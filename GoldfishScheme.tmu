@@ -1729,6 +1729,8 @@
 
   <paragraph|real?>
 
+  判断一个数是否是实数。
+
   <\goldfish-chunk|tests/goldfish/liii/base-test.scm|true|true>
     (check-true (real? 123)) \ \ \ \ \ \ \ \ \ \ \ ; 整数
 
