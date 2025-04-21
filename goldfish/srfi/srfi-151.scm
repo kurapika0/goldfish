@@ -19,7 +19,8 @@
 (export
   bitwise-not bitwise-and bitwise-ior bitwise-xor bitwise-eqv bitwise-nor bitwise-nand 
   bit-count bitwise-orc1 bitwise-orc2 bitwise-andc1 bitwise-andc2
-  arithmetic-shift integer-length bitwise-if bit-set?
+  arithmetic-shift integer-length bitwise-if
+  bit-set?
 )
 (begin
 
@@ -78,7 +79,6 @@
   (bitwise-ior
    (bitwise-and mask a)
    (bitwise-and (bitwise-not mask) b)))
-
 (define (bit-set? index n)
   (cond
     ((< index 0)
