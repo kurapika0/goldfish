@@ -17550,7 +17550,7 @@
 
     (define-library (scheme inexact)
 
-    (export acos asin atan cos exp finite? infinite? log nan? sin sqrt sqrt1 s7-sqrt tan)
+    (export acos asin atan cos exp finite? infinite? log nan? sin sqrt s7-sqrt tan)
 
     (begin
 
@@ -17641,7 +17641,7 @@
 
   <value|r7rs><paragraph|sqrt><index| sqrt>
 
-  用于计算数值<nbsp><code*|z><nbsp>的主平方根的库函数。接受实数或复数<nbsp><code*|z>（支持精确数和非精确数），若<nbsp><code*|z><nbsp>为非负实数，返回非负实数平方根；若<nbsp><code*|z><nbsp>为负数，则返回满足实部 <math|\<geq\>> 0<nbsp>或实部为 0 且虚部 <math|\<geq\>> 0的复数结果。若<nbsp><code*|z><nbsp>是精确非负数且结果可表示为有理数，返回精确值（如<nbsp><code*|(sqrt 9) \<Rightarrow\> 3>），否则返回非精确值（如<nbsp><code*|(sqrt 2) \<Rightarrow\> 1.414...>），若<nbsp><code*|z><nbsp>是非精确负数，返回若<nbsp><code*|z><nbsp>为精确负数，则返回 out-of-range。非数值输入（如符号、字符串）会触发断言错误。注意：对于负的精准数，目前输出只支持非精准复数。In par ticular, an exact complex number has an exact real part and an exact imaginary part; all other complex numbers are inexact complex numbers，我们的exact函数需要改进，在测试里(check-true (inexact? 1+2i)) 是通过的，但是在R7RS中应该是exact的。
+  用于计算数值<nbsp><code*|z><nbsp>的主平方根的库函数。接受实数或复数<nbsp><code*|z>（支持精确数和非精确数），若<nbsp><code*|z><nbsp>为非负实数，返回非负实数平方根；若<nbsp><code*|z><nbsp>为负数，则返回满足实部 <math|\<geq\>> 0<nbsp>或实部为 0 且虚部 <math|\<geq\>> 0的复数结果。若<nbsp><code*|z><nbsp>是精确非负数且结果可表示为有理数，返回精确值（如<nbsp><code*|(sqrt 9) \<Rightarrow\> 3>），否则返回非精确值（如<nbsp><code*|(sqrt 2) \<Rightarrow\> 1.414...>），若<nbsp><code*|z><nbsp>是非精确负数，返回若<nbsp><code*|z><nbsp>为精确负数，则返回 out-of-range。非数值输入（如符号、字符串）会触发断言错误。注意：对于负的精准数，目前输出只支持非精准复数。In particular, an exact complex number has an exact real part and an exact imaginary part; all other complex numbers are inexact complex numbers，我们的exact函数需要改进，在测试里(check-true (inexact? 1+2i)) 是通过的，但是在R7RS中应该是exact的。
 
   <\scm-chunk|goldfish/scheme/inexact.scm|true|true>
     (define s7-sqrt sqrt)
