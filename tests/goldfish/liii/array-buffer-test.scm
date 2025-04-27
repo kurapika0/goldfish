@@ -72,21 +72,35 @@
 (check-true (== (array-buffer :from-list '(1 2 3))
                 (array-buffer :from-list '(1 2 3) :extend! 10)))
 
+(check (array-buffer :from-list '(1 2 3) :to-list) => '(1 2 3))
+
+(check ((array-buffer :from-list '(1 2 3) :to-rich-list) :collect) => '(1 2 3))
+
 (let ((arb (array-buffer :from-list '(3 1 2 5 4))))
   (check (arb :collect) => #(3 1 2 5 4))
   (check (arb :to-vector) => (rich-vector #(3 1 2 5 4)))
-  (check (arb :to-list) => (rich-list '(3 1 2 5 4)))
+  (check (arb :to-list) => '(3 1 2 5 4))
+  (check ((arb :to-rich-list) :collect) => '(3 1 2 5 4))
+
   (arb :add-one! 0)
   (check (arb :collect) => #(3 1 2 5 4 0))
   (check (arb :to-vector) => (rich-vector #(3 1 2 5 4 0)))
-  (check (arb :to-list) => (rich-list '(3 1 2 5 4 0)))
+  (check (arb :to-list) => '(3 1 2 5 4 0))
+  (check ((arb :to-rich-list) :collect) => '(3 1 2 5 4 0))
+
   (arb :insert! 0 0)
   (check (arb :collect) => #(0 3 1 2 5 4 0))
   (check (arb :to-vector) => (rich-vector #(0 3 1 2 5 4 0)))
-  (check (arb :to-list) => (rich-list '(0 3 1 2 5 4 0)))
-  (check (arb :resize! 4 :to-list) => (rich-list '(0 3 1 2)))
+  (check (arb :to-list) => '(0 3 1 2 5 4 0))
+  (check ((arb :to-rich-list) :collect) => '(0 3 1 2 5 4 0))
+
+  (check (arb :resize! 4 :to-list) => '(0 3 1 2))
+  (check ((arb :to-rich-list) :collect) => '(0 3 1 2))
+
   (check (arb :resize! 3 :to-vector) => (rich-vector #(0 3 1)))
-  (check (arb :insert! 1 2 :to-list) => (rich-list '(0 2 3 1)))
+  (check (arb :insert! 1 2 :to-list) => '(0 2 3 1))
+  (check ((arb :to-rich-list) :collect) => '(0 2 3 1))
+
   (check (arb :collect) => #(0 2 3 1))
   (check (arb 0) => 0)
   (check (arb 1) => 2)
