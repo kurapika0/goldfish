@@ -101,6 +101,39 @@
   (let* ((key-fields
          (map (lambda (field) (string->symbol (string-append ":" (symbol->string (car field)))))
               fields))
+        
+         (field-names (map car fields))
+         
+         (method-names
+           (map (lambda (method)
+                  (let* ((method-sym (caadr method))
+                         (method-name (symbol->string method-sym)))
+                    (cond
+                      ((string-starts? method-name "@")
+                       (string-remove-prefix method-name "@"))
+                      ((string-starts? method-name "%")
+                       (string-remove-prefix method-name "%"))
+                      (else method-name))))
+                methods))
+         
+         (conflicts-names
+          (filter (lambda (method-name)
+                    (let ((name (string->symbol method-name)))
+                      (member name field-names)))
+                  method-names))
+         
+         (check-conflicts-names (unless (null? conflicts-names)
+              (let ((conflict-str (apply string-append 
+                                        (map (lambda (c) (string-append " <" c ">"))
+                                             conflicts-names))))
+                (error 'syntax-error (string-append "In class ["
+                                          (symbol->string class-name)
+                                          "]: Method name" 
+                                          (if (= (length conflicts-names) 1) "" "s")
+                                          conflict-str
+                                          " conflicts with field name"
+                                          (if (= (length conflicts-names) 1) "" "s"))))))
+         
          (instance-methods
           (filter (lambda (method) (string-starts? (symbol->string (caadr method)) "%"))
                   methods))

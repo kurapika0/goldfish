@@ -54,6 +54,31 @@
 (check (person :name "Alice" :age 25) => "Alice is 25 years old")
 (check-catch 'type-error (person :name 123 :age 25))
 
+(check-catch 'syntax-error
+  (eval
+    '(define-case-class instance-methods-conflict-test
+      ((name string?)
+       (age integer?))
+      (define (%name)
+        name))))
+
+(check-catch 'syntax-error
+  (eval
+    '(define-case-class static-methods-conflict-test
+      ((name string?)
+       (age integer?))
+      (define (@name)
+        name))))
+
+(check-catch 'syntax-error
+  (eval
+  '(define-case-class internal-methods-conflict-test
+      ((name string?)
+       (test-name string?)
+       (age integer?))
+      (define (test-name str)
+        (string-append str " ")))))
+
 (define-case-class person
   ((name string? "Bob")
    (age integer?)))
@@ -223,6 +248,7 @@
   => '(102 104 106 108 110))
 
 (check ($ 42 :get) => 42)
+
 (check-true ($ 42 :equals ($ 42)))
 (check-false ($ 41 :equals ($ 42)))
 

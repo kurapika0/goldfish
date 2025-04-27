@@ -559,7 +559,7 @@
 
   <scm|define-case-class>是一个宏，用于在 Goldfish Scheme 中定义类似 Scala 的样本类（Case Class）。样本类是不可变的数据结构，支持字段访问、方法调用、链式操作以及自动生成的实例方法（如 <with|font-family|tt|equals>、<with|font-family|tt|to-string> 等）。
 
-  样本类对象实际上是函数，该函数的第一个参数可以是字段或者是方法，字段统一使用<scm|'field>表示，方法统一使用<scm|:method>表示。实例方法采用<scm|%>作为前缀，静态方法采用<scm|@>作为前缀，内部方法没有<scm|@>和<scm|%>前缀。比如<scm|(bob :to-string)>实际上调用的是bob对象的实例方法<scm|%to-string>。静态方法只能通过样本类名调用，例如<scm|(person :default)>。实例方法只能通过该样本类构造的实例调用，例如 <scm|(bob :to-string)>。内部方法只能在定义实例方法时调用。
+  样本类对象实际上是函数，该函数的第一个参数可以是字段或者是方法，字段统一使用<scm|'field>表示，方法统一使用<scm|:method>表示，需要注意方法名和字段名不能重复。实例方法采用<scm|%>作为前缀，静态方法采用<scm|@>作为前缀，内部方法没有<scm|@>和<scm|%>前缀。比如<scm|(bob :to-string)>实际上调用的是bob对象的实例方法<scm|%to-string>。静态方法只能通过样本类名调用，例如<scm|(person :default)>。实例方法只能通过该样本类构造的实例调用，例如 <scm|(bob :to-string)>。内部方法只能在定义实例方法时调用。
 
   \;
 
@@ -715,6 +715,72 @@
     \ \ \ \ \ \ \ \ \ (map (lambda (field) (string-\<gtr\>symbol (string-append ":" (symbol-\<gtr\>string (car field)))))
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ fields))
+
+    \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ \ (field-names (map car fields))
+
+    \ \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ \ (method-names
+
+    \ \ \ \ \ \ \ \ \ \ \ (map (lambda (method)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let* ((method-sym (caadr method))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (method-name (symbol-\<gtr\>string method-sym)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cond
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ((string-starts? method-name "@")
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-remove-prefix method-name "@"))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ((string-starts? method-name "%")
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-remove-prefix method-name "%"))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (else method-name))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ methods))
+
+    \ \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ \ (conflicts-names
+
+    \ \ \ \ \ \ \ \ \ \ (filter (lambda (method-name)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let ((name (string-\<gtr\>symbol method-name)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (member name field-names)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ method-names))
+
+    \ \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ \ (check-conflicts-names (unless (null? conflicts-names)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let ((conflict-str (apply string-append\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (map (lambda (c) (string-append " \<less\>" c "\<gtr\>"))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conflicts-names))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (error 'syntax-error (string-append "In class ["
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (symbol-\<gtr\>string class-name)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "]: Method name"\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (= (length conflicts-names) 1) "" "s")
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conflict-str
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ " conflicts with field name"
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (= (length conflicts-names) 1) "" "s"))))))
+
+    \ \ \ \ \ \ \ \ \ 
 
     \ \ \ \ \ \ \ \ \ (instance-methods
 
@@ -956,6 +1022,60 @@
   </goldfish-chunk>
 
   <strong|测试用例>
+
+  测试：方法名不能与字段名重复
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check-catch 'syntax-error
+
+    \ \ (eval
+
+    \ \ \ \ '(define-case-class instance-methods-conflict-test
+
+    \ \ \ \ \ \ ((name string?)
+
+    \ \ \ \ \ \ \ (age integer?))
+
+    \ \ \ \ \ \ (define (%name)
+
+    \ \ \ \ \ \ \ \ name))))
+
+    \;
+
+    (check-catch 'syntax-error
+
+    \ \ (eval
+
+    \ \ \ \ '(define-case-class static-methods-conflict-test
+
+    \ \ \ \ \ \ ((name string?)
+
+    \ \ \ \ \ \ \ (age integer?))
+
+    \ \ \ \ \ \ (define (@name)
+
+    \ \ \ \ \ \ \ \ name))))
+
+    \;
+
+    (check-catch 'syntax-error
+
+    \ \ (eval
+
+    \ \ '(define-case-class internal-methods-conflict-test
+
+    \ \ \ \ \ \ ((name string?)
+
+    \ \ \ \ \ \ \ (test-name string?)
+
+    \ \ \ \ \ \ \ (age integer?))
+
+    \ \ \ \ \ \ (define (test-name str)
+
+    \ \ \ \ \ \ \ \ (string-append str " ")))))
+
+    \;
+  </goldfish-chunk>
 
   测试：不带用户自定义方法的样本类person
 
