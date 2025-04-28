@@ -894,6 +894,13 @@
 (check ($ (list "a" "b") :make-string) => "ab")
 (check ($ (list "a" "b") :make-string " ") => "a b")
 
+(let ((lst (rich-list '(1 2 3))))
+  (check (lst :to-vector) =>  #(1 2 3)))
+
+(let ((lst (rich-list '(1 2 3))))
+  (check (lst :to-rich-vector) => (rich-vector #(1 2 3)))
+  (check ((lst :to-rich-vector) :collect) => #(1 2 3)))
+
 (check-true (rich-vector :is-type-of (rich-vector :empty)))
 (check-true (rich-vector :is-type-of (rich-vector #(1 2 3))))
 

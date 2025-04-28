@@ -962,6 +962,12 @@
     (let1 as-string (lambda (x) (if (string? x) x (object->string x)))
           (rich-string (string-append start (string-join (map as-string data) sep) end)))))
 
+(define (%to-vector)
+  (list->vector data))
+
+(define (%to-rich-vector)
+  (rich-vector (list->vector data)))
+
 )
 
 (define-case-class rich-vector ((data vector?))

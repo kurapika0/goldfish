@@ -6023,6 +6023,44 @@
     \;
   </scm-chunk>
 
+  <paragraph|rich-list%to-vector>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%to-vector)
+
+    \ \ (list-\<gtr\>vector data))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let ((lst (rich-list '(1 2 3))))
+
+    \ \ (check (lst :to-vector) =\<gtr\> \ #(1 2 3)))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-list%to-rich-vector>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%to-rich-vector)
+
+    \ \ (rich-vector (list-\<gtr\>vector data)))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let ((lst (rich-list '(1 2 3))))
+
+    \ \ (check (lst :to-rich-vector) =\<gtr\> (rich-vector #(1 2 3)))
+
+    \ \ (check ((lst :to-rich-vector) :collect) =\<gtr\> #(1 2 3)))
+
+    \;
+  </goldfish-chunk>
+
   <section|结尾>
 
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
