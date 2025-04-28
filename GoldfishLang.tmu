@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.7>>
+<TMU|<tuple|1.1.0|2025.0.8>>
 
 <style|<tuple|book|goldfish|literate|reduced-margins|python|padded-paragraphs|chinese>>
 
@@ -3461,12 +3461,12 @@
     \;
   </goldfish-chunk>
 
-  <paragraph|rich-char%make-string><typehint|() =\<gtr\> rich-string>
+  <paragraph|rich-char%make-string><typehint|() =\<gtr\> string>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%make-string)
 
-    \ \ (rich-string (utf8-\>string (%to-bytevector))))
+    \ \ (utf8-\>string (%to-bytevector)))
 
     \;
   </goldfish-chunk>
@@ -3670,7 +3670,7 @@
 
     \ \ \ \ \ \ \ \ ((and (case-class? v) (v :is-instance-of 'rich-char))
 
-    \ \ \ \ \ \ \ \ \ (v :make-string))
+    \ \ \ \ \ \ \ \ \ (box (v :make-string)))
 
     \ \ \ \ \ \ \ \ (else (type-error "Expected types are char, rich-char, number, symbol or string"))))
 
@@ -4034,19 +4034,25 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (chained-define (%map f)
 
-    \ \ ((%to-vector)
+    \ \ (box ((%to-vector)
 
-    \ \ \ :map f
+    \ \ \ \ \ \ \ \ :map f
 
-    \ \ \ :map (@ _ :make-string)
+    \ \ \ \ \ \ \ \ :map (@ _ :make-string)
 
-    \ \ \ :make-string))
+    \ \ \ \ \ \ \ \ :make-string)))
 
     \;
   </goldfish-chunk>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
-    (check ($ "abc" :map (lambda (c) (c :to-upper))) =\<gtr\> "ABC")
+    (let1 s ($ "abc" :map (lambda (c) (c :to-upper)))
+
+    \ \ (check s =\<gtr\> "ABC")
+
+    \ \ (check (s :length) =\<gtr\> 3))
+
+    \;
 
     (check ($ "abc中文" :map (lambda (c) (c :to-upper))) =\<gtr\> "ABC中文")
 

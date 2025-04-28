@@ -457,7 +457,7 @@
       (string-append "#\\" (utf8->string (%to-bytevector)))))
 
 (define (%make-string)
-  (rich-string (utf8->string (%to-bytevector))))
+  (utf8->string (%to-bytevector)))
 
 )
 
@@ -516,7 +516,7 @@
         ((symbol? v) (rich-string (symbol->string v)))
         ((string? v) (rich-string v))
         ((and (case-class? v) (v :is-instance-of 'rich-char))
-         (v :make-string))
+         (box (v :make-string)))
         (else (type-error "Expected types are char, rich-char, number, symbol or string"))))
 
 (define (%get) data)
@@ -584,10 +584,10 @@
        (else (loop (cdr lst) (+ index 1)))))))))
 
 (chained-define (%map f)
-  ((%to-vector)
-   :map f
-   :map (@ _ :make-string)
-   :make-string))
+  (box ((%to-vector)
+        :map f
+        :map (@ _ :make-string)
+        :make-string)))
 
 (define (%count pred?)
   ((%to-vector) :count pred?))

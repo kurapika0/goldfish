@@ -498,7 +498,10 @@
   (check (str :index-of #\!) => 11)
   (check (str :index-of #\~) => -1))
 
-(check ($ "abc" :map (lambda (c) (c :to-upper))) => "ABC")
+(let1 s ($ "abc" :map (lambda (c) (c :to-upper)))
+  (check s => "ABC")
+  (check (s :length) => 3))
+
 (check ($ "abc中文" :map (lambda (c) (c :to-upper))) => "ABC中文")
 
 (check ($ "" :count (@ == _ #\A)) => 0)
