@@ -514,6 +514,12 @@
   (check (v 0) => (rich-char "中"))
   (check (v 1) => (rich-char "文")))
 
+(let1 v ($ "中文的" :to-rich-vector)
+  (check (v :length) => 3)
+  (check (v 0) => (rich-char "中"))
+  (check (v 1) => (rich-char "文"))
+  (check (v 2) => (rich-char "的")))
+
 (check ($ "Hello" :+ " " :+ "World") => "Hello World")
 (check ($ "hello " :+ (box "world")) => "hello world")
 (check-catch 'type-error ($ "hello" :+ 1))
@@ -967,7 +973,7 @@
 
 (check ($ (vector (rich-char "中") (rich-char "文"))) => ($ "中文" :to-vector))
 
-(check-false (($ "中文" :to-vector) :equals (rich-char "中")))
+(check-false (($ "中文" :to-rich-vector) :equals (rich-char "中")))
 
 (let ((vec (array #(1 2 3 4 5))))
   (check (vec :forall (lambda (x) (> x 0))) => #t)
@@ -1071,7 +1077,7 @@
 (let ((vec ($ #())))
   (check (vec :to-string) => "#()"))
 
-(let ((vec ($ "test123 你好" :to-vector)))
+(let ((vec ($ "test123 你好" :to-rich-vector)))
   (check (vec :to-string) => "#(#\\t #\\e #\\s #\\t #\\1 #\\2 #\\3 #\\space #\\你 #\\好)"))
 
 (let1 v ($ #(1 2 3))

@@ -552,10 +552,10 @@
   (string-ends? data suffix))
 
 (define (%forall pred)
-  ((%to-vector) :forall pred))
+  ((%to-rich-vector) :forall pred))
 
 (define (%exists pred)
-  ((%to-vector) :exists pred))
+  ((%to-rich-vector) :exists pred))
 
 (define (%contains elem)
   (cond ((string? elem)
@@ -584,31 +584,34 @@
        (else (loop (cdr lst) (+ index 1)))))))))
 
 (chained-define (%map f)
-  (box ((%to-vector)
+  (box ((%to-rich-vector)
         :map f
         :map (@ _ :make-string)
         :make-string)))
 
 (define (%count pred?)
-  ((%to-vector) :count pred?))
+  ((%to-rich-vector) :count pred?))
 
 (define (%to-string)
   data)
 
 (define (%to-vector)
   (if (string-null? data)
-      (rich-vector :empty)
+      (vector)
       (let* ((bv (string->utf8 data))
              (bv-size (length bv))
              (len (u8-string-length data))
              (result (make-vector len)))
         (let loop ((i 0) (j 0))
-             (if (>= i len)
-                 (rich-vector result)
-                 (let* ((next-j (bytevector-advance-u8 bv j bv-size))
-                        (code (utf8-byte-sequence->code-point (bytevector-copy bv j next-j))))
-                   (vector-set! result i (rich-char code))
-                   (loop (+ i 1) next-j)))))))
+          (if (>= i len)
+              result
+              (let* ((next-j (bytevector-advance-u8 bv j bv-size))
+                     (code (utf8-byte-sequence->code-point (bytevector-copy bv j next-j))))
+                (vector-set! result i (rich-char code))
+                (loop (+ i 1) next-j)))))))
+
+(define (%to-rich-vector)
+  (rich-vector (%to-vector)))
 
 (chained-define (%+ s)
   (cond
@@ -679,7 +682,7 @@
             (split-helper (+ next-pos sep-len) (cons (substring data start next-pos) acc)))))
     
     (if (zero? sep-len)
-        ((%to-vector) :map (lambda (c) (rich-string :value-of c :get)) :collect)
+        ((%to-rich-vector) :map (lambda (c) (rich-string :value-of c :get)) :collect)
         (rich-vector (reverse-list->vector (split-helper 0 '()))))))
 
 )
