@@ -1172,7 +1172,7 @@
 
 (let  ((ht ($ (hash-table 'x 10 'y 20 'z 30 'new 40)))     
       (sum 0))                                  
-  (ht :foreach (lambda (k v) 
+  (ht :for-each (lambda (k v) 
                (set! sum (+ sum v))))             
   (check sum => 100)                             
 )
@@ -1181,7 +1181,7 @@
 (let ((ht ($ (make-hash-table)))                      
       (call-counter 0))                          
   
-  (ht :foreach (lambda (k v) 
+  (ht :for-each (lambda (k v) 
                (set! call-counter (+ call-counter 1))))
   
   (check call-counter => 0)                      
@@ -1192,10 +1192,10 @@
        (outer ($ (hash-table 'a inner 'b 42)))     
        (total 0))                                  
   
-  (outer :foreach 
+  (outer :for-each 
     (lambda (k v)
       (if (case-class? v)
-        (v  :foreach
+        (v  :for-each
             (lambda (k v)
             (set! total (+ total v))))
         (set! total (+ total v)))))

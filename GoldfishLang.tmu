@@ -7495,10 +7495,10 @@
 
   \;
 
-  <paragraph|rich-hash-table%foreach>
+  <paragraph|rich-hash-table%for-each>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define (%foreach proc)
+    (define (%for-each proc)
 
     \ \ (hash-table-for-each proc data))
 
@@ -7512,7 +7512,7 @@
 
     \ \ \ \ \ \ (sum 0)) \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
 
-    \ \ (ht :foreach (lambda (k v)\ 
+    \ \ (ht :for-each (lambda (k v)\ 
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (set! sum (+ sum v)))) \ \ \ \ \ \ \ \ \ \ \ \ 
 
@@ -7530,7 +7530,7 @@
 
     \ \ 
 
-    \ \ (ht :foreach (lambda (k v)\ 
+    \ \ (ht :for-each (lambda (k v)\ 
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (set! call-counter (+ call-counter 1))))
 
@@ -7552,13 +7552,13 @@
 
     \ \ 
 
-    \ \ (outer :foreach\ 
+    \ \ (outer :for-each\ 
 
     \ \ \ \ (lambda (k v)
 
     \ \ \ \ \ \ (if (case-class? v)
 
-    \ \ \ \ \ \ \ \ (v \ :foreach
+    \ \ \ \ \ \ \ \ (v \ :for-each
 
     \ \ \ \ \ \ \ \ \ \ \ \ (lambda (k v)
 

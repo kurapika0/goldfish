@@ -1261,7 +1261,7 @@
 (define (%count pred)
   (hash-table-count pred data))
 
-(define (%foreach proc)
+(define (%for-each proc)
   (hash-table-for-each proc data))
 
 )
