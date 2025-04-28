@@ -7032,7 +7032,7 @@
 
     \ \ \ \ \ \ \ \ \ \ \ (middle (string-join (map as-string (vector-\<gtr\>list data)) sep)))
 
-    \ \ \ \ \ \ (rich-string (string-append start middle end)))))
+    \ \ \ \ \ \ (string-append start middle end))))
 
     \;
   </scm-chunk>

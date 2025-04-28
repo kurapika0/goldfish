@@ -1194,7 +1194,7 @@
   (receive (start sep end) (parse-args xs)
     (let* ((as-string (lambda (x) (if (string? x) x (object->string x))))
            (middle (string-join (map as-string (vector->list data)) sep)))
-      (rich-string (string-append start middle end)))))
+      (string-append start middle end))))
 
 (define (%to-list)
   (vector->list data))
