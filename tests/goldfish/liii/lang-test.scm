@@ -692,6 +692,22 @@
   (check-true (opt1 :exists (lambda (x) (== x 42))))
   (check-false (opt2 :exists (lambda (x) (== x 42)))))
 
+(check-true ((left "Value error") :left?))
+(check-false ((right 1) :left?))
+
+(check-false ((left "Value error") :right?))
+(check-true ((right 1) :right?))
+
+(check ((right 1) :or-else (right 2)) => (right 1))
+(check ((left "error") :get-or-else (right 2)) => (right 2))
+
+(check ((right 1) :get-or-else 2) => 1)
+(check ((left "error") :get-or-else 2) => 2)
+
+(let1 r ((right 1) :map (lambda (x) (+ x 1)))
+  (check-true (r :right?))
+  (check (r 'right) => 2))
+
 (check (rich-list :range 1 5) => ($ (list 1 2 3 4)))
 (check (rich-list :range 1 5 2) => ($ (list 1 3)))
 (check (rich-list :range 1 6 2) => ($ (list 1 3 5)))

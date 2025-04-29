@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.7>>
+<TMU|<tuple|1.1.0|2025.0.8>>
 
 <style|<tuple|book|goldfish|literate|reduced-margins|python|padded-paragraphs|chinese>>
 
@@ -100,7 +100,7 @@
 
     \ \ define-case-class case-class? == != chained-define display* object-\<gtr\>string
 
-    \ \ option none
+    \ \ option none either left right
 
     \ \ rich-integer rich-float rich-char rich-string
 
@@ -3392,13 +3392,13 @@
       <goldfish-result|13>
     </unfolded-io>
 
-    <\unfolded-io>
+    <\folded-io>
       \<gtr\>\ 
-    <|unfolded-io>
+    <|folded-io>
       (object-\<gtr\>string (integer-\<gtr\>char 13))
-    <|unfolded-io>
+    <|folded-io>
       <goldfish-result|"#\\return">
-    </unfolded-io>
+    </folded-io>
 
     <\input>
       \<gtr\>\ 
@@ -4950,6 +4950,180 @@
 
     \;
   </scm-chunk>
+
+  <chapter|either>
+
+  <section|either>
+
+  either分为左值和右值，如果左值非空，那么忽略右值；如果左值为空，那么启用右值。either通常用于错误处理，通常我们在左值中存放错误信息，在右值中存放关键信息。
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define-case-class either
+
+    \ \ ((left any? '())
+
+    \ \ \ (right any? '()))
+
+    \;
+  </goldfish-chunk>
+
+  \;
+
+  <subsection|谓词>
+
+  <paragraph|either%left?>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%left?)
+
+    \ \ (not (null? left)))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check-true ((left "Value error") :left?))
+
+    (check-false ((right 1) :left?))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|either%right?>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%right?)
+
+    \ \ (null? left))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check-false ((left "Value error") :right?))
+
+    (check-true ((right 1) :right?))
+
+    \;
+  </goldfish-chunk>
+
+  <subsection|选择器>
+
+  <paragraph|either%or-else>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|false>
+    (typed-define (%or-else (default case-class?))
+
+    \ \ (when (not (default :is-instance-of 'either))
+
+    \ \ \ \ (type-error "The first parameter of either%or-else must be a either case class"))
+
+    \;
+
+    \ \ (if (%right?)
+
+    \ \ \ \ \ \ (%this)
+
+    \ \ \ \ \ \ default))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|false>
+    (check ((right 1) :or-else (right 2)) =\<gtr\> (right 1))
+
+    (check ((left "error") :get-or-else (right 2)) =\<gtr\> (right 2))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|either%get-or-else>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%get-or-else default)
+
+    \ \ (if (%right?)
+
+    \ \ \ \ \ \ right
+
+    \ \ \ \ \ \ default))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|false>
+    (check ((right 1) :get-or-else 2) =\<gtr\> 1)
+
+    (check ((left "error") :get-or-else 2) =\<gtr\> 2)
+
+    \;
+  </goldfish-chunk>
+
+  <subsection|高阶函数>
+
+  <paragraph|either%for-each>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%for-each f)
+
+    \ \ (when (%right?)
+
+    \ \ \ \ (f right)))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|either%map>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%map f)
+
+    \ \ (if (%right?)
+
+    \ \ \ \ \ \ (either :left '() :right (f right))
+
+    \ \ \ \ \ \ (%this)))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let1 r ((right 1) :map (lambda (x) (+ x 1)))
+
+    \ \ (check-true (r :right?))
+
+    \ \ (check (r 'right) =\<gtr\> 2))
+
+    \;
+  </goldfish-chunk>
+
+  <subsection|结尾>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    )
+
+    \;
+  </goldfish-chunk>
+
+  <section|left>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (left v)
+
+    \ \ (either v '()))
+
+    \;
+  </goldfish-chunk>
+
+  <section|right>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (right v)
+
+    \ \ (either '() v))
+
+    \;
+  </goldfish-chunk>
 
   <chapter|rich-list>
 

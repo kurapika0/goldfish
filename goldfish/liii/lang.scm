@@ -20,7 +20,7 @@
 (export
   @ typed-define
   define-case-class case-class? == != chained-define display* object->string
-  option none
+  option none either left right
   rich-integer rich-float rich-char rich-string
   rich-list rich-vector array rich-hash-table
   box $
@@ -747,6 +747,46 @@
 )
 
 (define (none) (option '()))
+
+(define-case-class either
+  ((left any? '())
+   (right any? '()))
+
+(define (%left?)
+  (not (null? left)))
+
+(define (%right?)
+  (null? left))
+
+(typed-define (%or-else (default case-class?))
+  (when (not (default :is-instance-of 'either))
+    (type-error "The first parameter of either%or-else must be a either case class"))
+
+  (if (%right?)
+      (%this)
+      default))
+
+(define (%get-or-else default)
+  (if (%right?)
+      right
+      default))
+
+(define (%for-each f)
+  (when (%right?)
+    (f right)))
+
+(chained-define (%map f)
+  (if (%right?)
+      (either :left '() :right (f right))
+      (%this)))
+
+)
+
+(define (left v)
+  (either v '()))
+
+(define (right v)
+  (either '() v))
 
 (define-case-class rich-list ((data list?))
 
