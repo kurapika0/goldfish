@@ -794,6 +794,11 @@
       (right (f value))
       (%this)))
 
+(typed-define (%forall (pred procedure?))
+  (if (%right?)
+      (pred value)
+      #t))
+
 )
 
 (define (left v)
