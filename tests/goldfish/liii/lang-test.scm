@@ -698,11 +698,18 @@
 (check-false ((left "Value error") :right?))
 (check-true ((right 1) :right?))
 
+(check ((right 1) :get) => 1)
+(check ((left "error") :get) => "error")
+
 (check ((right 1) :or-else (right 2)) => (right 1))
 (check ((left "error") :get-or-else (right 2)) => (right 2))
 
 (check ((right 1) :get-or-else 2) => 1)
 (check ((left "error") :get-or-else 2) => 2)
+
+(check-true ((right 1) :contains 1))
+(check-false ((left "error") :contains 1))
+(check-true ((right (box 1)) :contains 1))
 
 (let1 r ((right 1) :map (lambda (x) (+ x 1)))
   (check-true (r :right?))

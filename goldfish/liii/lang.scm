@@ -758,6 +758,9 @@
 (define (%right?)
   (eq? type 'right))
 
+(define (%get)
+  value)
+
 (typed-define (%or-else (default case-class?))
   (when (not (default :is-instance-of 'either))
     (type-error "The first parameter of either%or-else must be a either case class"))
@@ -770,6 +773,10 @@
   (if (%right?)
       value
       default))
+
+(define (%contains x)
+  (and (%right?)
+       (== x value)))
 
 (define (%for-each f)
   (when (%right?)
