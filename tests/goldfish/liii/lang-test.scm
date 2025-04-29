@@ -522,7 +522,8 @@
 
 (check ($ "Hello" :+ " " :+ "World") => "Hello World")
 (check ($ "hello " :+ (box "world")) => "hello world")
-(check-catch 'type-error ($ "hello" :+ 1))
+(check ($ "Hello " :+ 2025) => "Hello 2025")
+(check ($ "Price is " :+ 1.2) => "Price is 1.2")
 
 (check ($ " abc " :strip-left) => "abc ")
 (check ($ "   abc" :strip-left) => "abc")

@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.7>>
+<TMU|<tuple|1.1.0|2025.0.8>>
 
 <style|<tuple|book|goldfish|literate|reduced-margins|python|padded-paragraphs|chinese>>
 
@@ -4171,6 +4171,22 @@
 
   <paragraph|rich-string%+>
 
+  实例方法<scm|+>是为了简化字符串的拼接，尤其是拼接number类型的变量。
+
+  两种方法的比较：
+
+  <\scm-code>
+    ; string concat in R7RS Scheme
+
+    (string-append "Hello " (number-\<gtr\>string 2025))
+
+    ; string concat in Goldfish Scheme
+
+    ($ "Hello " :+ 2025 :get)
+  </scm-code>
+
+  后者更加简洁，能够更好地处理字符串和数字拼接。
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (chained-define (%+ s)
 
@@ -4184,9 +4200,13 @@
 
     \ \ \ \ \ (rich-string (string-append data (s :get))))
 
+    \ \ \ \ ((number? s)
+
+    \ \ \ \ \ (rich-string (string-append data (number-\<gtr\>string s))))
+
     \ \ \ \ (else
 
-    \ \ \ \ \ \ (type-error (string-append (object-\<gtr\>string s) "is not string or rich-string")))))
+    \ \ \ \ \ \ (type-error (string-append (object-\<gtr\>string s) "is not string or rich-string or number")))))
 
     \;
   </goldfish-chunk>
@@ -4196,7 +4216,9 @@
 
     (check ($ "hello " :+ (box "world")) =\<gtr\> "hello world")
 
-    (check-catch 'type-error ($ "hello" :+ 1))
+    (check ($ "Hello " :+ 2025) =\<gtr\> "Hello 2025")
+
+    (check ($ "Price is " :+ 1.2) =\<gtr\> "Price is 1.2")
 
     \;
   </goldfish-chunk>

@@ -619,8 +619,10 @@
      (rich-string (string-append data s)))
     ((rich-string :is-type-of s)
      (rich-string (string-append data (s :get))))
+    ((number? s)
+     (rich-string (string-append data (number->string s))))
     (else
-      (type-error (string-append (object->string s) "is not string or rich-string")))))
+      (type-error (string-append (object->string s) "is not string or rich-string or number")))))
 
 (chained-define (%strip-left)
   (rich-string (string-trim data)))
