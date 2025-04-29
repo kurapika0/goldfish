@@ -62,5 +62,25 @@
   (check (path-read-text file-path) => file-content)
   (delete-file file-path))
 
+; Test for path-read-bytes
+(let ((file-name "binary-test.dat")
+      (file-content "Hello, binary world!"))
+  (define temp-dir (os-temp-dir))
+  (define file-path (string-append temp-dir (string (os-sep)) file-name))
+  
+  ; Write a simple string to the file
+  (path-write-text file-path file-content)
+  
+  ; Read it back using path-read-bytes
+  (let ((read-content (path-read-bytes file-path)))
+    ; Check that it's a bytevector
+    (check-true (bytevector? read-content))
+    ; Check that it has the correct length
+    (check (bytevector-length read-content) => (string-length file-content))
+    ; Check that the content matches when converted back to string
+    (check (utf8->string read-content) => file-content))
+  
+  (delete-file file-path))
+
 (check-report)
 
