@@ -4955,14 +4955,14 @@
 
   <section|either>
 
-  either分为左值和右值，如果左值非空，那么忽略右值；如果左值为空，那么启用右值。either通常用于错误处理，通常我们在左值中存放错误信息，在右值中存放关键信息。
+  either通常用于错误处理，通常我们在左值中存放错误信息，在右值中存放关键信息。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class either
 
-    \ \ ((left any? '())
+    \ \ ((type symbol?)
 
-    \ \ \ (right any? '()))
+    \ \ \ (value any?))
 
     \;
   </goldfish-chunk>
@@ -4976,7 +4976,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%left?)
 
-    \ \ (not (null? left)))
+    \ \ (eq? type 'left))
 
     \;
   </goldfish-chunk>
@@ -4994,7 +4994,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%right?)
 
-    \ \ (null? left))
+    \ \ (eq? type 'right))
 
     \;
   </goldfish-chunk>
@@ -5011,7 +5011,7 @@
 
   <paragraph|either%or-else>
 
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|false>
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (typed-define (%or-else (default case-class?))
 
     \ \ (when (not (default :is-instance-of 'either))
@@ -5029,7 +5029,7 @@
     \;
   </goldfish-chunk>
 
-  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|false>
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ((right 1) :or-else (right 2)) =\<gtr\> (right 1))
 
     (check ((left "error") :get-or-else (right 2)) =\<gtr\> (right 2))
@@ -5044,14 +5044,14 @@
 
     \ \ (if (%right?)
 
-    \ \ \ \ \ \ right
+    \ \ \ \ \ \ value
 
     \ \ \ \ \ \ default))
 
     \;
   </goldfish-chunk>
 
-  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|false>
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ((right 1) :get-or-else 2) =\<gtr\> 1)
 
     (check ((left "error") :get-or-else 2) =\<gtr\> 2)
@@ -5068,7 +5068,7 @@
 
     \ \ (when (%right?)
 
-    \ \ \ \ (f right)))
+    \ \ \ \ (f value)))
 
     \;
   </goldfish-chunk>
@@ -5080,7 +5080,7 @@
 
     \ \ (if (%right?)
 
-    \ \ \ \ \ \ (either :left '() :right (f right))
+    \ \ \ \ \ \ (right (f value))
 
     \ \ \ \ \ \ (%this)))
 
@@ -5092,7 +5092,7 @@
 
     \ \ (check-true (r :right?))
 
-    \ \ (check (r 'right) =\<gtr\> 2))
+    \ \ (check (r :get-or-else 0) =\<gtr\> 2))
 
     \;
   </goldfish-chunk>
@@ -5110,7 +5110,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (left v)
 
-    \ \ (either v '()))
+    \ \ (either 'left v))
 
     \;
   </goldfish-chunk>
@@ -5120,7 +5120,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (right v)
 
-    \ \ (either '() v))
+    \ \ (either 'right v))
 
     \;
   </goldfish-chunk>

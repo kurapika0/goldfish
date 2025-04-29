@@ -706,7 +706,7 @@
 
 (let1 r ((right 1) :map (lambda (x) (+ x 1)))
   (check-true (r :right?))
-  (check (r 'right) => 2))
+  (check (r :get-or-else 0) => 2))
 
 (check (rich-list :range 1 5) => ($ (list 1 2 3 4)))
 (check (rich-list :range 1 5 2) => ($ (list 1 3)))

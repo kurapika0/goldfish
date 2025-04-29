@@ -749,14 +749,14 @@
 (define (none) (option '()))
 
 (define-case-class either
-  ((left any? '())
-   (right any? '()))
+  ((type symbol?)
+   (value any?))
 
 (define (%left?)
-  (not (null? left)))
+  (eq? type 'left))
 
 (define (%right?)
-  (null? left))
+  (eq? type 'right))
 
 (typed-define (%or-else (default case-class?))
   (when (not (default :is-instance-of 'either))
@@ -768,25 +768,25 @@
 
 (define (%get-or-else default)
   (if (%right?)
-      right
+      value
       default))
 
 (define (%for-each f)
   (when (%right?)
-    (f right)))
+    (f value)))
 
 (chained-define (%map f)
   (if (%right?)
-      (either :left '() :right (f right))
+      (right (f value))
       (%this)))
 
 )
 
 (define (left v)
-  (either v '()))
+  (either 'left v))
 
 (define (right v)
-  (either '() v))
+  (either 'right v))
 
 (define-case-class rich-list ((data list?))
 
