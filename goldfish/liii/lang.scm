@@ -789,6 +789,11 @@
   (when (%right?)
     (f value)))
 
+(define (%to-option)
+  (if (%right?)
+      (option value)
+      (none)))
+
 (chained-define (%map f)
   (if (%right?)
       (right (f value))

@@ -5163,6 +5163,46 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|either%to-option>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%to-option)
+
+    \ \ (if (%right?)
+
+    \ \ \ \ \ \ (option value)
+
+    \ \ \ \ \ \ (none)))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    ;; 测试 1: right 值转换为 option
+
+    (let ((e1 (right 42)))
+
+    \ \ (check ((e1 :to-option) :get) =\<gtr\> 42)
+
+    \ \ (check-true ((e1 :to-option) :defined?))
+
+    \ \ (check-false ((e1 :to-option) :empty?)))
+
+    \;
+
+    ;; 测试 2: left 值转换为 option (应该返回 none)
+
+    (let ((e2 (left "error")))
+
+    \ \ (check ((e2 :to-option) :empty?) =\<gtr\> #t)
+
+    \ \ (check-false ((e2 :to-option) :defined?))
+
+    \ \ (check-catch 'value-error ((e2 :to-option) :get)))
+
+    \;
+  </goldfish-chunk>
+
   <paragraph|either%map>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>

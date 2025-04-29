@@ -723,6 +723,18 @@
 (check-false ((left "error") :contains 1))
 (check-true ((right (box 1)) :contains 1))
 
+;; 测试 1: right 值转换为 option
+(let ((e1 (right 42)))
+  (check ((e1 :to-option) :get) => 42)
+  (check-true ((e1 :to-option) :defined?))
+  (check-false ((e1 :to-option) :empty?)))
+
+;; 测试 2: left 值转换为 option (应该返回 none)
+(let ((e2 (left "error")))
+  (check ((e2 :to-option) :empty?) => #t)
+  (check-false ((e2 :to-option) :defined?))
+  (check-catch 'value-error ((e2 :to-option) :get)))
+
 (let1 r ((right 1) :map (lambda (x) (+ x 1)))
   (check-true (r :right?))
   (check (r :get-or-else 0) => 2))
