@@ -774,6 +774,13 @@
       value
       default))
 
+(typed-define (%filter-or-else (pred procedure?) (zero any?))
+  (if (%right?)
+      (if (pred value)
+          (%this)
+          (left zero))
+      (%this)))
+
 (define (%contains x)
   (and (%right?)
        (== x value)))
