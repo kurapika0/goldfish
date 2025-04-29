@@ -1017,7 +1017,7 @@
 
   (receive (start sep end) (parse-args xs)
     (let1 as-string (lambda (x) (if (string? x) x (object->string x)))
-          (rich-string (string-append start (string-join (map as-string data) sep) end)))))
+          (string-append start (string-join (map as-string data) sep) end))))
 
 (define (%to-vector)
   (list->vector data))
