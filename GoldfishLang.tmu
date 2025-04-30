@@ -137,10 +137,6 @@
 
   <paragraph*|@>
 
-  \;
-
-  <strong|概述>
-
   宏<scm|@>提供类似Scala语法的部分应用（Partial Application）功能，详情参考SFRI 26中宏<scm|cute>的说明。
 
   宏<scm|@>的关键在于<strong|宏展开时的静态求值>，而非运行时的动态绑定。简短的来说，<scm|@>只在宏展开时求值并绑定占位符，而不是每次被调用时重新求值。
@@ -174,8 +170,6 @@
 
     即使后续通过 <scm|(set! a 100)> 修改了 <code*|<scm|a>>，<scm|add10> 内部已经固定为 <scm|10>，因此 <scm|(add10 5)> 等价于 <scm|(+ 10 5)>，结果为 <scm|15>。
   </enumerate>
-
-  \;
 
   <strong|与普通闭包的区别>
 
@@ -213,8 +207,6 @@
     <scm|cute> 宏支持更复杂的模式（如 <scm|\<...\>> 表示未定参数序列），而 <scm|@> 仅支持固定位置的 <scm|_>，且不延迟求值。
   </enumerate>
 
-  \;
-
   <strong|设计意义>
 
   <\itemize-minus>
@@ -222,8 +214,6 @@
 
     <item><strong|语义确定性>：部分应用的结果在定义时即固定，不受后续环境变化影响。
   </itemize-minus>
-
-  \;
 
   <strong|实现函数>
 
@@ -529,44 +519,26 @@
 
   <section|样本类>
 
-  <paragraph|参考>
+  本节函数和相关功能如下表所示：
 
-  <\itemize-minus>
-    <item><scm|define-case-class>: 用于定义样本类的宏。
-
-    <item><scm|case-class?>: 用于判断某个对象是否为样本类。
-
-    <item><scm|==> 和 <scm|!=>: 样本类的相等性判断函数。
-
-    <item><scm|chained-define>: 简化了在样本类中定义方法的语法，使方法可以链式调用。
-
-    <item><scm|display*>: 正确处理样本类对象
-
-    <item><scm|object-<textgreater|>string>: 样本类的字符串表示函数。
-
-    <item><verbatim|box>: 将基础类型的值装箱为样本类的函数。
-
-    <item><scm|$>: 用于简化样本类的创建和操作。
-  </itemize-minus>
-
-  \;
+  <\big-table|<tabular|<tformat|<cwith|1|1|1|-1|cell-tborder|0ln>|<cwith|1|1|1|-1|cell-bborder|1ln>|<cwith|2|2|1|-1|cell-tborder|1ln>|<cwith|1|1|1|1|cell-lborder|0ln>|<cwith|1|1|2|2|cell-rborder|0ln>|<cwith|1|1|1|-1|cell-background|>|<table|<row|<cell|函数名>|<cell|功能>>|<row|<cell|<scm|define-case-class>>|<cell|用于定义样本类的宏>>|<row|<cell|<scm|case-class?>>|<cell|用于判断某个对象是否为样本类>>|<row|<cell|<scm|==> 和 <scm|!=>>|<cell|样本类的相等性判断函数>>|<row|<cell|<scm|chained-define>>|<cell|简化了在样本类中定义方法的语法，使方法可以链式调用>>|<row|<cell|<scm|display*>>|<cell|正确处理样本类对象>>|<row|<cell|<scm|object-<textgreater|>string>>|<cell|样本类的字符串表示函数>>|<row|<cell|<verbatim|box>>|<cell|将基础类型的值装箱为样本类的函数>>|<row|<cell|<scm|$>>|<cell|用于简化样本类的创建和操作>>>>>>
+    样本类相关函数和功能
+  </big-table>
 
   <paragraph|define-case-class><index|define-case-class>
-
-  \;
-
-  <strong|概述>
 
   <scm|define-case-class>是一个宏，用于在 Goldfish Scheme 中定义类似 Scala 的样本类（Case Class）。样本类是不可变的数据结构，支持字段访问、方法调用、链式操作以及自动生成的实例方法（如 <with|font-family|tt|equals>、<with|font-family|tt|to-string> 等）。
 
   样本类对象实际上是函数，该函数的第一个参数可以是字段或者是方法，字段统一使用<scm|'field>表示，方法统一使用<scm|:method>表示，需要注意方法名和字段名不能重复。实例方法采用<scm|%>作为前缀，静态方法采用<scm|@>作为前缀，内部方法没有<scm|@>和<scm|%>前缀。比如<scm|(bob :to-string)>实际上调用的是bob对象的实例方法<scm|%to-string>。静态方法只能通过样本类名调用，例如<scm|(person :default)>。实例方法只能通过该样本类构造的实例调用，例如 <scm|(bob :to-string)>。内部方法只能在定义实例方法时调用。
 
-  \;
-
-  <strong|函数签名>
+  <subparagraph|函数签名>
 
   <\goldfish-code>
-    (define-case-class class-name ((field1 type1?) (field2 type2?) ...)
+    (define-case-class class-name
+
+    \ \ ((field1 type1?) (field2 type2?) ...)
+
+    \ \ 
 
     \ \ (define (@static-method-name ...) ...) \ ; 静态方法
 
@@ -593,9 +565,7 @@
     <item><with|font-series|bold|internal-method-name>: 内部方法，没有前缀，只能在样本类内部调用。
   </itemize-minus>
 
-  \;
-
-  <strong|示例>
+  <paragraph|示例>
 
   <\goldfish-code>
     (define-case-class my-vector ((vec vector?) (size integer?))
@@ -1283,13 +1253,7 @@
 
   <paragraph|case-class?>
 
-  \;
-
-  <strong|概述>
-
   <scm|case-class?> 是一个用于判断某个对象是否为 <with|font-series|bold|样本类（Case Class）> 的谓词函数。样本类是 Goldfish Scheme 中一种特殊的数据结构，类似于 Scala 中的 Case Class，主要用于表示不可变的数据对象。样本类对象通常由 <scm|define-case-class> 宏定义生成。
-
-  \;
 
   <\strong>
     函数签名
@@ -1459,15 +1423,15 @@
 
   <scm|==> 函数的比较逻辑如下：\ 
 
-  <item>如果 <scm|left> 和 <scm|right> 都是样本类，则调用 <scm|left> 的 <scm|:equals> 方法进行比较。
+  <\itemize>
+    <item>如果 <scm|left> 和 <scm|right> 都是样本类，则调用 <scm|left> 的 <scm|:equals> 方法进行比较。
 
-  <item>如果 <scm|left> 是样本类而 <scm|right> 不是，则将 <scm|right> 用 <scm|box> 函数装箱后调用 <scm|left> 的 <scm|:equals> 方法。
+    <item>如果 <scm|left> 是样本类而 <scm|right> 不是，则将 <scm|right> 用 <scm|box> 函数装箱后调用 <scm|left> 的 <scm|:equals> 方法。
 
-  <item>如果 <scm|right> 是样本类而 <scm|left> 不是，则将 <scm|left> 用 <scm|box> 函数装箱后调用 <scm|right> 的 <scm|:equals> 方法。
+    <item>如果 <scm|right> 是样本类而 <scm|left> 不是，则将 <scm|left> 用 <scm|box> 函数装箱后调用 <scm|right> 的 <scm|:equals> 方法。
 
-  <item>如果两个对象都不是样本类，则使用 <scm|equal?> 进行比较。
-
-  \;
+    <item>如果两个对象都不是样本类，则使用 <scm|equal?> 进行比较。
+  </itemize>
 
   <strong|注意事项>
 
@@ -1541,10 +1505,6 @@
 
   <paragraph|!=><index|!=>
 
-  \;
-
-  <strong|概述>
-
   <scm|!=> 是一个用于判断两个对象是否不相等的函数。它是 <scm|==> 函数的逻辑取反，即如果 <scm|==> 返回 <scm|#t>，则 <scm|!=> 返回 <scm|#f>，反之亦然。<scm|!=> 支持对 <with|font-series|bold|样本类（Case Class）> 对象的特殊处理，同时也支持对普通对象的比较。
 
   \;
@@ -1586,10 +1546,8 @@
 
     <item>如果 <scm|right> 是样本类而 <scm|left> 不是，则将 <scm|left> 用 <scm|box> 函数装箱后调用 <scm|right> 的 <scm|:equals> 方法,并取反结果。
 
-    <item>如果两个对象都不是样本类，则使用 <scm|equal?> 进行比较,并取反结果。
+    <item>如果两个对象都不是样本类，则使用 <scm|equal?> 进行比较，并取反结果。
   </enumerate-numeric>
-
-  \;
 
   <strong|注意事项>
 
@@ -1601,8 +1559,6 @@
     <item>对于非样本类对象，<scm|!=> 的行为与 <scm|equal?> 的取反结果一致。
   </itemize-minus>
 
-  \;
-
   <strong|设计意义>
 
   <\itemize-minus>
@@ -1612,8 +1568,6 @@
 
     <item><with|font-series|bold|一致性>: 与 <scm|==> 共享相同的比较逻辑，确保行为的一致性。
   </itemize-minus>
-
-  \;
 
   <strong|实现函数>
 
@@ -1638,10 +1592,6 @@
   </scm-chunk>
 
   <paragraph|chained-define><index|chained-define>
-
-  \;
-
-  <strong|概述>
 
   <scm|chained-define> 是一个用于在 Goldfish Scheme 中定义支持链式调用的函数的宏。它简化了在样本类（case class）中定义方法的语法，使得方法可以返回当前对象（<scm|%this>），从而支持链式调用。
 
@@ -1861,10 +1811,6 @@
 
   <paragraph|object-\<gtr\>string>
 
-  \;
-
-  <strong|概述>
-
   <verbatim|object-<textgreater|>string> 是 Goldfish Scheme 中用于将任意对象转换为字符串表示的函数。它基于 S7 Scheme 的<scm| object-<textgreater|>string> 实现，并新增了对样本类（case class）的支持。如果对象是样本类，<scm|object-<textgreater|>string> 会调用样本类的 <scm|:to-string> 方法来获取其字符串表示；否则，直接调用 S7 的 <scm|object-<textgreater|>string> 函数。
 
   \;
@@ -1963,13 +1909,7 @@
 
   <paragraph|box>
 
-  \;
-
-  <strong|概述>
-
   <scm|box> 是 Goldfish Scheme 中用于将基础类型的值装箱为样本类（case class）的函数。它将整数、浮点数、字符、字符串、列表、向量和哈希表等基础类型的值转换为对应的样本类对象。通过装箱，基础类型的值可以享受样本类的功能，例如链式调用、类型检查和丰富的操作方法。
-
-  \;
 
   <strong|函数签名>
 
@@ -2022,8 +1962,6 @@
       </itemize-minus>
     </itemize-minus>
   </itemize-minus>
-
-  \;
 
   <strong|功能>
 
@@ -2118,10 +2056,6 @@
   </goldfish-chunk>
 
   <paragraph|$>
-
-  \;
-
-  <strong|概述>
 
   <scm|$> 是 Goldfish Scheme 中的一个语法糖，用于简化样本类（case class）的创建和操作。它将第一个参数装箱（boxing）为样本类，并将剩余的参数作为样本类的方法调用参数。<scm|$> 语法糖的核心目的是简化代码，避免显式调用 <scm|box> 函数，同时支持链式调用。
 
@@ -2243,17 +2177,13 @@
     \;
   </scm-chunk>
 
-  <chapter|rich-integer>
+  <chapter|富整数>
 
   <scm|rich-integer> 是 Goldfish Scheme 中的一个样本类（case class），用于封装整数并提供一系列操作和转换方法。该模块旨在增强 Scheme 中整数类型的功能，使其能够更方便地进行数值操作、类型转换和谓词判断。
 
   <section|基本结构>
 
   <paragraph|rich-integer>
-
-  \;
-
-  <strong|概述>
 
   <scm|rich-integer> 是一个样本类，其构造函数接受一个整数作为参数，并将其封装在样本类中。通过样本类的机制，<scm|rich-integer> 提供了丰富的实例方法和静态方法。
 
@@ -2314,10 +2244,6 @@
   <section|选择器>
 
   <paragraph|rich-integer%get>
-
-  \;
-
-  <strong|概述>
 
   <scm|%get> 是 <scm|rich-integer> 中最基本的选择器，用于返回样本类中封装的整数值。由于<scm|rich-integer> 是一个样本类，封装了一个整数 <scm|data>，<scm|%get> 的作用就是直接返回这个 <scm|data> 的值。
 
@@ -2380,10 +2306,6 @@
   <section|谓词>
 
   <paragraph|rich-integer%equals>
-
-  \;
-
-  <strong|概述>
 
   <scm|%equals> 是 <scm|rich-integer> 样本类中的一个谓词方法，用于判断两个 <scm|rich-integer> 实例是否相等。谓词方法是指返回布尔值（<scm|#t> 或 <scm|#f>）的函数或方法，通常用于条件判断或逻辑操作。<scm|%equals> 方法由 <scm|define-case-class> 宏自动生成，确保了样本类实例之间的相等性比较能够正确进行。
 
@@ -2573,7 +2495,7 @@
 
   <paragraph|rich-integer@max-value>
 
-  Goldfish Scheme中的integer是64位有符号整数，最大值为<math|2<rsup|63>-1>。
+  Goldfish Scheme中的整数是64位有符号整数，最大值为<math|2<rsup|63>-1>。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (@max-value) 9223372036854775807)
@@ -2589,7 +2511,7 @@
 
   <paragraph|rich-integer@min-value>
 
-  Goldfish Scheme中的integer是64位有符号整数，最大值为<math|-2<rsup|63>>。
+  Goldfish Scheme中的整数是64位有符号整数，最大值为<math|-2<rsup|63>>。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (@min-value) -9223372036854775808)
@@ -2607,6 +2529,12 @@
 
   <paragraph|rich-integer%sqrt>
 
+  求富整数的平方根的整数下界。
+
+  <\equation*>
+    <scm|(x :sqrt)>=<around*|\<lfloor\>|<sqrt|x>|\<rfloor\>>
+  </equation*>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     ;;return exact integer
 
@@ -2623,7 +2551,7 @@
     \;
   </goldfish-chunk>
 
-  \;
+  测试用例：
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ 0 :sqrt) =\<gtr\> 0) \ \ \ \ \ \ 
@@ -2663,7 +2591,7 @@
     \;
   </goldfish-chunk>
 
-  <chapter|rich-rational>
+  <chapter|富有理数>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class rich-rational ((data rational?))
@@ -2689,7 +2617,7 @@
     \;
   </scm-chunk>
 
-  <section|谓词>
+  <section|其它函数>
 
   <paragraph|rich-float%abs>
 
@@ -2723,7 +2651,7 @@
     \;
   </goldfish-chunk>
 
-  <chapter|rich-float>
+  <chapter|富浮点数>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class rich-float ((data float?))
@@ -2837,7 +2765,9 @@
     \;
   </goldfish-chunk>
 
-  <chapter|rich-char>
+  <chapter|富字符>
+
+  富字符支持Unicode，内部采用Unicode码点的整数表示，并且封装了大量常用函数。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class rich-char ((code-point integer?))
@@ -3623,17 +3553,15 @@
     \;
   </goldfish-chunk>
 
-  <chapter|rich-string>
+  <chapter|富字符串>
 
-  Unicode编码的字符串。
+  富字符串基于基础的Scheme字符串类型，封装了大量易用的函数，并且支持Unicode。
 
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class rich-string ((data string?))
 
     \;
   </scm-chunk>
-
-  \;
 
   <section|静态方法>
 
@@ -5387,7 +5315,7 @@
     \;
   </goldfish-chunk>
 
-  <chapter|rich-list>
+  <chapter|富列表>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class rich-list ((data list?))
@@ -6531,7 +6459,7 @@
 
   \;
 
-  <chapter|rich-vector>
+  <chapter|富向量>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class rich-vector ((data vector?))
@@ -7393,7 +7321,7 @@
 
   <paragraph|rich-vector%distinct>
 
-  \;
+  为富向量去重，返回值仍旧是富向量。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (chained-define (%distinct)
@@ -7451,7 +7379,7 @@
 
   <paragraph|rich-vector%to-string>
 
-  将Rich Vector转换为基础类型的字符串。
+  将富向量转换为基础类型的字符串。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%to-string)
@@ -7663,7 +7591,7 @@
     \;
   </goldfish-chunk>
 
-  <chapter|rich-hash-table>
+  <chapter|富哈希表>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class rich-hash-table ((data hash-table?))
@@ -7774,8 +7702,6 @@
 
     \;
   </goldfish-chunk>
-
-  \;
 
   <paragraph|rich-hash-table%forall>
 
@@ -7966,10 +7892,6 @@
 
     \ \ \ \ \ \ 
   </goldfish-chunk>
-
-  \;
-
-  \;
 
   <paragraph|rich-hash-table%count>
 
