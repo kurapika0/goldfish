@@ -3301,7 +3301,7 @@
     \;
   </cpp-chunk>
 
-  <paragraph|path-write-bytes>
+  <paragraph|path-write-text>
 
   <\goldfish-chunk|goldfish/liii/path.scm|true|true>
     (define path-write-text
@@ -3447,7 +3447,29 @@
 
   <subsection|谓词>
 
+  <paragraph|path%file?>
+
+  判断当前的路径是否是文件。
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (define (%file?)
+
+    \ \ (path-file? (%to-string)))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    (when (os-linux?)
+
+    \ \ (check-false (path :/ "tmp" :file?)))
+
+    \;
+  </scm-chunk>
+
   <paragraph|path%dir?>
+
+  判断当前的路径是否是目录。
 
   <\goldfish-chunk|goldfish/liii/path.scm|true|true>
     (define (%dir?)
@@ -3456,6 +3478,14 @@
 
     \;
   </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    (when (os-linux?)
+
+    \ \ (check-true (path :/ "tmp" :dir?)))
+
+    \;
+  </scm-chunk>
 
   <paragraph|path%absolute?>
 
@@ -3477,6 +3507,24 @@
     (check-true ((path #("/" "tmp")) :absolute?))
 
     (check-false ((path #("tmp")) :absolute?))
+
+    \;
+  </scm-chunk>
+
+  <paragraph|path%exists?>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (define (%exists?)
+
+    \ \ (path-exists? (%to-string)))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    (when (os-linux?)
+
+    \ \ (check-true (path :/ "tmp" :exists?)))
 
     \;
   </scm-chunk>
@@ -3583,16 +3631,34 @@
     \;
   </scm-chunk>
 
-  \;
+  <subsection|实用方法>
 
-  \;
+  <paragraph|path%read-text>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (define (%read-text)
+
+    \ \ (path-read-text (%to-string)))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|path%write-text>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (typed-define (%write-text (content string?))
+
+    \ \ (path-write-text (%to-string) content))
+
+    \;
+  </goldfish-chunk>
 
   <subsection|静态方法>
 
   <paragraph|path@cwd>
 
   <\goldfish-chunk|goldfish/liii/path.scm|true|true>
-    (define (@cwd)
+    (chained-define (@cwd)
 
     \ \ (@from-string (getcwd)))
 
@@ -3602,7 +3668,7 @@
   <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
     (when (os-linux?)
 
-    \ \ (check-true ((path :cwd) :dir?)))
+    \ \ (check-true (path :cwd :dir?)))
 
     \;
   </scm-chunk>

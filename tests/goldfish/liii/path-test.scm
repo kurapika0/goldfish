@@ -75,15 +75,24 @@
   
   (delete-file file-path))
 
+(when (os-linux?)
+  (check-false (path :/ "tmp" :file?)))
+
+(when (os-linux?)
+  (check-true (path :/ "tmp" :dir?)))
+
 (check-true ((path #("/")) :absolute?))
 (check-true ((path #("/" "tmp")) :absolute?))
 (check-false ((path #("tmp")) :absolute?))
+
+(when (os-linux?)
+  (check-true (path :/ "tmp" :exists?)))
 
 (check ((path #("/" "etc" "passwd")) :to-string) => "/etc/passwd")
 (check ((path #("/" "tmp" "")) :to-string) => "/tmp/")
 
 (when (os-linux?)
-  (check-true ((path :cwd) :dir?)))
+  (check-true (path :cwd :dir?)))
 
 (check (path :/ "etc" :/ "host" :to-string) => "/etc/host")
 

@@ -70,6 +70,9 @@
    (type symbol? 'posix)
    (drive string? ""))
 
+(define (%file?)
+  (path-file? (%to-string)))
+
 (define (%dir?)
   (path-dir? (%to-string)))
 
@@ -77,6 +80,9 @@
   (if (eq? type 'posix)
       (string-starts? (parts 0) "/")
       (???)))
+
+(define (%exists?)
+  (path-exists? (%to-string)))
 
 (define (@from-vector v)
   (define (check-posix-parts parts)
@@ -118,7 +124,13 @@
             s))
       (value-error "invalid type of path" type)))
 
-(define (@cwd)
+(define (%read-text)
+  (path-read-text (%to-string)))
+
+(typed-define (%write-text (content string?))
+  (path-write-text (%to-string) content))
+
+(chained-define (@cwd)
   (@from-string (getcwd)))
 
 (chained-define (@/ x)
