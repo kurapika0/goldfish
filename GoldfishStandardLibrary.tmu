@@ -2722,13 +2722,11 @@
 
     (export
 
-    \ \ make-path path-parts path-absolute?
-
-    \ \ path-\<gtr\>string
-
     \ \ path-dir? path-file? path-exists?
 
-    \ \ path-getsize path-read-text path-read-bytes path-write-text\ 
+    \ \ path-getsize path-read-text path-read-bytes path-write-text
+
+    \ \ path
 
     )
 
@@ -2830,66 +2828,6 @@
 
     \;
   </goldfish-chunk>
-
-  <paragraph|path-absolute?>
-
-  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
-    (define path-absolute?
-
-    \ \ (typed-lambda ((path path?))
-
-    \ \ \ \ (case (path-type path)
-
-    \ \ \ \ \ \ ((posix)
-
-    \ \ \ \ \ \ \ (string-starts? ((path-parts path) 0) "/"))
-
-    \ \ \ \ \ \ (else (value-error "path-absolute?: invalid type of path" (path-type path))))))
-
-    \;
-  </goldfish-chunk>
-
-  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
-    (check-true (path-absolute? (make-path #("/"))))
-
-    (check-true (path-absolute? (make-path #("/" "tmp"))))
-
-    (check-false (path-absolute? (make-path #("tmp"))))
-
-    \;
-  </scm-chunk>
-
-  <paragraph|path-\<gtr\>string>
-
-  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
-    (define path-\<gtr\>string
-
-    \ \ (typed-lambda ((path path?))
-
-    \ \ \ \ (case (path-type path)
-
-    \ \ \ \ \ \ ((posix)
-
-    \ \ \ \ \ \ \ (let1 s (string-join (vector-\<gtr\>list (path-parts path)) (string #\\/))
-
-    \ \ \ \ \ \ \ \ \ (if (string-starts? s "//")
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (string-drop s 1)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ s)))
-
-    \ \ \ \ \ \ (else (value-error "path-\<gtr\>string: invalid type of path" (path-type path))))))
-
-    \;
-  </goldfish-chunk>
-
-  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
-    (check (path-\<gtr\>string (make-path #("/" "etc" "passwd"))) =\<gtr\> "/etc/passwd")
-
-    (check (path-\<gtr\>string (make-path #("/" "tmp" ""))) =\<gtr\> "/tmp/")
-
-    \;
-  </scm-chunk>
 
   <paragraph|path-dir?>
 
@@ -3548,6 +3486,84 @@
 
     \;
   </cpp-chunk>
+
+  <section|path样本类>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (define-case-class path
+
+    \ \ ((parts vector?)
+
+    \ \ \ (type symbol? 'posix)
+
+    \ \ \ (drive string? ""))
+
+    \;
+  </goldfish-chunk>
+
+  <subsection|谓词>
+
+  <paragraph|path%absolute?>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (define (%absolute?)
+
+    \ \ (if (eq? type 'posix)
+
+    \ \ \ \ \ \ (string-starts? (parts 0) "/")
+
+    \ \ \ \ \ \ (???)))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    (check-true ((path #("/")) :absolute?))
+
+    (check-true ((path #("/" "tmp")) :absolute?))
+
+    (check-false ((path #("tmp")) :absolute?))
+
+    \;
+  </scm-chunk>
+
+  <subsection|转换器>
+
+  <paragraph|path%to-string>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (define (%to-string)
+
+    \ \ (if (eq? type 'posix)
+
+    \ \ \ \ \ \ (let1 s ($ parts :make-string "/")
+
+    \ \ \ \ \ \ \ \ (if (string-starts? s "//")
+
+    \ \ \ \ \ \ \ \ \ \ \ \ (string-drop s 1)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ s))
+
+    \ \ \ \ \ \ (value-error "invalid type of path" type)))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    (check ((path #("/" "etc" "passwd")) :to-string) =\<gtr\> "/etc/passwd")
+
+    (check ((path #("/" "tmp" "")) :to-string) =\<gtr\> "/tmp/")
+
+    \;
+  </scm-chunk>
+
+  \;
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    )
+
+    \;
+  </goldfish-chunk>
 
   <section|结尾>
 

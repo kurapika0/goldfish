@@ -16,10 +16,9 @@
 
 (define-library (liii path)
 (export
-  make-path path-parts path-absolute?
-  path->string
   path-dir? path-file? path-exists?
-  path-getsize path-read-text path-read-bytes path-write-text 
+  path-getsize path-read-text path-read-bytes path-write-text
+  path
 )
 (import (liii base) (liii error) (liii vector) (liii string) (liii list))
 (begin
@@ -58,23 +57,6 @@
      (%make-path parts type drive))
     (else (value-error "make-path: invalid type" type))))
 
-(define path-absolute?
-  (typed-lambda ((path path?))
-    (case (path-type path)
-      ((posix)
-       (string-starts? ((path-parts path) 0) "/"))
-      (else (value-error "path-absolute?: invalid type of path" (path-type path))))))
-
-(define path->string
-  (typed-lambda ((path path?))
-    (case (path-type path)
-      ((posix)
-       (let1 s (string-join (vector->list (path-parts path)) (string #\/))
-         (if (string-starts? s "//")
-             (string-drop s 1)
-             s)))
-      (else (value-error "path->string: invalid type of path" (path-type path))))))
-
 (define (path-dir? path)
   (g_isdir path))
 
@@ -108,6 +90,26 @@
 (define path-write-text
   (typed-lambda ((path string?) (content string?))
     (g_path-write-text path content)))
+
+(define-case-class path
+  ((parts vector?)
+   (type symbol? 'posix)
+   (drive string? ""))
+
+(define (%absolute?)
+  (if (eq? type 'posix)
+      (string-starts? (parts 0) "/")
+      (???)))
+
+(define (%to-string)
+  (if (eq? type 'posix)
+      (let1 s ($ parts :make-string "/")
+        (if (string-starts? s "//")
+            (string-drop s 1)
+            s))
+      (value-error "invalid type of path" type)))
+
+)
 
 ) ; end of begin
 ) ; end of define-library

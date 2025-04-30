@@ -20,13 +20,6 @@
 
 (check-set-mode! 'report-failed)
 
-(check-true (path-absolute? (make-path #("/"))))
-(check-true (path-absolute? (make-path #("/" "tmp"))))
-(check-false (path-absolute? (make-path #("tmp"))))
-
-(check (path->string (make-path #("/" "etc" "passwd"))) => "/etc/passwd")
-(check (path->string (make-path #("/" "tmp" ""))) => "/tmp/")
-
 (check (path-dir? ".") => #t)
 (check (path-dir? "..") => #t)
 
@@ -81,6 +74,13 @@
     (check (utf8->string read-content) => file-content))
   
   (delete-file file-path))
+
+(check-true ((path #("/")) :absolute?))
+(check-true ((path #("/" "tmp")) :absolute?))
+(check-false ((path #("tmp")) :absolute?))
+
+(check ((path #("/" "etc" "passwd")) :to-string) => "/etc/passwd")
+(check ((path #("/" "tmp" "")) :to-string) => "/tmp/")
 
 (check-report)
 
