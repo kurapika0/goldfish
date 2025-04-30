@@ -727,6 +727,11 @@
       #f
       (f value)))
 
+(define (%contains pred?)
+  (if (null? value)
+      #f
+      (pred? value)))
+
 (define (%for-each f)
   (when (not (null? value))
         (f value)))

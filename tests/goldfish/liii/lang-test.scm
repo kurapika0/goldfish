@@ -693,6 +693,13 @@
   (check-true (opt1 :exists (lambda (x) (== x 42))))
   (check-false (opt2 :exists (lambda (x) (== x 42)))))
 
+(check ((option "hello") :contains string?) => #t)
+(check ((option 42) :contains integer?) => #t)
+(check ((option #t) :contains boolean?) => #t)
+(check ((option '()) :contains null?) => #f)
+(check ((none) :contains string?) => #f)
+(check ((option "hello") :contains number?) => #f)
+
 (check-true ((left "Value error") :left?))
 (check-false ((right 1) :left?))
 
