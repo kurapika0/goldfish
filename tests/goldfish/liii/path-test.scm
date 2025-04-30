@@ -18,7 +18,7 @@
         (liii check)
         (liii os))
 
-(check-set-mode! 'report-failed)
+; (check-set-mode! 'report-failed)
 
 (check (path-dir? ".") => #t)
 (check (path-dir? "..") => #t)
@@ -81,6 +81,11 @@
 
 (check ((path #("/" "etc" "passwd")) :to-string) => "/etc/passwd")
 (check ((path #("/" "tmp" "")) :to-string) => "/tmp/")
+
+(when (os-linux?)
+  (check-true ((path :cwd) :dir?)))
+
+(check (path :/ "etc" :/ "host" :to-string) => "/etc/host")
 
 (check-report)
 
