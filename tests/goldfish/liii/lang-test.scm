@@ -810,6 +810,29 @@
 (check ($ (list 1 2 3) :head-option) => (option 1))
 (check (rich-list :empty :head-option) => (none))
 
+(let ((lst ($ '(1 2 3 4 5))))
+  ;; 基本切片
+  (check (lst :slice 1 3 :collect) => '(2 3))
+
+  ;; from超出范围
+  (check (lst :slice 10 3 :collect) => '())
+
+  ;; until超出范围
+  (check (lst :slice 2 10 :collect) => '(3 4 5))
+
+  ;; from > until
+  (check (lst :slice 3 1 :collect) => '())
+
+  ;; 负数索引
+  (check (lst :slice -1 3 :collect) => '(1 2 3))
+
+  ;; 链式调用
+  (check (lst :slice 1 4 :map (@ * _ 2) :collect) => '(4 6 8))
+
+  ;; 空切片
+  (check (lst :slice 2 2 :collect) => '())
+)
+
 (check-true ($ (list) :empty?))
 (check-false ($ '(1 2 3) :empty?))
 

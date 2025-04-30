@@ -883,6 +883,14 @@
       (option (car data))))
 
 
+(chained-define (%slice from until)
+  (let* ((len (length data))
+         (start (max 0 (min from len)))
+         (end (max 0 (min until len))))
+    (if (< start end)
+        (rich-list (take (drop data start) (- end start)))
+        (rich-list '()))))
+
 (define (%empty?)
   (null? data))
 
