@@ -5146,7 +5146,7 @@
 
     \ \ os-error file-not-found-error not-a-directory-error file-exists-error
 
-    \ \ timeout-error type-error type-error? key-error value-error)
+    \ \ timeout-error type-error type-error? key-error value-error index-error)
 
     (begin
 
@@ -5331,6 +5331,24 @@
 
   <\scm-chunk|tests/goldfish/liii/error-test.scm|true|true>
     (check-catch 'value-error (value-error))
+
+    \;
+  </scm-chunk>
+
+  <paragraph|index-error><index|index-error>
+
+  值不正确
+
+  <\scm-chunk|goldfish/liii/error.scm|true|true>
+    (define (index-error . args)
+
+    \ \ (apply error (cons 'index-error args)))
+
+    \;
+  </scm-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/error-test.scm|true|true>
+    (check-catch 'index-error (index-error))
 
     \;
   </scm-chunk>

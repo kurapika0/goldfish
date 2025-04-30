@@ -16,7 +16,7 @@
 
 (import (liii check) (liii array-buffer))
 
-(check-set-mode! 'report-failed)
+; (check-set-mode! 'report-failed)
 
 (check (array-buffer :from-vector #(1 2 3) :collect) => #(1 2 3))
 
@@ -27,7 +27,7 @@
   (check (arr 0) => 1)
   (check (arr 1) => 2)
   (check (arr 2) => 3)
-  (check-catch 'key-error (arr 3)))
+  (check-catch 'index-error (arr 3)))
 
 (let ((arr (array-buffer :from-list '(1 2 3))))
   (check (arr :set! 0 4 :collect) => #(4 2 3))
@@ -65,7 +65,7 @@
   (check (arr :insert! 5 6 :length) ==> 6)
   (check-true (== (arr :insert! 3 4)
                   (array-buffer :from-list '(0 1 5 4 2 3 6))))
-  (check-catch 'key-error (arr :insert! 8 9)))
+  (check-catch 'index-error (arr :insert! 8 9)))
 
 (check-true (== (array-buffer :from-list '(1 2 3))
                 (array-buffer :from-list '(1 2) :add-one! 3)))
@@ -104,7 +104,7 @@
   (check (arb :collect) => #(0 2 3 1))
   (check (arb 0) => 0)
   (check (arb 1) => 2)
-  (check-catch 'key-error (arb 5)))
+  (check-catch 'index-error (arb 5)))
 
 (check-report)
 

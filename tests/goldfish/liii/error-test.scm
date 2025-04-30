@@ -41,6 +41,8 @@
 
 (check-catch 'value-error (value-error))
 
+(check-catch 'index-error (index-error))
+
 (check-catch '??? (???))
 
 (check-report)

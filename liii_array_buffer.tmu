@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.7>>
+<TMU|<tuple|1.1.0|2025.0.8>>
 
 <style|<tuple|generic|chinese|goldfish|literate|reduced-margins>>
 
@@ -88,7 +88,7 @@
   <\goldfish-chunk|goldfish/liii/array-buffer.scm|true|true>
     (define-library (liii array-buffer)
 
-    (import (liii lang))
+    (import (liii lang) (liii error))
 
     (export array-buffer)
 
@@ -104,17 +104,23 @@
 
     \;
 
-    (check-set-mode! 'report-failed)
+    ; (check-set-mode! 'report-failed)
 
     \;
   </goldfish-chunk>
 
   <section|array-buffer>
 
-  <scm|array-buffer> 是大小可变的数组，支持随机读写，均摊 <math|O<around*|(|1|)>> 时间在末尾插入和删除元素。成员 <scm|size> 表示数组的大小，<scm|capacity> 表示内存中预留的空间。
+  <scm|array-buffer>是大小可变的数组，支持随机读写，均摊 <math|O<around*|(|1|)>> 时间在末尾插入和删除元素。成员 <scm|size> 表示数组的大小，<scm|capacity> 表示内存中预留的空间。
 
   <\goldfish-chunk|goldfish/liii/array-buffer.scm|true|true>
-    (define-case-class array-buffer ((data vector?) (size integer?) (capacity integer?))
+    (define-case-class array-buffer
+
+    \ \ ((data vector?)
+
+    \ \ \ (size integer?)
+
+    \ \ \ (capacity integer?))
 
     \;
   </goldfish-chunk>
@@ -160,11 +166,13 @@
   <subsection|内部方法>
 
   <\goldfish-chunk|goldfish/liii/array-buffer.scm|true|true>
-    (define (check-bound n)
+    (typed-define (check-bound (n integer?))
 
-    \ \ (when (or (not (integer? n)) (\<less\> n 0) (\<gtr\>= n size))
+    \ \ (when (or (\<less\> n 0) (\<gtr\>= n size))
 
-    \ \ \ \ (key-error "array-buffer out of bound")))
+    \ \ \ \ (index-error
+
+    \ \ \ \ \ \ ($ "access No." :+ n :+ " of array-buffer [0:" :+ size :+ ")" :get))))
 
     \;
   </goldfish-chunk>
@@ -174,7 +182,9 @@
   <paragraph|array-buffer%collect>
 
   <\goldfish-chunk|goldfish/liii/array-buffer.scm|true|true>
-    (define (%collect) (copy data (make-vector size)))
+    (define (%collect)
+
+    \ \ (copy data (make-vector size)))
 
     \;
   </goldfish-chunk>
@@ -210,7 +220,7 @@
 
     \ \ (check (arr 2) =\<gtr\> 3)
 
-    \ \ (check-catch 'key-error (arr 3)))
+    \ \ (check-catch 'index-error (arr 3)))
 
     \;
   </scm-chunk>
@@ -478,7 +488,7 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (array-buffer :from-list '(0 1 5 4 2 3 6))))
 
-    \ \ (check-catch 'key-error (arr :insert! 8 9)))
+    \ \ (check-catch 'index-error (arr :insert! 8 9)))
 
     \;
   </scm-chunk>
@@ -516,7 +526,9 @@
   <paragraph|array-buffer%to-vector>
 
   <\goldfish-chunk|goldfish/liii/array-buffer.scm|true|true>
-    (define (%to-vector) (rich-vector (copy data (make-vector size))))
+    (define (%to-vector)
+
+    \ \ (rich-vector (copy data (make-vector size))))
 
     \;
   </goldfish-chunk>
@@ -622,7 +634,7 @@
 
     \ \ (check (arb 1) =\<gtr\> 2)
 
-    \ \ (check-catch 'key-error (arb 5)))
+    \ \ (check-catch 'index-error (arb 5)))
 
     \;
   </goldfish-chunk>
