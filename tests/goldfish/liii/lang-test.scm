@@ -468,6 +468,13 @@
    (check (str :slice 0 5 :to-string) => "Hello"))
 
 (let1 str ($ "Hello，世界")
+  (check (str :take -1) => "")
+  (check (str :take 0) => "")
+  (check (str :take 1) => "H")
+  (check (str :take 8) => "Hello，世界")
+  (check (str :take 9) => "Hello，世界"))
+
+(let1 str ($ "Hello，世界")
   (check (str :take-right -1) => "")
   (check (str :take-right 0) => "")
   (check (str :take-right 1) => "界")

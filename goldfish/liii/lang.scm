@@ -563,6 +563,9 @@
           (else
            (rich-string (u8-substring data start end))))))
 
+(chained-define (%take n)
+  (%slice 0 n))
+
 (chained-define (%take-right n)
   (%slice (- N n) N))
 

@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.8>>
+<TMU|<tuple|1.1.0|2025.0.7>>
 
 <style|<tuple|book|goldfish|literate|reduced-margins|python|padded-paragraphs|chinese>>
 
@@ -3800,6 +3800,30 @@
   </goldfish-chunk>
 
   <paragraph|rich-string%take>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%take n)
+
+    \ \ (%slice 0 n))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let1 str ($ "Hello，世界")
+
+    \ \ (check (str :take -1) =\<gtr\> "")
+
+    \ \ (check (str :take 0) =\<gtr\> "")
+
+    \ \ (check (str :take 1) =\<gtr\> "H")
+
+    \ \ (check (str :take 8) =\<gtr\> "Hello，世界")
+
+    \ \ (check (str :take 9) =\<gtr\> "Hello，世界"))
+
+    \;
+  </goldfish-chunk>
 
   <paragraph|rich-string%take-right>
 
