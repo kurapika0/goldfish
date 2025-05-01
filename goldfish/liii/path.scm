@@ -77,9 +77,14 @@
   (path-dir? (%to-string)))
 
 (define (%absolute?)
-  (if (eq? type 'posix)
-      (string-starts? (parts 0) "/")
-      (???)))
+  (case type
+    ((posix)
+     (string-starts? (parts 0) "/"))
+    ((windows)
+     (not ($ drive :empty?)))
+    (else
+     (value-error
+      (string-append "path%absolute?: unknown type" (symbol->string type))))))
 
 (define (%exists?)
   (path-exists? (%to-string)))
@@ -109,7 +114,8 @@
         (else (type-error "input must be vector or rich-vector"))))
 
 (define (@from-string s)
-  (cond ((os-linux?)
+  (display* s "\n")
+  (cond ((or (os-linux?) (os-macos?))
          (if (string-starts? s "/")
              (@from-vector (append #("/")
                                    (($ (string-drop s 1) :split "/") :collect)))
@@ -136,16 +142,28 @@
 (typed-define (%write-text (content string?))
   (path-write-text (%to-string) content))
 
-(chained-define (@cwd)
-  (@from-string (getcwd)))
-
 (chained-define (@/ x)
   (if (string-ends? x ":")
       (path #() 'windows ($ x :drop-right 1 :get))
       (path (append #("/") (vector x)))))
 
 (chained-define (%/ x)
-  (path (append parts (vector x))))
+  ((%this) :parts (append parts (vector x))))
+
+(chained-define (@cwd)
+  (@from-string (getcwd)))
+
+(chained-define (@home)
+  (cond ((or (os-linux?) (os-macos?))
+         (path :from-string (getenv "HOME")))
+        ((os-windows?)
+         (path (($ (getenv "HOMEPATH") 
+                   :strip-prefix (string (os-sep))
+                   :split (string (os-sep)))
+                :collect)
+               'windows
+               ($ (getenv "HOMEDRIVE") :drop-right 1 :get)))
+        (else (value-error "path@home: unknown type"))))
 
 )
 
