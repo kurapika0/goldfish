@@ -17,21 +17,16 @@
 (import (liii list)
         (liii string)
         (liii os)
-        (liii path))
-
-(define (listdir2 dir)
-  ((box (vector->list (listdir dir)))
-   :map (lambda (x) (string-append dir "/" x))
-   :collect))
-
-(display (listdir2 "tests/goldfish"))
+        (liii path)
+        (liii lang))
 
 (define (all-tests)
-  ((box (listdir2 "tests/goldfish"))
-   :filter path-dir?
-   :flat-map listdir2
-   :filter (lambda (x) (path-file? x))
-   :filter (lambda (x) (not (string-ends? x "srfi-78-test.scm")))))
+  (((path :./ "tests" :/ "goldfish" :list-path) :to-rich-list)
+   :filter (@ _ :dir?)
+   :flat-map (lambda (x) ((x :list-path) :to-list))
+   :filter (@ _ :file?)
+   :filter (lambda (x) (not ($ (x :to-string) :ends-with "srfi-78-test.scm")))
+   :map (@ _ :to-string)))
 
 (define (goldfish-cmd)
   (if (os-windows?)
@@ -47,4 +42,3 @@
                     (os-call x)))
   (when (ret-l :exists (compose not zero?))
     (exit -1)))
-
