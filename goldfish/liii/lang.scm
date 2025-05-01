@@ -501,14 +501,16 @@
              (make-rich-char x)
              (value-error "rich-char: code point out of range" x)))
         ((string? x)
-         (if (= 1 (u8-string-length x))
+         (if (= 1 ($ x :length))
              (rich-char (string->utf8 x))
              (value-error "rich-char: must be u8 string which length equals 1")))
         ((bytevector? x)
          (make-rich-char (utf8-byte-sequence->code-point x)))
         (else (type-error "rich-char: must be integer, string, bytevector"))))
 
-(define-case-class rich-string ((data string?))
+(define-case-class rich-string
+  ((data string?)
+   (N integer? (u8-string-length data)))
 
 (chained-define (@value-of v) 
   (cond ((char? v) (rich-string (string v)))
@@ -522,7 +524,7 @@
 (define (%get) data)
 
 (define (%length)
-  (u8-string-length data))
+  N)
 
 (define (%char-at index)
   (let* ((start index)
@@ -535,12 +537,12 @@
   (%char-at i))
 
 (chained-define (%slice from until)
-  (let* ((len (u8-string-length data))
-         (start (max 0 from))
-         (end (min len until)))
+  (let* ((start (max 0 from))
+         (end (min N until)))
     (if (< start end)
         (rich-string (u8-substring data start end))
         (rich-string ""))))
+
 
 (define (%empty?)
   (string-null? data))
@@ -600,10 +602,9 @@
       (vector)
       (let* ((bv (string->utf8 data))
              (bv-size (length bv))
-             (len (u8-string-length data))
-             (result (make-vector len)))
+             (result (make-vector N)))
         (let loop ((i 0) (j 0))
-          (if (>= i len)
+          (if (>= i N)
               result
               (let* ((next-j (bytevector-advance-u8 bv j bv-size))
                      (code (utf8-byte-sequence->code-point (bytevector-copy bv j next-j))))

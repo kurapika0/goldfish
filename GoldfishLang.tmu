@@ -3538,7 +3538,7 @@
 
     \ \ \ \ \ \ \ \ ((string? x)
 
-    \ \ \ \ \ \ \ \ \ (if (= 1 (u8-string-length x))
+    \ \ \ \ \ \ \ \ \ (if (= 1 ($ x :length))
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ (rich-char (string-\<gtr\>utf8 x))
 
@@ -3558,7 +3558,11 @@
   富字符串基于基础的Scheme字符串类型，封装了大量易用的函数，并且支持Unicode。
 
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
-    (define-case-class rich-string ((data string?))
+    (define-case-class rich-string
+
+    \ \ ((data string?)
+
+    \ \ \ (N integer? (u8-string-length data)))
 
     \;
   </scm-chunk>
@@ -3646,7 +3650,7 @@
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
     (define (%length)
 
-    \ \ (u8-string-length data))
+    \ \ N)
 
     \;
   </scm-chunk>
@@ -3720,11 +3724,9 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (chained-define (%slice from until)
 
-    \ \ (let* ((len (u8-string-length data))
+    \ \ (let* ((start (max 0 from))
 
-    \ \ \ \ \ \ \ \ \ (start (max 0 from))
-
-    \ \ \ \ \ \ \ \ \ (end (min len until)))
+    \ \ \ \ \ \ \ \ \ (end (min N until)))
 
     \ \ \ \ (if (\<less\> start end)
 
@@ -3756,6 +3758,18 @@
 
     \;
   </goldfish-chunk>
+
+  <paragraph|rich-string%take>
+
+  <paragraph|rich-string%take-right>
+
+  <paragraph|rich-string%drop>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-string%drop-right>
 
   <section|谓词>
 
@@ -4040,13 +4054,11 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ (bv-size (length bv))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (len (u8-string-length data))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (result (make-vector len)))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (result (make-vector N)))
 
     \ \ \ \ \ \ \ \ (let loop ((i 0) (j 0))
 
-    \ \ \ \ \ \ \ \ \ \ (if (\<gtr\>= i len)
+    \ \ \ \ \ \ \ \ \ \ (if (\<gtr\>= i N)
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ result
 
