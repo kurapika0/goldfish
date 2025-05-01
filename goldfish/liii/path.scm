@@ -86,6 +86,9 @@
      (value-error
       (string-append "path%absolute?: unknown type" (symbol->string type))))))
 
+(define (%relative)
+  (not (%absolute?)))
+
 (define (%exists?)
   (path-exists? (%to-string)))
 
@@ -113,14 +116,23 @@
          (@from-vector (v :collect)))
         (else (type-error "input must be vector or rich-vector"))))
 
-(define (@from-string s)
-  (display* s "\n")
-  (cond ((or (os-linux?) (os-macos?))
-         (if (string-starts? s "/")
-             (@from-vector (append #("/")
-                                   (($ (string-drop s 1) :split "/") :collect)))
-             (@from-vector ($ s :split "/"))))
-        (else (???))))
+(chained-define (@from-string s)
+  (cond ((and (or (os-linux?) (os-macos?))
+              (string-starts? s "/"))
+         (path :/ (@from-string ($ s :drop 1 :get))))
+        ((and (os-windows?)
+              (>= (string-length s) 2)
+              (char=? (s 1) #\:))
+         (path :of-drive (s 0)
+               :/ (@from-string ($ s :drop 2 :get))))
+        (else
+         (let loop ((iter s))
+           (cond ((or (string-null? iter) (string=? iter "."))
+                  (@from-vector (vector ".")))
+                 ((not (char=? (iter 0) (os-sep)))
+                  (@from-vector ($ iter :split (string (os-sep)))))
+                 (else
+                  (loop ($ iter :drop 1 :get))))))))
 
 (define (%to-string)
   (case type
@@ -142,13 +154,37 @@
 (typed-define (%write-text (content string?))
   (path-write-text (%to-string) content))
 
-(chained-define (@/ x)
-  (if (string-ends? x ":")
-      (path #() 'windows ($ x :drop-right 1 :get))
-      (path (append #("/") (vector x)))))
-
 (chained-define (%/ x)
-  ((%this) :parts (append parts (vector x))))
+  (cond ((string? x)
+         ((%this) :parts (vector-append parts (vector x))))
+        ((path :is-type-of x)
+         (cond ((x :absolute?)
+                (value-error "path to append must not be absolute path: " (x :to-string)))
+               ((x :equals (path (vector ".")))
+                (%this))
+               (else ((%this) :parts (vector-append parts (x 'parts))))))
+        (else (type-error "only string?, path is allowed"))))
+
+(chained-define (@of-drive ch)
+  (when (not (char? ch))
+    (type-error "path@of-drive must take char? as input"))
+
+  (path #() 'windows ($ ch :to-upper :make-string)))
+
+(chained-define (@root)
+  (path #("/")))
+
+(chained-define (@/ x)
+  (if (path :is-type-of x)
+      (path :root :/ x)
+      (cond ((and (string-ends? x ":") (= (string-length x) 2))
+             (path :of-drive (x 0)))
+            ((string=? x "/")
+             (path :root))
+            (else (path (vector-append #("/") (vector x)))))))
+
+(chained-define (@./ x)
+  (path (vector x)))
 
 (chained-define (@cwd)
   (@from-string (getcwd)))
@@ -157,12 +193,8 @@
   (cond ((or (os-linux?) (os-macos?))
          (path :from-string (getenv "HOME")))
         ((os-windows?)
-         (path (($ (getenv "HOMEPATH") 
-                   :strip-prefix (string (os-sep))
-                   :split (string (os-sep)))
-                :collect)
-               'windows
-               ($ (getenv "HOMEDRIVE") :drop-right 1 :get)))
+         (path :of-drive ((getenv "HOMEDRIVE") 0)
+               :/ (path :from-string (getenv "HOMEPATH"))))
         (else (value-error "path@home: unknown type"))))
 
 )
