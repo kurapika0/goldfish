@@ -97,12 +97,24 @@
        ,body
        ,@rest)))
 
-(define-macro (define-case-class class-name fields . methods)
+(define-macro (define-case-class class-name fields . private-fields-and-methods)
   (let* ((key-fields
          (map (lambda (field) (string->symbol (string-append ":" (symbol->string (car field)))))
               fields))
         
          (field-names (map car fields))
+
+         (private-fields (filter (lambda (x)
+                                   (and (list? x)
+                                        (>= (length x) 2)
+                                        (symbol? (x 1))))
+                                 private-fields-and-methods))
+
+         (methods (filter (lambda (x)
+                            (and (list? x)
+                                 (>= (length x) 2)
+                                 (pair? (x 1))))
+                          private-fields-and-methods))
          
          (method-names
            (map (lambda (method)
@@ -216,6 +228,7 @@
                       (car strings)
                       (string-append acc " " (car strings))))))))
 
+  ,@private-fields
   ,@internal-methods
   ,@instance-methods
  
@@ -509,8 +522,9 @@
         (else (type-error "rich-char: must be integer, string, bytevector"))))
 
 (define-case-class rich-string
-  ((data string?)
-   (N integer? (u8-string-length data)))
+  ((data string?))
+  
+(define N (u8-string-length data))
 
 (chained-define (@value-of v) 
   (cond ((char? v) (rich-string (string v)))

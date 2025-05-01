@@ -538,7 +538,9 @@
 
     \ \ ((field1 type1?) (field2 type2?) ...)
 
-    \ \ 
+    \ \ (define private-field1 ...) ; 内部字段
+
+    \;
 
     \ \ (define (@static-method-name ...) ...) \ ; 静态方法
 
@@ -627,11 +629,7 @@
 
   样本类的默认构造函数有类型校验，但不做任何值校验。如果需要做值校验，那么需要使用同名的函数覆盖<scm|define-case-class>生成的默认实现。该同名函数可称为该样本类的伴生函数。
 
-  \;
-
-  <\strong>
-    功能
-  </strong>
+  <subparagraph|功能>
 
   <\enumerate>
     <item><with|font-series|bold|字段访问>: 样本类的字段可以通过字段名直接访问，例如 (<scm|instance 'field-name>)。
@@ -653,9 +651,7 @@
     <item><with|font-series|bold|类型检查>: 样本类的构造函数会自动检查字段的类型，如果类型不匹配，会抛出类型错误。
   </enumerate>
 
-  \;
-
-  <strong|设计意义>\ 
+  <subparagraph|设计意义>\ 
 
   <\itemize-minus>
     <item>不可变性: 样本类的实例是不可变的，确保了数据的一致性和线程安全。
@@ -667,18 +663,14 @@
     <item>扩展性: 支持自定义静态方法和实例方法，可以根据需要扩展样本类的功能。
   </itemize-minus>
 
-  \;
-
-  <strong|实现细节>
+  <subparagraph|实现细节>
 
   <scm|define-case-class> 在宏展开时会生成样本类的构造函数、字段访问器、实例方法和静态方法。实例方法通过分发器（dispatcher）实现，支持链式调用和动态方法查找。
 
-  \;
-
-  <strong|实现函数>
+  <subparagraph|实现函数>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define-macro (define-case-class class-name fields . methods)
+    (define-macro (define-case-class class-name fields . private-fields-and-methods)
 
     \ \ (let* ((key-fields
 
@@ -689,6 +681,30 @@
     \ \ \ \ \ \ \ \ 
 
     \ \ \ \ \ \ \ \ \ (field-names (map car fields))
+
+    \;
+
+    \ \ \ \ \ \ \ \ \ (private-fields (filter (lambda (x)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (and (list? x)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\<gtr\>= (length x) 2)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (symbol? (x 1))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ private-fields-and-methods))
+
+    \;
+
+    \ \ \ \ \ \ \ \ \ (methods (filter (lambda (x)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (and (list? x)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\<gtr\>= (length x) 2)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (pair? (x 1))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ private-fields-and-methods))
 
     \ \ \ \ \ \ \ \ \ 
 
@@ -915,6 +931,8 @@
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-append acc " " (car strings))))))))
 
     \;
+
+    \ \ ,@private-fields
 
     \ \ ,@internal-methods
 
@@ -3555,17 +3573,23 @@
 
   <chapter|富字符串>
 
-  富字符串基于基础的Scheme字符串类型，封装了大量易用的函数，并且支持Unicode。
+  富字符串基于基础的Scheme字符串类型，封装了大量易用的函数，并且支持Unicode。富字符串是不可变字符串，其中的一些字符串的操作，比如移除字符串左侧空白字符，会返回一个新的富字符串，而不是修改当前富字符串。
 
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class rich-string
 
-    \ \ ((data string?)
+    \ \ ((data string?))
 
-    \ \ \ (N integer? (u8-string-length data)))
+    \ \ 
+
+    (define N (u8-string-length data))
 
     \;
   </scm-chunk>
+
+  <section|实现细节>
+
+  基于富字符串的不可变性，我们直接在内部定义<scm|N>作为富字符串的长度，避免字符串长度的重复计算。另外，富字符串我们默认采用UTF-8编码，如果传入别的编码格式，目前无法正常处理。
 
   <section|静态方法>
 
