@@ -3608,17 +3608,29 @@
   <\goldfish-chunk|goldfish/liii/path.scm|true|true>
     (define (%to-string)
 
-    \ \ (if (eq? type 'posix)
+    \ \ (case type
 
-    \ \ \ \ \ \ (let1 s ($ parts :make-string "/")
+    \ \ \ \ ((posix)
+
+    \ \ \ \ \ (let1 s ($ parts :make-string "/")
 
     \ \ \ \ \ \ \ \ (if (string-starts? s "//")
 
     \ \ \ \ \ \ \ \ \ \ \ \ (string-drop s 1)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ s))
+    \ \ \ \ \ \ \ \ \ \ \ \ s)))
 
-    \ \ \ \ \ \ (value-error "invalid type of path" type)))
+    \ \ \ \ ((windows)
+
+    \ \ \ \ \ (let1 s ($ parts :make-string "\\\\")
+
+    \ \ \ \ \ \ \ (if (string-null? drive)
+
+    \ \ \ \ \ \ \ \ \ \ \ s
+
+    \ \ \ \ \ \ \ \ \ \ \ (string-append drive ":\\\\" s))))
+
+    \ \ \ \ (else (value-error "path%to-string: unknown type" type))))
 
     \;
   </goldfish-chunk>
@@ -3627,6 +3639,8 @@
     (check ((path #("/" "etc" "passwd")) :to-string) =\<gtr\> "/etc/passwd")
 
     (check ((path #("/" "tmp" "")) :to-string) =\<gtr\> "/tmp/")
+
+    (check ((path #("Users") 'windows "C") :to-string) =\<gtr\> "C:\\\\Users")
 
     \;
   </scm-chunk>
@@ -3673,17 +3687,31 @@
     \;
   </scm-chunk>
 
-  <paragraph|path%/>
-
   <paragraph|path@/>
 
   <\goldfish-chunk|goldfish/liii/path.scm|true|true>
     (chained-define (@/ x)
 
-    \ \ (path (append #("/") (vector x))))
+    \ \ (if (string-ends? x ":")
+
+    \ \ \ \ \ \ (path #() 'windows ($ x :drop-right 1 :get))
+
+    \ \ \ \ \ \ (path (append #("/") (vector x)))))
 
     \;
+  </goldfish-chunk>
 
+  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    (check (path :/ "C:" :to-string) =\<gtr\> "C:\\\\")
+
+    (check (path :/ "root" :to-string) =\<gtr\> "/root")
+
+    \;
+  </scm-chunk>
+
+  <paragraph|path%/>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
     (chained-define (%/ x)
 
     \ \ (path (append parts (vector x))))

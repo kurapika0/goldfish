@@ -90,9 +90,13 @@
 
 (check ((path #("/" "etc" "passwd")) :to-string) => "/etc/passwd")
 (check ((path #("/" "tmp" "")) :to-string) => "/tmp/")
+(check ((path #("Users") 'windows "C") :to-string) => "C:\\Users")
 
 (when (os-linux?)
   (check-true (path :cwd :dir?)))
+
+(check (path :/ "C:" :to-string) => "C:\\")
+(check (path :/ "root" :to-string) => "/root")
 
 (check (path :/ "etc" :/ "host" :to-string) => "/etc/host")
 

@@ -117,12 +117,18 @@
         (else (???))))
 
 (define (%to-string)
-  (if (eq? type 'posix)
-      (let1 s ($ parts :make-string "/")
+  (case type
+    ((posix)
+     (let1 s ($ parts :make-string "/")
         (if (string-starts? s "//")
             (string-drop s 1)
-            s))
-      (value-error "invalid type of path" type)))
+            s)))
+    ((windows)
+     (let1 s ($ parts :make-string "\\")
+       (if (string-null? drive)
+           s
+           (string-append drive ":\\" s))))
+    (else (value-error "path%to-string: unknown type" type))))
 
 (define (%read-text)
   (path-read-text (%to-string)))
@@ -134,7 +140,9 @@
   (@from-string (getcwd)))
 
 (chained-define (@/ x)
-  (path (append #("/") (vector x))))
+  (if (string-ends? x ":")
+      (path #() 'windows ($ x :drop-right 1 :get))
+      (path (append #("/") (vector x)))))
 
 (chained-define (%/ x)
   (path (append parts (vector x))))
