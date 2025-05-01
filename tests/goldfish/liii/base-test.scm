@@ -1042,6 +1042,7 @@
 (check (bytevector-append #u8(1) #u8()) => #u8(1))
 
 (check (u8-string-length "中文") => 2)
+(check (u8-string-length "") => 0)
 
 (check (utf8->string (bytevector #x48 #x65 #x6C #x6C #x6F)) => "Hello")
 (check (utf8->string #u8(#xC3 #xA4)) => "ä")
@@ -1068,6 +1069,8 @@
 (check (string->utf8 "ä") => #u8(#xC3 #xA4))
 (check (string->utf8 "中") => #u8(#xE4 #xB8 #xAD))
 (check (string->utf8 "👍") => #u8(#xF0 #x9F #x91 #x8D))
+
+(check (string->utf8 "") => #u8())
 
 (check (u8-substring "汉字书写" 0 1) => "汉")
 (check (u8-substring "汉字书写" 0 4) => "汉字书写")

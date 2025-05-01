@@ -4126,27 +4126,33 @@
 
     \ \ \ \ \ \ \ \ (N (string-length str)))
 
-    \ \ \ \ (let loop ((pos 0) (cnt 0))
+    \ \ \ \ (if (zero? N)
 
-    \ \ \ \ \ \ (let ((next-pos (bytevector-advance-u8 bv pos N)))
+    \ \ \ \ \ \ \ \ 0
 
-    \ \ \ \ \ \ \ \ (cond
+    \ \ \ \ \ \ \ \ (let loop ((pos 0) (cnt 0))
 
-    \ \ \ \ \ \ \ \ \ ((= next-pos N)
+    \ \ \ \ \ \ \ \ \ \ (let ((next-pos (bytevector-advance-u8 bv pos N)))
 
-    \ \ \ \ \ \ \ \ \ \ (+ cnt 1))
+    \ \ \ \ \ \ \ \ \ \ \ \ (cond
 
-    \ \ \ \ \ \ \ \ \ ((= next-pos pos)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ ((= next-pos N)
 
-    \ \ \ \ \ \ \ \ \ \ (error 'value-error "Invalid UTF-8 sequence at index: " pos))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (+ cnt 1))
 
-    \ \ \ \ \ \ \ \ \ (else (loop next-pos (+ cnt 1))))))))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ ((= next-pos pos)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (error 'value-error "Invalid UTF-8 sequence at index: " pos))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (else (loop next-pos (+ cnt 1)))))))))
 
     \;
   </scm-chunk>
 
   <\scm-chunk|tests/goldfish/liii/base-test.scm|true|true>
     (check (u8-string-length "中文") =\<gtr\> 2)
+
+    (check (u8-string-length "") =\<gtr\> 0)
 
     \;
   </scm-chunk>
@@ -4246,7 +4252,7 @@
 
     \ \ (let ((N (u8-string-length str)))
 
-    \ \ \ \ (when (or (\<less\> start 0) (\<gtr\>= start N))
+    \ \ \ \ (when (and (\<gtr\> N 0) (or (\<less\> start 0) (\<gtr\>= start N)))
 
     \ \ \ \ \ \ \ \ (error 'out-of-range
 
@@ -4309,6 +4315,10 @@
     (check (string-\<gtr\>utf8 "中") =\<gtr\> #u8(#xE4 #xB8 #xAD))
 
     (check (string-\<gtr\>utf8 "👍") =\<gtr\> #u8(#xF0 #x9F #x91 #x8D))
+
+    \;
+
+    (check (string-\<gtr\>utf8 "") =\<gtr\> #u8())
 
     \;
   </scm-chunk>

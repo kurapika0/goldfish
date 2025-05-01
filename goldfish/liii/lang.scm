@@ -319,7 +319,7 @@
   (cond ((integer? x) (rich-integer x))
         ((rational? x) (rich-rational x))
         ((float? x) (rich-float x))
-        ((char? x) (rich-char (char->integer x)))
+        ((char? x) (rich-char x))
         ((string? x) (rich-string x))
         ((list? x) (rich-list x))
         ((vector? x) (rich-vector x))
@@ -404,6 +404,13 @@
              (value-error "rich-char: code point out of range" data)))
         (else
          (type-error "rich-char: only accept char and integer"))))
+
+(define (%equals that)
+  (cond ((char? that)
+         (= code-point (char->integer that)))
+        ((rich-char :is-type-of that)
+         (= code-point (that :to-integer)))
+        (else #f)))
 
 (define (%ascii?)
   (and (>= code-point 0) (<= code-point 127)))
@@ -527,6 +534,9 @@
 (chained-define (@from-integer x)
   (rich-char x))
 
+(define (%to-integer)
+  code-point)
+
 )
 
 (define-case-class rich-string
@@ -542,8 +552,8 @@
         ((number? v) (rich-string (number->string v)))
         ((symbol? v) (rich-string (symbol->string v)))
         ((string? v) (rich-string v))
-        ((and (case-class? v) (v :is-instance-of 'rich-char))
-         (box (v :make-string)))
+        ((rich-char :is-type-of v)
+         (rich-string (v :make-string)))
         (else (type-error "Expected types are char, rich-char, number, symbol or string"))))
 
 (define (%get) data)
@@ -604,24 +614,30 @@
          (string-contains data (string elem)))
         (else (type-error "elem must be char or string"))))
 
-;; Find the index for the char or substring in rich-string (from start-index), else return -1
-(define (%index-of sub . start-index)
-  (let1 start (if (null? start-index) 0 (car start-index))
+(define* (%index-of ch/str (start 0))
   (cond
-    ((string? sub)
-     (let ((str-len (string-length data))
-           (sub-len (string-length sub)))
+    ((or (string? ch/str) (char? ch/str))
+     (%index-of (box ch/str) start))
+    ((rich-string :is-type-of ch/str)
+     (let* ((target-data (ch/str :get))
+            (target-len (ch/str :length))
+            (max-start (- N target-len)))
        (let loop ((i start))
          (cond
-           ((> (+ i sub-len) str-len) -1)
-           ((equal? (substring data i (+ i sub-len)) sub) i)
+           ((> i max-start) -1)
+           ((let ((slice (%slice i (+ i target-len))))
+              (slice :equals ch/str))
+            i)
            (else (loop (+ i 1)))))))
-    ((char? sub)
-     (let loop ((lst (string->list (substring data start))) (index start))
-       (cond
-       ((null? lst) -1)
-       ((char=? (car lst) sub) index)
-       (else (loop (cdr lst) (+ index 1)))))))))
+    ((rich-char :is-type-of ch/str)
+     (let loop ((i start))
+       (if (>= i N)
+           -1
+           (let ((c (%char-at i)))
+             (if (c :equals ch/str)
+                 i
+                 (loop (+ i 1)))))))
+    (else (type-error "rich-string%index-of only accept search string/char/rich-string/rich-char"))))
 
 (chained-define (%map f)
   (box ((%to-rich-vector)
@@ -713,17 +729,17 @@
         (apply result args))))
 
 (define (%split sep)
-  (let ((str-len (string-length data))
-        (sep-len (string-length sep)))
-
+  (let ((str-len ($ data :length))
+        (sep-len ($ sep :length)))
+    
     (define (split-helper start acc)
       (let ((next-pos (%index-of sep start)))
         (if (= next-pos -1)
-            (cons (substring data start) acc)
-            (split-helper (+ next-pos sep-len) (cons (substring data start next-pos) acc)))))
+            (cons (%drop start :get) acc)
+            (split-helper (+ next-pos sep-len) (cons (%slice start next-pos :get) acc)))))
     
     (if (zero? sep-len)
-        ((%to-rich-vector) :map (lambda (c) (rich-string :value-of c :get)) :collect)
+        ((%to-rich-vector) :map (lambda (c) (c :make-string)))
         (rich-vector (reverse-list->vector (split-helper 0 '()))))))
 
 )

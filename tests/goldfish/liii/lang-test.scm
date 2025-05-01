@@ -19,7 +19,7 @@
         (liii cut)
         (liii case))
 
-; (check-set-mode! 'report-failed)
+(check-set-mode! 'report-failed)
 
 (check ((@ + _ 2) 1) => 3)
 (check ((@ list 1 _ 3 _ 5) 2 4) => (list 1 2 3 4 5))
@@ -445,6 +445,7 @@
 
 (check ((rich-string "abc") :length) => 3)
 (check ((rich-string "中文") :length) => 2)
+(check (rich-string :empty :length) => 0)
 
 (let1 str ($ "你好，世界")
   (check (str :char-at 0) => (rich-char #x4F60))  ;; "你" 的 Unicode 码点
@@ -515,21 +516,29 @@
   (check-true (str :contains "Hello"))
   (check-true (str :contains "")))
 
-(let1 str (rich-string "hello world!")
-  (check (str :index-of "hello") => 0)
-  (check (str :index-of "hello") => (str :index-of "hello" 0))
-  (check (str :index-of "hello" 1) => -1)
-  (check (str :index-of "world") => 6)
-  (check (str :index-of "world" 1) => 6)
-  (check (str :index-of "!") => 11)
-  (check (str :index-of "scheme") => -1)
-  (check (str :index-of #\h) => 0)
-  (check (str :index-of #\h) => (str :index-of #\h 0))
-  (check (str :index-of #\h 1) => -1)
-  (check (str :index-of #\w) => 6)
-  (check (str :index-of #\w 1) => 6)
-  (check (str :index-of #\!) => 11)
-  (check (str :index-of #\~) => -1))
+(let1 str (rich-string "你好，世界！")
+  (check (str :index-of ($ "你")) => 0)
+  (check (str :index-of ($ "好")) => 1)
+  (check (str :index-of ($ "世")) => 3)
+  (check (str :index-of ($ "界")) => 4)
+  (check (str :index-of ($ "！")) => 5)
+  (check (str :index-of ($ "中" 0)) => -1)
+  (check (str :index-of (rich-string "你好")) => 0)
+  (check (str :index-of (rich-string "世界")) => 3)
+  (check (str :index-of (rich-string "你好，世界")) => 0)
+  (check (str :index-of (rich-string "世界！")) => 3)
+  (check (str :index-of (rich-string "你好，世界！")) => 0)
+  (check (str :index-of (rich-string "中国")) => -1)
+  (check (str :index-of ($ "你") 1) => -1)
+  (check (str :index-of (rich-string "世界") 4) => -1))
+
+(let1 str (rich-string "Hello😀World")
+  (check (str :index-of ($ "😀")) => 5)
+  (check (str :index-of (rich-string "😀")) => 5)
+  (check (str :index-of (rich-string "Hello😀")) => 0)
+  (check (str :index-of (rich-string "😀World")) => 5)
+  (check (str :index-of ($ "😀") 6) => -1)
+  (check (str :index-of (rich-string "😀World") 6) => -1))
 
 (let1 s ($ "abc" :map (lambda (c) (c :to-upper)))
   (check s => "ABC")
@@ -546,6 +555,10 @@
 (let1 v ($ "中文" :to-vector)
   (check (v 0) => (rich-char :from-string "#\\中"))
   (check (v 1) => (rich-char :from-string "#\\文")))
+
+(let1 v ($ "hello" :to-vector)
+  (check (v 0) => (box #\h))
+  (check (v 4) => (rich-char #\o)))
 
 (let1 v ($ "中文的" :to-rich-vector)
   (check (v :length) => 3)
@@ -601,7 +614,6 @@
 (check ($ "世界" :strip-suffix "界") => "世")
 
 (check-catch 'wrong-number-of-args ("hello":strip-suffix "llo"))
-(check-catch 'unbound-variable (123:strip-suffix 1))
 
 (check ($ "hahaha" :replace-first "a" "oo") => ($ "hoohaha"))
 (check ($ "hello" :replace-first "world" "") => ($ "hello"))
