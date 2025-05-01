@@ -19,7 +19,7 @@
         (liii cut)
         (liii case))
 
-(check-set-mode! 'report-failed)
+; (check-set-mode! 'report-failed)
 
 (check ((@ + _ 2) 1) => 3)
 (check ((@ list 1 _ 3 _ 5) 2 4) => (list 1 2 3 4 5))
@@ -466,6 +466,15 @@
    (check (str :slice 100 101) => ($ ""))
    (check (str :slice -1 100) => ($ "Hello，世界"))
    (check (str :slice 0 5 :to-string) => "Hello"))
+
+(let1 str ($ "Hello，世界")
+  (check (str :drop 1) => "ello，世界")
+  (check (str :drop 0) => "Hello，世界")
+  (check (str :drop -1) => "Hello，世界")
+  (check (str :drop 6) => "世界")
+  (check (str :drop 7) => "界")
+  (check (str :drop 8) => "")
+  (check (str :drop 9) => ""))
 
 (check ($ "42") => ($ "42"))
 (check-false ($ "41" :equals ($ "42")))

@@ -526,6 +526,9 @@
   
 (define N (u8-string-length data))
 
+(chained-define (@empty)
+  (rich-string ""))
+
 (chained-define (@value-of v) 
   (cond ((char? v) (rich-string (string v)))
         ((number? v) (rich-string (number->string v)))
@@ -553,10 +556,15 @@
 (chained-define (%slice from until)
   (let* ((start (max 0 from))
          (end (min N until)))
-    (if (< start end)
-        (rich-string (u8-substring data start end))
-        (rich-string ""))))
+    (cond ((and (zero? start) (= end N))
+           (%this))
+          ((>= start end)
+           (rich-string :empty))
+          (else
+           (rich-string (u8-substring data start end))))))
 
+(chained-define (%drop n)
+  (%slice n N))
 
 (define (%empty?)
   (string-null? data))

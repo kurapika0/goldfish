@@ -128,7 +128,7 @@
 
     \;
 
-    (check-set-mode! 'report-failed)
+    ; (check-set-mode! 'report-failed)
 
     \;
   </scm-chunk>
@@ -3593,6 +3593,16 @@
 
   <section|静态方法>
 
+  <paragraph|rich-string@empty>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (@empty)
+
+    \ \ (rich-string ""))
+
+    \;
+  </goldfish-chunk>
+
   <paragraph|rich-string@is-type-of>
 
   这个静态方法是自动生成的，用于判断一个对象的类型是否是<scm|rich-string>。
@@ -3752,11 +3762,17 @@
 
     \ \ \ \ \ \ \ \ \ (end (min N until)))
 
-    \ \ \ \ (if (\<less\> start end)
+    \ \ \ \ (cond ((and (zero? start) (= end N))
 
-    \ \ \ \ \ \ \ \ (rich-string (u8-substring data start end))
+    \ \ \ \ \ \ \ \ \ \ \ (%this))
 
-    \ \ \ \ \ \ \ \ (rich-string ""))))
+    \ \ \ \ \ \ \ \ \ \ ((\<gtr\>= start end)
+
+    \ \ \ \ \ \ \ \ \ \ \ (rich-string :empty))
+
+    \ \ \ \ \ \ \ \ \ \ (else
+
+    \ \ \ \ \ \ \ \ \ \ \ (rich-string (u8-substring data start end))))))
 
     \;
   </goldfish-chunk>
@@ -3790,6 +3806,30 @@
   <paragraph|rich-string%drop>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%drop n)
+
+    \ \ (%slice n N))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let1 str ($ "Hello，世界")
+
+    \ \ (check (str :drop 1) =\<gtr\> "ello，世界")
+
+    \ \ (check (str :drop 0) =\<gtr\> "Hello，世界")
+
+    \ \ (check (str :drop -1) =\<gtr\> "Hello，世界")
+
+    \ \ (check (str :drop 6) =\<gtr\> "世界")
+
+    \ \ (check (str :drop 7) =\<gtr\> "界")
+
+    \ \ (check (str :drop 8) =\<gtr\> "")
+
+    \ \ (check (str :drop 9) =\<gtr\> ""))
+
     \;
   </goldfish-chunk>
 
