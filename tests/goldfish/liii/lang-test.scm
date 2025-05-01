@@ -585,6 +585,7 @@
 (check ($ "hello" :strip-prefix "abc") => ($ "hello"))
 (check ($ "hello" :strip-prefix "helloo") => ($ "hello"))
 (check ($ "hello" :strip-prefix "he" :strip-prefix "ll") => ($ "o"))
+(check ($ "世界" :strip-prefix "世") => "界")
 
 (check-catch 'wrong-number-of-args ("hello":strip-prefix "he"))
 (check-catch 'unbound-variable (123:strip-prefix 1))
@@ -596,9 +597,11 @@
 (check ($ "hello" :strip-suffix "abc") => ($ "hello"))
 (check ($ "hello" :strip-suffix "hhello") => ($ "hello"))
 (check ($ "hello" :strip-suffix "lo" :strip-suffix "el") => ($ "h"))
+(check ($ "世界" :strip-suffix "界") => "世")
 
 (check-catch 'wrong-number-of-args ("hello":strip-suffix "llo"))
 (check-catch 'unbound-variable (123:strip-suffix 1))
+
 (check ($ "hahaha" :replace-first "a" "oo") => ($ "hoohaha"))
 (check ($ "hello" :replace-first "world" "") => ($ "hello"))
 (check ($ "hello" :replace-first "l" "L" :strip-prefix "he") => ($ "Llo")) ; chain

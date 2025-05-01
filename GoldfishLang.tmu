@@ -4381,9 +4381,9 @@
     \;
   </goldfish-chunk>
 
-  \;
-
   <paragraph|rich-string%strip-prefix>
+
+  如果前缀不匹配，则返回原富字符串；如果前缀匹配，则返回移除前缀之后的富字符串。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (chained-define (%strip-prefix prefix)
@@ -4410,6 +4410,8 @@
 
     (check ($ "hello" :strip-prefix "he" :strip-prefix "ll") =\<gtr\> ($ "o"))
 
+    (check ($ "世界" :strip-prefix "世") =\<gtr\> "界")
+
     \;
 
     (check-catch 'wrong-number-of-args ("hello":strip-prefix "he"))
@@ -4420,6 +4422,8 @@
   </goldfish-chunk>
 
   <paragraph|rich-string%strip-suffix>
+
+  如果后缀不匹配，则返回原富字符串；如果后缀匹配，则返回移除后缀之后的富字符串。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (chained-define (%strip-suffix suffix)
@@ -4444,11 +4448,15 @@
 
     (check ($ "hello" :strip-suffix "lo" :strip-suffix "el") =\<gtr\> ($ "h"))
 
+    (check ($ "世界" :strip-suffix "界") =\<gtr\> "世")
+
     \;
 
     (check-catch 'wrong-number-of-args ("hello":strip-suffix "llo"))
 
     (check-catch 'unbound-variable (123:strip-suffix 1))
+
+    \;
   </goldfish-chunk>
 
   <paragraph|rich-string%replace-first>
