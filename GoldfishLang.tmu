@@ -3803,6 +3803,30 @@
 
   <paragraph|rich-string%take-right>
 
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%take-right n)
+
+    \ \ (%slice (- N n) N))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let1 str ($ "Hello，世界")
+
+    \ \ (check (str :take-right -1) =\<gtr\> "")
+
+    \ \ (check (str :take-right 0) =\<gtr\> "")
+
+    \ \ (check (str :take-right 1) =\<gtr\> "界")
+
+    \ \ (check (str :take-right 8) =\<gtr\> "Hello，世界")
+
+    \ \ (check (str :take-right 9) =\<gtr\> "Hello，世界"))
+
+    \;
+  </goldfish-chunk>
+
   <paragraph|rich-string%drop>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
@@ -3831,9 +3855,37 @@
     \ \ (check (str :drop 9) =\<gtr\> ""))
 
     \;
+
+    (check (rich-string :empty :drop 1) =\<gtr\> "")
+
+    \;
   </goldfish-chunk>
 
   <paragraph|rich-string%drop-right>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%drop-right n)
+
+    \ \ (%slice 0 (- N n)))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let1 str ($ "Hello，世界")
+
+    \ \ (check (str :drop-right -1) =\<gtr\> "Hello，世界")
+
+    \ \ (check (str :drop-right 0) =\<gtr\> "Hello，世界")
+
+    \ \ (check (str :drop-right 1) =\<gtr\> "Hello，世")
+
+    \ \ (check (str :drop-right 8) =\<gtr\> "")
+
+    \ \ (check (str :drop-right 8) =\<gtr\> ""))
+
+    \;
+  </goldfish-chunk>
 
   <section|谓词>
 

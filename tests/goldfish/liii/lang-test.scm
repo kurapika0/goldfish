@@ -468,6 +468,13 @@
    (check (str :slice 0 5 :to-string) => "Hello"))
 
 (let1 str ($ "Hello，世界")
+  (check (str :take-right -1) => "")
+  (check (str :take-right 0) => "")
+  (check (str :take-right 1) => "界")
+  (check (str :take-right 8) => "Hello，世界")
+  (check (str :take-right 9) => "Hello，世界"))
+
+(let1 str ($ "Hello，世界")
   (check (str :drop 1) => "ello，世界")
   (check (str :drop 0) => "Hello，世界")
   (check (str :drop -1) => "Hello，世界")
@@ -475,6 +482,15 @@
   (check (str :drop 7) => "界")
   (check (str :drop 8) => "")
   (check (str :drop 9) => ""))
+
+(check (rich-string :empty :drop 1) => "")
+
+(let1 str ($ "Hello，世界")
+  (check (str :drop-right -1) => "Hello，世界")
+  (check (str :drop-right 0) => "Hello，世界")
+  (check (str :drop-right 1) => "Hello，世")
+  (check (str :drop-right 8) => "")
+  (check (str :drop-right 8) => ""))
 
 (check ($ "42") => ($ "42"))
 (check-false ($ "41" :equals ($ "42")))

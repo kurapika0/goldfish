@@ -563,8 +563,14 @@
           (else
            (rich-string (u8-substring data start end))))))
 
+(chained-define (%take-right n)
+  (%slice (- N n) N))
+
 (chained-define (%drop n)
   (%slice n N))
+
+(chained-define (%drop-right n)
+  (%slice 0 (- N n)))
 
 (define (%empty?)
   (string-null? data))
