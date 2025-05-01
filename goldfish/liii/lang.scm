@@ -343,7 +343,7 @@
       (rich-list (list))
       (rich-list (iota (+ (- n data)) data))))
 
-(define (%to-char)
+(define (%to-rich-char)
   (rich-char data))
 
 (define (%to-string)
@@ -393,7 +393,17 @@
 
 )
 
-(define-case-class rich-char ((code-point integer?))
+(define-case-class rich-char ((data any?))
+                   
+(define code-point
+  (cond ((char? data)
+         (char->integer data))
+        ((integer? data)
+         (if (and (>= data 0) (<= data #x10FFFF))
+             data
+             (value-error "rich-char: code point out of range" data)))
+        (else
+         (type-error "rich-char: only accept char and integer"))))
 
 (define (%ascii?)
   (and (>= code-point 0) (<= code-point 127)))
@@ -464,62 +474,60 @@
     (else
      (value-error "Invalid code point"))))
 
+(define (@from-bytevector x)
+  (define (utf8-byte-sequence->code-point byte-seq)
+    (let ((len (bytevector-length byte-seq)))
+      (cond
+        ((= len 1)
+         (bytevector-u8-ref byte-seq 0))
+        ((= len 2)
+         (let ((b1 (bytevector-u8-ref byte-seq 0))
+               (b2 (bytevector-u8-ref byte-seq 1)))
+           (bitwise-ior
+            (arithmetic-shift (bitwise-and b1 #x1F) 6)
+            (bitwise-and b2 #x3F))))
+        ((= len 3)
+         (let ((b1 (bytevector-u8-ref byte-seq 0))
+               (b2 (bytevector-u8-ref byte-seq 1))
+               (b3 (bytevector-u8-ref byte-seq 2)))
+           (bitwise-ior
+            (arithmetic-shift (bitwise-and b1 #x0F) 12)
+            (arithmetic-shift (bitwise-and b2 #x3F) 6)
+            (bitwise-and b3 #x3F))))
+        ((= len 4)
+         (let ((b1 (bytevector-u8-ref byte-seq 0))
+               (b2 (bytevector-u8-ref byte-seq 1))
+               (b3 (bytevector-u8-ref byte-seq 2))
+               (b4 (bytevector-u8-ref byte-seq 3)))
+           (bitwise-ior
+           (arithmetic-shift (bitwise-and b1 #x07) 18)
+           (arithmetic-shift (bitwise-and b2 #x3F) 12)
+           (arithmetic-shift (bitwise-and b3 #x3F) 6)
+           (bitwise-and b4 #x3F))))
+        (else
+         (value-error "Invalid UTF-8 byte sequence length")))))
+
+  (rich-char (utf8-byte-sequence->code-point x)))
+
 (define (%to-string)
   (if (%ascii?)
       (object->string (integer->char code-point))
       (string-append "#\\" (utf8->string (%to-bytevector)))))
 
+(define (@from-string x)
+  (when (not (string-starts? x "#\\"))
+    (value-error "char@from-string: the input must start with #\\"))
+  (if (= 1 ($ x :drop 2 :length))
+      (rich-char :from-bytevector (string->utf8 ($ x :drop 2 :get)))
+      (value-error "rich-char: must be u8 string which length equals 1")))
+
 (define (%make-string)
   (utf8->string (%to-bytevector)))
 
+(chained-define (@from-integer x)
+  (rich-char x))
+
 )
-
-(define make-rich-char rich-char)
-
-(define (utf8-byte-sequence->code-point byte-seq)
-  (let ((len (bytevector-length byte-seq)))
-    (cond
-      ((= len 1)
-       (bytevector-u8-ref byte-seq 0))
-      ((= len 2)
-       (let ((b1 (bytevector-u8-ref byte-seq 0))
-             (b2 (bytevector-u8-ref byte-seq 1)))
-         (bitwise-ior
-          (arithmetic-shift (bitwise-and b1 #x1F) 6)
-          (bitwise-and b2 #x3F))))
-      ((= len 3)
-       (let ((b1 (bytevector-u8-ref byte-seq 0))
-             (b2 (bytevector-u8-ref byte-seq 1))
-             (b3 (bytevector-u8-ref byte-seq 2)))
-         (bitwise-ior
-          (arithmetic-shift (bitwise-and b1 #x0F) 12)
-          (arithmetic-shift (bitwise-and b2 #x3F) 6)
-          (bitwise-and b3 #x3F))))
-      ((= len 4)
-       (let ((b1 (bytevector-u8-ref byte-seq 0))
-             (b2 (bytevector-u8-ref byte-seq 1))
-             (b3 (bytevector-u8-ref byte-seq 2))
-             (b4 (bytevector-u8-ref byte-seq 3)))
-         (bitwise-ior
-          (arithmetic-shift (bitwise-and b1 #x07) 18)
-          (arithmetic-shift (bitwise-and b2 #x3F) 12)
-          (arithmetic-shift (bitwise-and b3 #x3F) 6)
-          (bitwise-and b4 #x3F))))
-      (else
-       (value-error "Invalid UTF-8 byte sequence length")))))
-
-(define (rich-char x)
-  (cond ((integer? x)
-         (if (and (>= x 0) (<= x #x10FFFF))
-             (make-rich-char x)
-             (value-error "rich-char: code point out of range" x)))
-        ((string? x)
-         (if (= 1 ($ x :length))
-             (rich-char (string->utf8 x))
-             (value-error "rich-char: must be u8 string which length equals 1")))
-        ((bytevector? x)
-         (make-rich-char (utf8-byte-sequence->code-point x)))
-        (else (type-error "rich-char: must be integer, string, bytevector"))))
 
 (define-case-class rich-string
   ((data string?))
@@ -546,9 +554,8 @@
 (define (%char-at index)
   (let* ((start index)
          (end (+ index 1))
-         (byte-seq (string->utf8 data start end))
-         (code-point (utf8-byte-sequence->code-point byte-seq)))
-    (rich-char byte-seq)))
+         (byte-seq (string->utf8 data start end)))
+    (rich-char :from-bytevector byte-seq)))
 
 (typed-define (%apply (i integer?))
   (%char-at i))
@@ -638,8 +645,8 @@
           (if (>= i N)
               result
               (let* ((next-j (bytevector-advance-u8 bv j bv-size))
-                     (code (utf8-byte-sequence->code-point (bytevector-copy bv j next-j))))
-                (vector-set! result i (rich-char code))
+                     (ch (rich-char :from-bytevector (bytevector-copy bv j next-j))))
+                (vector-set! result i ch)
                 (loop (+ i 1) next-j)))))))
 
 (define (%to-rich-vector)

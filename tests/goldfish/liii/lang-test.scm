@@ -260,7 +260,7 @@
 (check (($ 1 :until 2) :collect) => (list 1))
 (check (($ 2 :until 2) :collect) => (list ))
 
-(check-catch 'value-error ($ #x110000 :to-char))
+(check-catch 'value-error ($ #x110000 :to-rich-char))
 
 (check ($ 1 :to-string) => "1")
 
@@ -415,6 +415,7 @@
 
 (check ((rich-char #x1F600) :to-string) => "#\\😀")
 
+
 (check ($ #\space :make-string) => " ")
 (check ($ #\return :make-string) => (string #\return))
 
@@ -455,7 +456,7 @@
 
 (let1 str ($ "Hello，世界")
    (check (str 0) => ($ #\H))
-   (check (str 7) => (rich-char "界")))
+   (check (str 7) => (rich-char :from-string "#\\界")))
 
 (let1 str ($ "Hello，世界")
    (check (str :slice 0 5) => ($ "Hello"))
@@ -507,7 +508,7 @@
 
 (check-false ($ "全部都是中文" :forall (@ _ :digit?)))
 
-(check-true ($ "全部都是中文" :exists (@ _ :equals (rich-char "中"))))
+(check-true ($ "全部都是中文" :exists (@ _ :equals (rich-char :from-string "#\\中"))))
 
 (let1 str (rich-string "Hello, World!")
   (check-true (str :contains #\W))
@@ -538,19 +539,19 @@
 
 (check ($ "" :count (@ == _ #\A)) => 0)
 (check ($ "hello" :count (@ == _ #\l)) => 2)
-(check ($ "你好，我是韩梅梅" :count (@ == _ (rich-char "梅"))) => 2)
+(check ($ "你好，我是韩梅梅" :count (@ == _ (rich-char :from-string "#\\梅"))) => 2)
 
 (check ((rich-string "hello") :to-string) => "hello")
 
 (let1 v ($ "中文" :to-vector)
-  (check (v 0) => (rich-char "中"))
-  (check (v 1) => (rich-char "文")))
+  (check (v 0) => (rich-char :from-string "#\\中"))
+  (check (v 1) => (rich-char :from-string "#\\文")))
 
 (let1 v ($ "中文的" :to-rich-vector)
   (check (v :length) => 3)
-  (check (v 0) => (rich-char "中"))
-  (check (v 1) => (rich-char "文"))
-  (check (v 2) => (rich-char "的")))
+  (check (v 0) => (rich-char :from-string "#\\中"))
+  (check (v 1) => (rich-char :from-string "#\\文"))
+  (check (v 2) => (rich-char :from-string "#\\的")))
 
 (check ($ "Hello" :+ " " :+ "World") => "Hello World")
 (check ($ "hello " :+ (box "world")) => "hello world")
@@ -1098,9 +1099,9 @@
 
 (check-true ($ #(1 2 3) :equals ($ #(1 2 3))))
 
-(check ($ (vector (rich-char "中") (rich-char "文"))) => ($ "中文" :to-vector))
+(check ($ (vector ($ "中" 0) ($ "文" 0))) => ($ "中文" :to-vector))
 
-(check-false (($ "中文" :to-rich-vector) :equals (rich-char "中")))
+(check-false (($ "中文" :to-rich-vector) :equals ($ "中" 0)))
 
 (let ((vec (array #(1 2 3 4 5))))
   (check (vec :forall (lambda (x) (> x 0))) => #t)

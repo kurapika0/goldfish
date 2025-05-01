@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.7>>
+<TMU|<tuple|1.1.0|2025.0.8>>
 
 <style|<tuple|book|goldfish|literate|reduced-margins|python|padded-paragraphs|chinese>>
 
@@ -2477,10 +2477,10 @@
     \;
   </goldfish-chunk>
 
-  <paragraph|rich-integer%to-char>
+  <paragraph|rich-integer%to-rich-char>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define (%to-char)
+    (define (%to-rich-char)
 
     \ \ (rich-char data))
 
@@ -2488,7 +2488,7 @@
   </goldfish-chunk>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
-    (check-catch 'value-error ($ #x110000 :to-char))
+    (check-catch 'value-error ($ #x110000 :to-rich-char))
 
     \;
   </goldfish-chunk>
@@ -2788,7 +2788,27 @@
   富字符支持Unicode，内部采用Unicode码点的整数表示，并且封装了大量常用函数。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define-case-class rich-char ((code-point integer?))
+    (define-case-class rich-char ((data any?))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+
+    (define code-point
+
+    \ \ (cond ((char? data)
+
+    \ \ \ \ \ \ \ \ \ (char-\<gtr\>integer data))
+
+    \ \ \ \ \ \ \ \ ((integer? data)
+
+    \ \ \ \ \ \ \ \ \ (if (and (\<gtr\>= data 0) (\<less\>= data #x10FFFF))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ data
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (value-error "rich-char: code point out of range" data)))
+
+    \ \ \ \ \ \ \ \ (else
+
+    \ \ \ \ \ \ \ \ \ (type-error "rich-char: only accept char and integer"))))
 
     \;
   </goldfish-chunk>
@@ -3303,6 +3323,80 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-char@from-bytevector>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (@from-bytevector x)
+
+    \ \ (define (utf8-byte-sequence-\<gtr\>code-point byte-seq)
+
+    \ \ \ \ (let ((len (bytevector-length byte-seq)))
+
+    \ \ \ \ \ \ (cond
+
+    \ \ \ \ \ \ \ \ ((= len 1)
+
+    \ \ \ \ \ \ \ \ \ (bytevector-u8-ref byte-seq 0))
+
+    \ \ \ \ \ \ \ \ ((= len 2)
+
+    \ \ \ \ \ \ \ \ \ (let ((b1 (bytevector-u8-ref byte-seq 0))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (b2 (bytevector-u8-ref byte-seq 1)))
+
+    \ \ \ \ \ \ \ \ \ \ \ (bitwise-ior
+
+    \ \ \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b1 #x1F) 6)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ (bitwise-and b2 #x3F))))
+
+    \ \ \ \ \ \ \ \ ((= len 3)
+
+    \ \ \ \ \ \ \ \ \ (let ((b1 (bytevector-u8-ref byte-seq 0))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (b2 (bytevector-u8-ref byte-seq 1))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (b3 (bytevector-u8-ref byte-seq 2)))
+
+    \ \ \ \ \ \ \ \ \ \ \ (bitwise-ior
+
+    \ \ \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b1 #x0F) 12)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b2 #x3F) 6)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ (bitwise-and b3 #x3F))))
+
+    \ \ \ \ \ \ \ \ ((= len 4)
+
+    \ \ \ \ \ \ \ \ \ (let ((b1 (bytevector-u8-ref byte-seq 0))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (b2 (bytevector-u8-ref byte-seq 1))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (b3 (bytevector-u8-ref byte-seq 2))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (b4 (bytevector-u8-ref byte-seq 3)))
+
+    \ \ \ \ \ \ \ \ \ \ \ (bitwise-ior
+
+    \ \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b1 #x07) 18)
+
+    \ \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b2 #x3F) 12)
+
+    \ \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b3 #x3F) 6)
+
+    \ \ \ \ \ \ \ \ \ \ \ (bitwise-and b4 #x3F))))
+
+    \ \ \ \ \ \ \ \ (else
+
+    \ \ \ \ \ \ \ \ \ (value-error "Invalid UTF-8 byte sequence length")))))
+
+    \;
+
+    \ \ (rich-char (utf8-byte-sequence-\<gtr\>code-point x)))
+
+    \;
+  </goldfish-chunk>
+
   <paragraph|rich-char%to-string>
 
   在Scheme中，有一些表示字符的特殊规则，这种特殊的规则，解决了那些无法显示的字符的显示问题，比如：
@@ -3409,6 +3503,28 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-char@from-string><typehint|((x string?)) =\<gtr\> rich-char>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (@from-string x)
+
+    \ \ (when (not (string-starts? x "#\\\\"))
+
+    \ \ \ \ (value-error "char@from-string: the input must start with #\\\\"))
+
+    \ \ (if (= 1 ($ x :drop 2 :length))
+
+    \ \ \ \ \ \ (rich-char :from-bytevector (string-\<gtr\>utf8 ($ x :drop 2 :get)))
+
+    \ \ \ \ \ \ (value-error "rich-char: must be u8 string which length equals 1")))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    \;
+  </goldfish-chunk>
+
   <paragraph|rich-char%make-string><typehint|() =\<gtr\> string>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
@@ -3453,120 +3569,22 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-char@from-integer>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (@from-integer x)
+
+    \ \ (rich-char x))
+
+    \;
+  </goldfish-chunk>
+
   <section|结尾>
 
   \;
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     )
-
-    \;
-  </goldfish-chunk>
-
-  <paragraph|rich-char>
-
-  rich-char是样本类rich-char的伴生函数，用于定义更好的构造器。本构造器支持：
-
-  <\description>
-    <item*|integer>将整数形式的Unicode码点转换为rich-char，一般我们使用十六进制来表示整数
-
-    <item*|bytevector>将UTF-8编码的字节数组转换为rich-char
-
-    <item*|string>将UTF-8编码的长度为1的字符串转换为rich-char。由于字符字面量不支持Unicode，故而采用这种方式做转换。
-  </description>
-
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define make-rich-char rich-char)
-
-    \;
-
-    (define (utf8-byte-sequence-\<gtr\>code-point byte-seq)
-
-    \ \ (let ((len (bytevector-length byte-seq)))
-
-    \ \ \ \ (cond
-
-    \ \ \ \ \ \ ((= len 1)
-
-    \ \ \ \ \ \ \ (bytevector-u8-ref byte-seq 0))
-
-    \ \ \ \ \ \ ((= len 2)
-
-    \ \ \ \ \ \ \ (let ((b1 (bytevector-u8-ref byte-seq 0))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (b2 (bytevector-u8-ref byte-seq 1)))
-
-    \ \ \ \ \ \ \ \ \ (bitwise-ior
-
-    \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b1 #x1F) 6)
-
-    \ \ \ \ \ \ \ \ \ \ (bitwise-and b2 #x3F))))
-
-    \ \ \ \ \ \ ((= len 3)
-
-    \ \ \ \ \ \ \ (let ((b1 (bytevector-u8-ref byte-seq 0))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (b2 (bytevector-u8-ref byte-seq 1))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (b3 (bytevector-u8-ref byte-seq 2)))
-
-    \ \ \ \ \ \ \ \ \ (bitwise-ior
-
-    \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b1 #x0F) 12)
-
-    \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b2 #x3F) 6)
-
-    \ \ \ \ \ \ \ \ \ \ (bitwise-and b3 #x3F))))
-
-    \ \ \ \ \ \ ((= len 4)
-
-    \ \ \ \ \ \ \ (let ((b1 (bytevector-u8-ref byte-seq 0))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (b2 (bytevector-u8-ref byte-seq 1))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (b3 (bytevector-u8-ref byte-seq 2))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (b4 (bytevector-u8-ref byte-seq 3)))
-
-    \ \ \ \ \ \ \ \ \ (bitwise-ior
-
-    \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b1 #x07) 18)
-
-    \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b2 #x3F) 12)
-
-    \ \ \ \ \ \ \ \ \ \ (arithmetic-shift (bitwise-and b3 #x3F) 6)
-
-    \ \ \ \ \ \ \ \ \ \ (bitwise-and b4 #x3F))))
-
-    \ \ \ \ \ \ (else
-
-    \ \ \ \ \ \ \ (value-error "Invalid UTF-8 byte sequence length")))))
-
-    \;
-
-    (define (rich-char x)
-
-    \ \ (cond ((integer? x)
-
-    \ \ \ \ \ \ \ \ \ (if (and (\<gtr\>= x 0) (\<less\>= x #x10FFFF))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (make-rich-char x)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (value-error "rich-char: code point out of range" x)))
-
-    \ \ \ \ \ \ \ \ ((string? x)
-
-    \ \ \ \ \ \ \ \ \ (if (= 1 ($ x :length))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (rich-char (string-\<gtr\>utf8 x))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (value-error "rich-char: must be u8 string which length equals 1")))
-
-    \ \ \ \ \ \ \ \ ((bytevector? x)
-
-    \ \ \ \ \ \ \ \ \ (make-rich-char (utf8-byte-sequence-\<gtr\>code-point x)))
-
-    \ \ \ \ \ \ \ \ (else (type-error "rich-char: must be integer, string, bytevector"))))
 
     \;
   </goldfish-chunk>
@@ -3706,11 +3724,9 @@
 
     \ \ \ \ \ \ \ \ \ (end (+ index 1))
 
-    \ \ \ \ \ \ \ \ \ (byte-seq (string-\<gtr\>utf8 data start end))
+    \ \ \ \ \ \ \ \ \ (byte-seq (string-\<gtr\>utf8 data start end)))
 
-    \ \ \ \ \ \ \ \ \ (code-point (utf8-byte-sequence-\<gtr\>code-point byte-seq)))
-
-    \ \ \ \ (rich-char byte-seq)))
+    \ \ \ \ (rich-char :from-bytevector byte-seq)))
 
     \;
   </goldfish-chunk>
@@ -3748,7 +3764,7 @@
 
     \ \ \ (check (str 0) =\<gtr\> ($ #\\H))
 
-    \ \ \ (check (str 7) =\<gtr\> (rich-char "界")))
+    \ \ \ (check (str 7) =\<gtr\> (rich-char :from-string "#\\\\界")))
 
     \;
   </goldfish-chunk>
@@ -3994,7 +4010,7 @@
   </goldfish-chunk>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
-    (check-true ($ "全部都是中文" :exists (@ _ :equals (rich-char "中"))))
+    (check-true ($ "全部都是中文" :exists (@ _ :equals (rich-char :from-string "#\\\\中"))))
 
     \;
   </goldfish-chunk>
@@ -4158,7 +4174,7 @@
 
     (check ($ "hello" :count (@ == _ #\\l)) =\<gtr\> 2)
 
-    (check ($ "你好，我是韩梅梅" :count (@ == _ (rich-char "梅"))) =\<gtr\> 2)
+    (check ($ "你好，我是韩梅梅" :count (@ == _ (rich-char :from-string "#\\\\梅"))) =\<gtr\> 2)
 
     \;
   </goldfish-chunk>
@@ -4204,9 +4220,9 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let* ((next-j (bytevector-advance-u8 bv j bv-size))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (code (utf8-byte-sequence-\<gtr\>code-point (bytevector-copy bv j next-j))))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (ch (rich-char :from-bytevector (bytevector-copy bv j next-j))))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (vector-set! result i (rich-char code))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (vector-set! result i ch)
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ i 1) next-j)))))))
 
@@ -4216,9 +4232,9 @@
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (let1 v ($ "中文" :to-vector)
 
-    \ \ (check (v 0) =\<gtr\> (rich-char "中"))
+    \ \ (check (v 0) =\<gtr\> (rich-char :from-string "#\\\\中"))
 
-    \ \ (check (v 1) =\<gtr\> (rich-char "文")))
+    \ \ (check (v 1) =\<gtr\> (rich-char :from-string "#\\\\文")))
 
     \;
   </goldfish-chunk>
@@ -4238,11 +4254,11 @@
 
     \ \ (check (v :length) =\<gtr\> 3)
 
-    \ \ (check (v 0) =\<gtr\> (rich-char "中"))
+    \ \ (check (v 0) =\<gtr\> (rich-char :from-string "#\\\\中"))
 
-    \ \ (check (v 1) =\<gtr\> (rich-char "文"))
+    \ \ (check (v 1) =\<gtr\> (rich-char :from-string "#\\\\文"))
 
-    \ \ (check (v 2) =\<gtr\> (rich-char "的")))
+    \ \ (check (v 2) =\<gtr\> (rich-char :from-string "#\\\\的")))
 
     \;
   </goldfish-chunk>
@@ -7064,11 +7080,11 @@
 
     \;
 
-    (check ($ (vector (rich-char "中") (rich-char "文"))) =\<gtr\> ($ "中文" :to-vector))
+    (check ($ (vector ($ "中" 0) ($ "文" 0))) =\<gtr\> ($ "中文" :to-vector))
 
     \;
 
-    (check-false (($ "中文" :to-rich-vector) :equals (rich-char "中")))
+    (check-false (($ "中文" :to-rich-vector) :equals ($ "中" 0)))
 
     \;
   </goldfish-chunk>
