@@ -621,11 +621,15 @@
 
 (check ($ "hahaha" :replace-first "a" "oo") => ($ "hoohaha"))
 (check ($ "hello" :replace-first "world" "") => ($ "hello"))
-(check ($ "hello" :replace-first "l" "L" :strip-prefix "he") => ($ "Llo")) ; chain
+(check ($ "hello" :replace-first "l" "L" :strip-prefix "he") => ($ "Llo"))
+
+(check ($ "韩梅梅" :replace-first "梅" "雪") => "韩雪梅")
 
 (check ($ "hahaha" :replace "a" "oo") => ($ "hoohoohoo"))
 (check ($ "hello" :replace "world" "") => ($ "hello"))
-(check ($ "hello" :replace "l" "L" :strip-prefix "he") => ($ "LLo")) ; chain
+(check ($ "hello" :replace "l" "L" :strip-prefix "he") => ($ "LLo"))
+
+(check ($ "韩梅梅" :replace "梅" "雪") => "韩雪雪")
 
 (let ((s (rich-string "test")))
   (check (s :pad-left 5 #\# :pad-left 6) => (rich-string " #test")))

@@ -4600,27 +4600,19 @@
   <paragraph|rich-string%replace-first>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    ;; Replace the first occurrence of the substring old to new.
-
     (chained-define (%replace-first old new)
 
-    \ \ (define (replace-helper str old new start)
+    \ \ (let ((next-pos (%index-of old)))
 
-    \ \ \ \ (let \ ((next-pos (%index-of old start)))
+    \ \ \ \ (if (= next-pos -1)
 
-    \ \ \ \ \ \ (if (= next-pos -1)
+    \ \ \ \ \ \ \ \ (%this)
 
-    \ \ \ \ \ \ \ \ \ \ str
+    \ \ \ \ \ \ \ \ ((%slice 0 next-pos)
 
-    \ \ \ \ \ \ \ \ \ \ (string-append
+    \ \ \ \ \ \ \ \ \ :+ new
 
-    \ \ \ \ \ \ \ \ \ \ \ \ (substring str 0 next-pos)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ new
-
-    \ \ \ \ \ \ \ \ \ \ \ \ (substring str (+ next-pos (string-length old)))))))
-
-    \ \ (rich-string (replace-helper data old new 0)))
+    \ \ \ \ \ \ \ \ \ :+ (%drop (+ next-pos ($ old :length)))))))
 
     \;
   </goldfish-chunk>
@@ -4630,7 +4622,11 @@
 
     (check ($ "hello" :replace-first "world" "") =\<gtr\> ($ "hello"))
 
-    (check ($ "hello" :replace-first "l" "L" :strip-prefix "he") =\<gtr\> ($ "Llo")) ; chain
+    (check ($ "hello" :replace-first "l" "L" :strip-prefix "he") =\<gtr\> ($ "Llo"))
+
+    \;
+
+    (check ($ "韩梅梅" :replace-first "梅" "雪") =\<gtr\> "韩雪梅")
 
     \;
   </goldfish-chunk>
@@ -4638,8 +4634,6 @@
   <paragraph|rich-string%replace>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    ;; Replace the occurrences of the substring old to new.
-
     (chained-define (%replace old new)
 
     \ \ (define (replace-helper str old new start)
@@ -4664,7 +4658,11 @@
 
     (check ($ "hello" :replace "world" "") =\<gtr\> ($ "hello"))
 
-    (check ($ "hello" :replace "l" "L" :strip-prefix "he") =\<gtr\> ($ "LLo")) ; chain
+    (check ($ "hello" :replace "l" "L" :strip-prefix "he") =\<gtr\> ($ "LLo"))
+
+    \;
+
+    (check ($ "韩梅梅" :replace "梅" "雪") =\<gtr\> "韩雪雪")
 
     \;
   </goldfish-chunk>

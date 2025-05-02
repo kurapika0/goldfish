@@ -719,19 +719,14 @@
 (chained-define (%strip-suffix suffix)
   (rich-string (string-remove-suffix data suffix)))
 
-;; Replace the first occurrence of the substring old to new.
 (chained-define (%replace-first old new)
-  (define (replace-helper str old new start)
-    (let  ((next-pos (%index-of old start)))
-      (if (= next-pos -1)
-          str
-          (string-append
-            (substring str 0 next-pos)
-            new
-            (substring str (+ next-pos (string-length old)))))))
-  (rich-string (replace-helper data old new 0)))
+  (let ((next-pos (%index-of old)))
+    (if (= next-pos -1)
+        (%this)
+        ((%slice 0 next-pos)
+         :+ new
+         :+ (%drop (+ next-pos ($ old :length)))))))
 
-;; Replace the occurrences of the substring old to new.
 (chained-define (%replace old new)
   (define (replace-helper str old new start)
     (let ((next-pos ((rich-string str) :index-of old start)))
