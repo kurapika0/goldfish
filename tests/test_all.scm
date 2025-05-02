@@ -21,9 +21,9 @@
         (liii lang))
 
 (define (all-tests)
-  (((path :./ "tests" :/ "goldfish" :list-path) :to-rich-list)
+  ((path :./ "tests" :/ "goldfish" :list-path)
    :filter (@ _ :dir?)
-   :flat-map (lambda (x) ((x :list-path) :to-list))
+   :flat-map (lambda (x) ((x :list-path) :collect))
    :filter (@ _ :file?)
    :filter (lambda (x) (not ($ (x :to-string) :ends-with "srfi-78-test.scm")))
    :map (@ _ :to-string)))
