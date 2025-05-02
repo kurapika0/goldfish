@@ -540,6 +540,10 @@
   (check (str :index-of ($ "😀") 6) => -1)
   (check (str :index-of (rich-string "😀World") 6) => -1))
 
+(check ($ "Hello" :index-of #\e) => 1)
+(check ($ "Hello" :index-of #\e 5) => -1)
+(check ($ "Hello" :index-of #\e -1) => 1)
+
 (let1 s ($ "abc" :map (lambda (c) (c :to-upper)))
   (check s => "ABC")
   (check (s :length) => 3))

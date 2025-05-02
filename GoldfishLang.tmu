@@ -4080,53 +4080,103 @@
   查找字符串中指定的字符或子串的下标，找不到则返回 -1。默认从字符串起始位置开始查找。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define* (%index-of ch/str (start 0))
+    (define* (%index-of str/char (start-index 0))
 
-    \ \ (cond
+    \ \ (define (bytes-match? data-bv data-pos str-bv str-size data-size)
 
-    \ \ \ \ ((or (string? ch/str) (char? ch/str))
+    \ \ \ \ (let loop ((i 0))
 
-    \ \ \ \ \ (%index-of (box ch/str) start))
+    \ \ \ \ \ \ (if (\<gtr\>= i str-size)
 
-    \ \ \ \ ((rich-string :is-type-of ch/str)
+    \ \ \ \ \ \ \ \ \ \ #t
 
-    \ \ \ \ \ (let* ((target-data (ch/str :get))
+    \ \ \ \ \ \ \ \ \ \ (and (\<less\> (+ data-pos i) data-size)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ (target-len (ch/str :length))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (= (bytevector-u8-ref data-bv (+ data-pos i))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ (max-start (- N target-len)))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (bytevector-u8-ref str-bv i))
 
-    \ \ \ \ \ \ \ (let loop ((i start))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ i 1))))))
 
-    \ \ \ \ \ \ \ \ \ (cond
+    \;
 
-    \ \ \ \ \ \ \ \ \ \ \ ((\<gtr\> i max-start) -1)
+    \ \ (define (char-index-\<gtr\>byte-pos bv size char-index)
 
-    \ \ \ \ \ \ \ \ \ \ \ ((let ((slice (%slice i (+ i target-len))))
+    \ \ \ \ (let loop ((i 0) (pos 0))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (slice :equals ch/str))
+    \ \ \ \ \ \ (if (\<gtr\>= i char-index)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ i)
+    \ \ \ \ \ \ \ \ \ \ pos
 
-    \ \ \ \ \ \ \ \ \ \ \ (else (loop (+ i 1)))))))
+    \ \ \ \ \ \ \ \ \ \ (loop (+ i 1) (bytevector-advance-u8 bv pos size)))))
 
-    \ \ \ \ ((rich-char :is-type-of ch/str)
+    \ \ 
 
-    \ \ \ \ \ (let loop ((i start))
+    \ \ (define* (inner-index-of str start-index)
 
-    \ \ \ \ \ \ \ (if (\<gtr\>= i N)
+    \ \ \ \ (if (or (string-null? data) (string-null? str))
 
-    \ \ \ \ \ \ \ \ \ \ \ -1
+    \ \ \ \ \ \ \ \ -1
 
-    \ \ \ \ \ \ \ \ \ \ \ (let ((c (%char-at i)))
+    \ \ \ \ \ \ \ \ (let* ((data-bv (string-\<gtr\>utf8 data))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (if (c :equals ch/str)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (str-bv (string-\<gtr\>utf8 str))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ i
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (data-size (bytevector-length data-bv))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ i 1)))))))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (str-size (bytevector-length str-bv)))
 
-    \ \ \ \ (else (type-error "rich-string%index-of only accept search string/char/rich-string/rich-char"))))
+    \ \ \ \ \ \ \ \ \ \ (if (or (negative? start-index)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\<gtr\>= start-index N))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ -1
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let ((start-byte-pos (char-index-\<gtr\>byte-pos data-bv data-size start-index)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let search ((byte-pos start-byte-pos) (current-char-index start-index))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cond
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ((\<gtr\> (+ byte-pos str-size) data-size) -1)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ((bytes-match? data-bv byte-pos str-bv str-size data-size)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ current-char-index)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (else
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (search (bytevector-advance-u8 data-bv byte-pos data-size)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (+ current-char-index 1))))))))))
+
+    \;
+
+    \ \ (unless (integer? start-index)
+
+    \ \ \ \ (type-error "rich-string%index-of: the second parameter must be integer"))
+
+    \ \ 
+
+    \ \ (let1 positive-start-index (max 0 start-index)
+
+    \ \ \ \ (cond ((string? str/char)
+
+    \ \ \ \ \ \ \ \ \ \ \ (inner-index-of str/char positive-start-index))
+
+    \ \ \ \ \ \ \ \ \ \ ((rich-string :is-type-of str/char)
+
+    \ \ \ \ \ \ \ \ \ \ \ (inner-index-of (str/char :get) positive-start-index))
+
+    \ \ \ \ \ \ \ \ \ \ ((char? str/char)
+
+    \ \ \ \ \ \ \ \ \ \ \ (inner-index-of (string str/char) positive-start-index))
+
+    \ \ \ \ \ \ \ \ \ \ ((rich-char :is-type-of str/char)
+
+    \ \ \ \ \ \ \ \ \ \ \ (inner-index-of (str/char :make-string) positive-start-index))
+
+    \ \ \ \ \ \ \ \ \ \ (else (type-error "rich-string%index-of: first parameter must be string/rich-string/char/rich-char")))))
 
     \;
   </goldfish-chunk>
@@ -4177,6 +4227,16 @@
     \ \ (check (str :index-of ($ "😀") 6) =\<gtr\> -1)
 
     \ \ (check (str :index-of (rich-string "😀World") 6) =\<gtr\> -1))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ "Hello" :index-of #\\e) =\<gtr\> 1)
+
+    (check ($ "Hello" :index-of #\\e 5) =\<gtr\> -1)
+
+    (check ($ "Hello" :index-of #\\e -1) =\<gtr\> 1)
 
     \;
   </goldfish-chunk>

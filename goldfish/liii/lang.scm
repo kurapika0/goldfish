@@ -614,30 +614,55 @@
          (string-contains data (string elem)))
         (else (type-error "elem must be char or string"))))
 
-(define* (%index-of ch/str (start 0))
-  (cond
-    ((or (string? ch/str) (char? ch/str))
-     (%index-of (box ch/str) start))
-    ((rich-string :is-type-of ch/str)
-     (let* ((target-data (ch/str :get))
-            (target-len (ch/str :length))
-            (max-start (- N target-len)))
-       (let loop ((i start))
-         (cond
-           ((> i max-start) -1)
-           ((let ((slice (%slice i (+ i target-len))))
-              (slice :equals ch/str))
-            i)
-           (else (loop (+ i 1)))))))
-    ((rich-char :is-type-of ch/str)
-     (let loop ((i start))
-       (if (>= i N)
-           -1
-           (let ((c (%char-at i)))
-             (if (c :equals ch/str)
-                 i
-                 (loop (+ i 1)))))))
-    (else (type-error "rich-string%index-of only accept search string/char/rich-string/rich-char"))))
+(define* (%index-of str/char (start-index 0))
+  (define (bytes-match? data-bv data-pos str-bv str-size data-size)
+    (let loop ((i 0))
+      (if (>= i str-size)
+          #t
+          (and (< (+ data-pos i) data-size)
+               (= (bytevector-u8-ref data-bv (+ data-pos i))
+                  (bytevector-u8-ref str-bv i))
+               (loop (+ i 1))))))
+
+  (define (char-index->byte-pos bv size char-index)
+    (let loop ((i 0) (pos 0))
+      (if (>= i char-index)
+          pos
+          (loop (+ i 1) (bytevector-advance-u8 bv pos size)))))
+  
+  (define* (inner-index-of str start-index)
+    (if (or (string-null? data) (string-null? str))
+        -1
+        (let* ((data-bv (string->utf8 data))
+               (str-bv (string->utf8 str))
+               (data-size (bytevector-length data-bv))
+               (str-size (bytevector-length str-bv)))
+          (if (or (negative? start-index)
+                  (>= start-index N))
+              -1
+              (let ((start-byte-pos (char-index->byte-pos data-bv data-size start-index)))
+                (let search ((byte-pos start-byte-pos) (current-char-index start-index))
+                  (cond
+                    ((> (+ byte-pos str-size) data-size) -1)
+                    ((bytes-match? data-bv byte-pos str-bv str-size data-size)
+                     current-char-index)
+                    (else
+                     (search (bytevector-advance-u8 data-bv byte-pos data-size)
+                             (+ current-char-index 1))))))))))
+
+  (unless (integer? start-index)
+    (type-error "rich-string%index-of: the second parameter must be integer"))
+  
+  (let1 positive-start-index (max 0 start-index)
+    (cond ((string? str/char)
+           (inner-index-of str/char positive-start-index))
+          ((rich-string :is-type-of str/char)
+           (inner-index-of (str/char :get) positive-start-index))
+          ((char? str/char)
+           (inner-index-of (string str/char) positive-start-index))
+          ((rich-char :is-type-of str/char)
+           (inner-index-of (str/char :make-string) positive-start-index))
+          (else (type-error "rich-string%index-of: first parameter must be string/rich-string/char/rich-char")))))
 
 (chained-define (%map f)
   (box ((%to-rich-vector)
