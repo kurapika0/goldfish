@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.7>>
+<TMU|<tuple|1.1.0|2025.0.9>>
 
 <style|<tuple|book|goldfish|literate|reduced-margins|python|padded-paragraphs|chinese>>
 
@@ -6703,6 +6703,30 @@
     (check ($ '(2 3 4) :reduce-option *) =\<gtr\> (option 24)) \ 
 
     (check ($ '(5) :reduce-option (lambda (x y) (+ x y 10))) =\<gtr\> (option 5))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-list%take-while>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%take-while pred)
+
+    \ \ (let ((result (take-while pred data)))
+
+    \ \ \ \ (rich-list result)))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ '(1 2 3 4 5 6 7) :take-while (@ \<less\> _ 5) :collect) =\<gtr\> '(1 2 3 4))
+
+    (check ($ '() :take-while (@ \<less\> _ 5) :collect) =\<gtr\> '())
+
+    (check ($ '(1 2 3) :take-while number? :collect) =\<gtr\> '(1 2 3))
+
+    (check ($ '(5 1 2 3) :take-while (@ \<less\> _ 3) :collect) =\<gtr\> '())
 
     \;
   </goldfish-chunk>

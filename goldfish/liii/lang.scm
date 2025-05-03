@@ -1108,6 +1108,10 @@
       (none)
       (option (reduce f '() data))))
 
+(chained-define (%take-while pred)
+  (let ((result (take-while pred data)))
+    (rich-list result)))
+
 (define (%to-string)
   (object->string data))
 

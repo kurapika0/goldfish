@@ -1038,6 +1038,11 @@
 (check ($ '(2 3 4) :reduce-option *) => (option 24))  
 (check ($ '(5) :reduce-option (lambda (x y) (+ x y 10))) => (option 5))
 
+(check ($ '(1 2 3 4 5 6 7) :take-while (@ < _ 5) :collect) => '(1 2 3 4))
+(check ($ '() :take-while (@ < _ 5) :collect) => '())
+(check ($ '(1 2 3) :take-while number? :collect) => '(1 2 3))
+(check ($ '(5 1 2 3) :take-while (@ < _ 3) :collect) => '())
+
 (check (object->string ($ '(1 2 3))) => "(1 2 3)")
 
 (let1 l (rich-list (list 1 2 3))
