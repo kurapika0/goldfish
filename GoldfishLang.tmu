@@ -7883,6 +7883,36 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-vector%take-while>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%take-while pred)
+
+    \ \ (let* ((vec data)
+
+    \ \ \ \ \ \ \ \ \ (len (vector-length vec))
+
+    \ \ \ \ \ \ \ \ \ (idx (vector-index (lambda (x) (not (pred x))) vec)))
+
+    \ \ \ \ (rich-vector (vector-copy vec 0 (or idx len)))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ #(2 4 6 7 8 9) :take-while even?) =\<gtr\> #(2 4 6))
+
+    (check ($ #(1 3 5 7) :take-while odd?) =\<gtr\> #(1 3 5 7))
+
+    (check ($ #() :take-while even?) =\<gtr\> #())
+
+    (check ($ #(1 2 3 4) :take-while even?) =\<gtr\> #())
+
+    (check ($ #(0 0 0 1 0) :take-while zero?) =\<gtr\> #(0 0 0))
+
+    \;
+  </goldfish-chunk>
+
   <section|转换器>
 
   <paragraph|rich-vector%to-string>

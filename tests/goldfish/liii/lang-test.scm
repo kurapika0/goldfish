@@ -1246,6 +1246,12 @@
        :reduce vector-append)
        => #(1 1 2 2 3 3 4 4 5 5))
 
+(check ($ #(2 4 6 7 8 9) :take-while even?) => #(2 4 6))
+(check ($ #(1 3 5 7) :take-while odd?) => #(1 3 5 7))
+(check ($ #() :take-while even?) => #())
+(check ($ #(1 2 3 4) :take-while even?) => #())
+(check ($ #(0 0 0 1 0) :take-while zero?) => #(0 0 0))
+
 (check (object->string ($ #(1 2 3))) => "#(1 2 3)")
 
 (let ((vec ($ #("Hello" "World"))))

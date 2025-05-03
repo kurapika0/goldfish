@@ -1363,6 +1363,12 @@
               acc
               (loop (f acc (vector-ref data i)) (+ i 1)))))))
 
+(chained-define (%take-while pred)
+  (let* ((vec data)
+         (len (vector-length vec))
+         (idx (vector-index (lambda (x) (not (pred x))) vec)))
+    (rich-vector (vector-copy vec 0 (or idx len)))))
+
 (define (%to-string)
   ((%map object->string)
    :make-string "#(" " " ")"))
