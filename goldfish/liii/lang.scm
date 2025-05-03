@@ -664,6 +664,12 @@
            (inner-index-of (str/char :make-string) positive-start-index))
           (else (type-error "rich-string%index-of: first parameter must be string/rich-string/char/rich-char")))))
 
+(chained-define (%take-while pred)
+  (let loop ((i 0))
+    (if (and (< i N) (pred (%char-at i)))
+      (loop (+ i 1))
+      (%take i))))
+
 (chained-define (%map f)
   (box ((%to-rich-vector)
         :map f

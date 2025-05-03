@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.9>>
+<TMU|<tuple|1.1.0|2025.0.7>>
 
 <style|<tuple|book|goldfish|literate|reduced-margins|python|padded-paragraphs|chinese>>
 
@@ -4237,6 +4237,38 @@
     (check ($ "Hello" :index-of #\\e 5) =\<gtr\> -1)
 
     (check ($ "Hello" :index-of #\\e -1) =\<gtr\> 1)
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-string%take-while>
+
+  从头开始取字符，直到条件不满足为止
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%take-while pred)
+
+    \ \ (let loop ((i 0))
+
+    \ \ \ \ (if (and (\<less\> i N) (pred (%char-at i)))
+
+    \ \ \ \ \ \ (loop (+ i 1))
+
+    \ \ \ \ \ \ (%take i))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ "Hello123" :take-while (@ _ :ascii?)) =\<gtr\> "Hello123")
+
+    (check ($ "123abc" :take-while (@ _ :digit?)) =\<gtr\> "123")
+
+    (check ($ "你好World" :take-while (@ _ :ascii?)) =\<gtr\> "")
+
+    (check ($ "" :take-while (@ _ :ascii?)) =\<gtr\> "")
+
+    (check ($ "ABC" :take-while (@ _ :upper?)) =\<gtr\> "ABC")
 
     \;
   </goldfish-chunk>

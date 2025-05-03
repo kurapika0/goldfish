@@ -544,6 +544,12 @@
 (check ($ "Hello" :index-of #\e 5) => -1)
 (check ($ "Hello" :index-of #\e -1) => 1)
 
+(check ($ "Hello123" :take-while (@ _ :ascii?)) => "Hello123")
+(check ($ "123abc" :take-while (@ _ :digit?)) => "123")
+(check ($ "你好World" :take-while (@ _ :ascii?)) => "")
+(check ($ "" :take-while (@ _ :ascii?)) => "")
+(check ($ "ABC" :take-while (@ _ :upper?)) => "ABC")
+
 (let1 s ($ "abc" :map (lambda (c) (c :to-upper)))
   (check s => "ABC")
   (check (s :length) => 3))
