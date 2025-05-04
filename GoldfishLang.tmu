@@ -128,7 +128,7 @@
 
     \;
 
-    (check-set-mode! 'report-failed)
+    ;(check-set-mode! 'report-failed)
 
     \;
   </scm-chunk>
@@ -4241,38 +4241,6 @@
     \;
   </goldfish-chunk>
 
-  <paragraph|rich-string%take-while>
-
-  从头开始取字符，直到条件不满足为止
-
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%take-while pred)
-
-    \ \ (let loop ((i 0))
-
-    \ \ \ \ (if (and (\<less\> i N) (pred (%char-at i)))
-
-    \ \ \ \ \ \ (loop (+ i 1))
-
-    \ \ \ \ \ \ (%take i))))
-
-    \;
-  </goldfish-chunk>
-
-  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
-    (check ($ "Hello123" :take-while (@ _ :ascii?)) =\<gtr\> "Hello123")
-
-    (check ($ "123abc" :take-while (@ _ :digit?)) =\<gtr\> "123")
-
-    (check ($ "你好World" :take-while (@ _ :ascii?)) =\<gtr\> "")
-
-    (check ($ "" :take-while (@ _ :ascii?)) =\<gtr\> "")
-
-    (check ($ "ABC" :take-while (@ _ :upper?)) =\<gtr\> "ABC")
-
-    \;
-  </goldfish-chunk>
-
   <section|高阶函数>
 
   <paragraph|rich-string%map><typehint|((p procedure?)) =\<gtr\> rich-string?>
@@ -4323,6 +4291,94 @@
     (check ($ "hello" :count (@ == _ #\\l)) =\<gtr\> 2)
 
     (check ($ "你好，我是韩梅梅" :count (@ == _ (rich-char :from-string "#\\\\梅"))) =\<gtr\> 2)
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-string%index-where>
+
+  返回字符串中第一个满足 pred 条件的字符的索引
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%index-where pred)
+
+    \ \ (let ((bytes (string-\<gtr\>utf8 data))
+
+    \ \ \ \ \ \ \ \ (len (bytevector-length (string-\<gtr\>utf8 data))))
+
+    \ \ \ \ (let loop ((byte-pos 0) (char-index 0))
+
+    \ \ \ \ \ \ (cond
+
+    \ \ \ \ \ \ \ \ ((\<gtr\>= byte-pos len) -1)
+
+    \ \ \ \ \ \ \ \ (else
+
+    \ \ \ \ \ \ \ \ \ (let* ((next-pos (bytevector-advance-u8 bytes byte-pos len))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (char-bytes (bytevector-copy bytes byte-pos next-pos))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (char (rich-char :from-bytevector char-bytes)))
+
+    \ \ \ \ \ \ \ \ \ \ \ (if (pred char)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ char-index
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop next-pos (+ char-index 1)))))))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ "Hello" :index-where (@ _ :equals (rich-char #\\e))) =\<gtr\> 1)
+
+    (check ($ "" :index-where (@ _ :digit?)) =\<gtr\> -1)
+
+    (check ($ "abc" :index-where (@ _ :digit?)) =\<gtr\> -1)
+
+    (check ($ "中文" :index-where (@ _ :equals (rich-char #x4E2D))) =\<gtr\> 0)
+
+    (check ($ "中文" :index-where (@ _ :equals (rich-char #x6587))) =\<gtr\> 1)
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-string%take-while>
+
+  返回从开头开始连续满足 pred 条件的子字符串
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%take-while pred)
+
+    \ \ (let ((stop-index (%index-where (lambda (c) (not (pred c))))))
+
+    \ \ \ \ (if (= stop-index -1)
+
+    \ \ \ \ \ \ \ \ (%this)
+
+    \ \ \ \ \ \ \ \ (%slice 0 stop-index))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ "Hello123" :take-while (@ _ :ascii?)) =\<gtr\> "Hello123")
+
+    (check ($ "123abc" :take-while (@ _ :digit?)) =\<gtr\> "123")
+
+    (check ($ "你好World" :take-while (@ _ :ascii?)) =\<gtr\> "")
+
+    (check ($ "" :take-while (@ _ :ascii?)) =\<gtr\> "")
+
+    (check ($ "ABC" :take-while (@ _ :upper?)) =\<gtr\> "ABC")
+
+    (check ($ "123abc" :take-while (@ _ :digit?)) =\<gtr\> ($ "123"))
+
+    (check ($ "你好世界hello" :take-while (@ _ :equals (rich-char #x4F60))) =\<gtr\> ($ "你"))
+
+    (check ($ "aaaaa" :take-while (@ _ :equals (rich-char #\\a)) :get) =\<gtr\> "aaaaa")
+
+    (check ($ "" :take-while (@ _ :digit?)) =\<gtr\> "")
 
     \;
   </goldfish-chunk>

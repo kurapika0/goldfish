@@ -19,7 +19,7 @@
         (liii cut)
         (liii case))
 
-(check-set-mode! 'report-failed)
+;(check-set-mode! 'report-failed)
 
 (check ((@ + _ 2) 1) => 3)
 (check ((@ list 1 _ 3 _ 5) 2 4) => (list 1 2 3 4 5))
@@ -544,12 +544,6 @@
 (check ($ "Hello" :index-of #\e 5) => -1)
 (check ($ "Hello" :index-of #\e -1) => 1)
 
-(check ($ "Hello123" :take-while (@ _ :ascii?)) => "Hello123")
-(check ($ "123abc" :take-while (@ _ :digit?)) => "123")
-(check ($ "你好World" :take-while (@ _ :ascii?)) => "")
-(check ($ "" :take-while (@ _ :ascii?)) => "")
-(check ($ "ABC" :take-while (@ _ :upper?)) => "ABC")
-
 (let1 s ($ "abc" :map (lambda (c) (c :to-upper)))
   (check s => "ABC")
   (check (s :length) => 3))
@@ -559,6 +553,22 @@
 (check ($ "" :count (@ == _ #\A)) => 0)
 (check ($ "hello" :count (@ == _ #\l)) => 2)
 (check ($ "你好，我是韩梅梅" :count (@ == _ (rich-char :from-string "#\\梅"))) => 2)
+
+(check ($ "Hello" :index-where (@ _ :equals (rich-char #\e))) => 1)
+(check ($ "" :index-where (@ _ :digit?)) => -1)
+(check ($ "abc" :index-where (@ _ :digit?)) => -1)
+(check ($ "中文" :index-where (@ _ :equals (rich-char #x4E2D))) => 0)
+(check ($ "中文" :index-where (@ _ :equals (rich-char #x6587))) => 1)
+
+(check ($ "Hello123" :take-while (@ _ :ascii?)) => "Hello123")
+(check ($ "123abc" :take-while (@ _ :digit?)) => "123")
+(check ($ "你好World" :take-while (@ _ :ascii?)) => "")
+(check ($ "" :take-while (@ _ :ascii?)) => "")
+(check ($ "ABC" :take-while (@ _ :upper?)) => "ABC")
+(check ($ "123abc" :take-while (@ _ :digit?)) => ($ "123"))
+(check ($ "你好世界hello" :take-while (@ _ :equals (rich-char #x4F60))) => ($ "你"))
+(check ($ "aaaaa" :take-while (@ _ :equals (rich-char #\a)) :get) => "aaaaa")
+(check ($ "" :take-while (@ _ :digit?)) => "")
 
 (check ((rich-string "hello") :to-string) => "hello")
 

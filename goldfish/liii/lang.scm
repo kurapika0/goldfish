@@ -664,12 +664,6 @@
            (inner-index-of (str/char :make-string) positive-start-index))
           (else (type-error "rich-string%index-of: first parameter must be string/rich-string/char/rich-char")))))
 
-(chained-define (%take-while pred)
-  (let loop ((i 0))
-    (if (and (< i N) (pred (%char-at i)))
-      (loop (+ i 1))
-      (%take i))))
-
 (chained-define (%map f)
   (box ((%to-rich-vector)
         :map f
@@ -678,6 +672,26 @@
 
 (define (%count pred?)
   ((%to-rich-vector) :count pred?))
+
+(define (%index-where pred)
+  (let ((bytes (string->utf8 data))
+        (len (bytevector-length (string->utf8 data))))
+    (let loop ((byte-pos 0) (char-index 0))
+      (cond
+        ((>= byte-pos len) -1)
+        (else
+         (let* ((next-pos (bytevector-advance-u8 bytes byte-pos len))
+                (char-bytes (bytevector-copy bytes byte-pos next-pos))
+                (char (rich-char :from-bytevector char-bytes)))
+           (if (pred char)
+               char-index
+               (loop next-pos (+ char-index 1)))))))))
+
+(chained-define (%take-while pred)
+  (let ((stop-index (%index-where (lambda (c) (not (pred c))))))
+    (if (= stop-index -1)
+        (%this)
+        (%slice 0 stop-index))))
 
 (define (%to-string)
   data)
