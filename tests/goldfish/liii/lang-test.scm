@@ -1287,6 +1287,10 @@
 (check ($ #(1 2 3 4) :take-while even?) => #())
 (check ($ #(0 0 0 1 0) :take-while zero?) => #(0 0 0))
 
+(check ($ #(1 2 3 4 5) :max-by identity) => 5)
+(check ($ #("apple" "banana" "pear") :max-by string-length) => "banana")
+(check-catch 'value-error ($ #() :max-by identity))
+
 (check (object->string ($ #(1 2 3))) => "#(1 2 3)")
 
 (let ((vec ($ #("Hello" "World"))))

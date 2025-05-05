@@ -1401,6 +1401,22 @@
          (idx (vector-index (lambda (x) (not (pred x))) vec)))
     (rich-vector (vector-copy vec 0 (or idx len)))))
 
+(chained-define (%max-by f)
+  (let ((vec data)
+        (len (length data)))
+    (if (zero? len)
+        (value-error "max-by of empty vector")
+        (let loop ((i 1)
+                   (max-elem (vector-ref vec 0))
+                   (max-val (f (vector-ref vec 0))))
+             (if (>= i len)
+                 max-elem
+                 (let* ((current-elem (vector-ref vec i))
+                        (current-val (f current-elem)))
+                   (if (< current-val max-val)
+                       (loop (+ i 1) max-elem max-val)
+                       (loop (+ i 1) current-elem current-val))))))))
+
 (define (%to-string)
   ((%map object->string)
    :make-string "#(" " " ")"))

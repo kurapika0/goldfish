@@ -8077,6 +8077,52 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-vector%max-by>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%max-by f)
+
+    \ \ (let ((vec data)
+
+    \ \ \ \ \ \ \ \ (len (length data)))
+
+    \ \ \ \ (if (zero? len)
+
+    \ \ \ \ \ \ \ \ (value-error "max-by of empty vector")
+
+    \ \ \ \ \ \ \ \ (let loop ((i 1)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (max-elem (vector-ref vec 0))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (max-val (f (vector-ref vec 0))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (if (\<gtr\>= i len)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ max-elem
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let* ((current-elem (vector-ref vec i))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (current-val (f current-elem)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (\<less\> current-val max-val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ i 1) max-elem max-val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ i 1) current-elem current-val))))))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ #(1 2 3 4 5) :max-by identity) =\<gtr\> 5)
+
+    (check ($ #("apple" "banana" "pear") :max-by string-length) =\<gtr\> "banana")
+
+    (check-catch 'value-error ($ #() :max-by identity))
+
+    \;
+  </goldfish-chunk>
+
   <section|转换器>
 
   <paragraph|rich-vector%to-string>
