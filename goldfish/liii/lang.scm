@@ -171,7 +171,7 @@
          (this-symbol (gensym))
          (f-make-case-class (string->symbol (string-append "make-case-class-" (symbol->string class-name)))))
 
-`(define (,class-name msg . args)
+`(define (,class-name . args)
 
 (define (@is-type-of obj)
   (and (case-class? obj)
@@ -258,9 +258,12 @@
   ,this-symbol
 ) ; end of the internal typed define
 
-(if (in? msg (list ,@static-messages :is-type-of))
-    (apply static-dispatcher (cons msg args))
-    (apply ,f-make-case-class (cons msg args)))
+(if (null? args)
+    (,f-make-case-class)
+    (let ((msg (car args)))
+      (if (in? msg (list ,@static-messages :is-type-of))
+          (apply static-dispatcher args)
+          (apply ,f-make-case-class args))))
 
 ) ; end of define
 ) ; end of let

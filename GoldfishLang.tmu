@@ -818,7 +818,7 @@
 
     \;
 
-    `(define (,class-name msg . args)
+    `(define (,class-name . args)
 
     \;
 
@@ -992,11 +992,17 @@
 
     \;
 
-    (if (in? msg (list ,@static-messages :is-type-of))
+    (if (null? args)
 
-    \ \ \ \ (apply static-dispatcher (cons msg args))
+    \ \ \ \ (,f-make-case-class)
 
-    \ \ \ \ (apply ,f-make-case-class (cons msg args)))
+    \ \ \ \ (let ((msg (car args)))
+
+    \ \ \ \ \ \ (if (in? msg (list ,@static-messages :is-type-of))
+
+    \ \ \ \ \ \ \ \ \ \ (apply static-dispatcher args)
+
+    \ \ \ \ \ \ \ \ \ \ (apply ,f-make-case-class args))))
 
     \;
 
@@ -1143,6 +1149,36 @@
     \ \ (check (bob :to-string) =\<gtr\> "I am Bob 21 years old!")
 
     \ \ (check (bob :greet "Alice") =\<gtr\> "Hi Alice, I am Bob 21 years old!"))
+
+    \;
+  </goldfish-chunk>
+
+  测试：不带公开方法的样本类
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|false>
+    (define-case-class anonymous ()
+
+    \ \ (define name "")
+
+    \;
+
+    \ \ (define (%get-name) name)
+
+    \;
+
+    \ \ (define (%set-name! x)
+
+    \ \ \ \ (set! name x))
+
+    )
+
+    \;
+
+    (let1 p (anonymous)
+
+    \ \ (p :set-name! "Alice")
+
+    \ \ (check (p :get-name) =\<gtr\> "Alice"))
 
     \;
   </goldfish-chunk>

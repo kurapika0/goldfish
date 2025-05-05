@@ -116,6 +116,19 @@
   (check (bob :to-string) => "I am Bob 21 years old!")
   (check (bob :greet "Alice") => "Hi Alice, I am Bob 21 years old!"))
 
+(define-case-class anonymous ()
+  (define name "")
+
+  (define (%get-name) name)
+
+  (define (%set-name! x)
+    (set! name x))
+)
+
+(let1 p (anonymous)
+  (p :set-name! "Alice")
+  (check (p :get-name) => "Alice"))
+
 (define-case-class test-case-class
   ((name string?))
   
