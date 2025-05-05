@@ -128,7 +128,7 @@
 
     \;
 
-    ;(check-set-mode! 'report-failed)
+    (check-set-mode! 'report-failed)
 
     \;
   </scm-chunk>
@@ -7935,6 +7935,30 @@
     \ \ \ \ \ \ \ :reduce vector-append)
 
     \ \ \ \ \ \ \ =\<gtr\> #(1 1 2 2 3 3 4 4 5 5))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-vector%index-where>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%index-where pred)
+
+    \ \ (vector-index pred data))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let ((vec (array #(1 2 3 4 5))))
+
+    \ \ (check (vec :index-where even?) =\<gtr\> 1)
+
+    \ \ (check (vec :index-where (@ \<gtr\> _ 3)) =\<gtr\> 3)
+
+    \ \ (check (vec :index-where (@ \<gtr\> _ 5)) =\<gtr\> #f)
+
+    )
 
     \;
   </goldfish-chunk>

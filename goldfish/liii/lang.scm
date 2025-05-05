@@ -1377,6 +1377,9 @@
               acc
               (loop (f acc (vector-ref data i)) (+ i 1)))))))
 
+(define (%index-where pred)
+  (vector-index pred data))
+
 (chained-define (%take-while pred)
   (let* ((vec data)
          (len (vector-length vec))

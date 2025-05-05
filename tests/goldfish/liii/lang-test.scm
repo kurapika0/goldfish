@@ -19,7 +19,7 @@
         (liii cut)
         (liii case))
 
-;(check-set-mode! 'report-failed)
+(check-set-mode! 'report-failed)
 
 (check ((@ + _ 2) 1) => 3)
 (check ((@ list 1 _ 3 _ 5) 2 4) => (list 1 2 3 4 5))
@@ -1255,6 +1255,12 @@
        :map identity  ; 保持子向量不变
        :reduce vector-append)
        => #(1 1 2 2 3 3 4 4 5 5))
+
+(let ((vec (array #(1 2 3 4 5))))
+  (check (vec :index-where even?) => 1)
+  (check (vec :index-where (@ > _ 3)) => 3)
+  (check (vec :index-where (@ > _ 5)) => #f)
+)
 
 (check ($ #(2 4 6 7 8 9) :take-while even?) => #(2 4 6))
 (check ($ #(1 3 5 7) :take-while odd?) => #(1 3 5 7))
