@@ -4374,11 +4374,41 @@
 
     (check ($ "123abc" :take-while (@ _ :digit?)) =\<gtr\> ($ "123"))
 
-    (check ($ "你好世界hello" :take-while (@ _ :equals (rich-char #x4F60))) =\<gtr\> ($ "你"))
+    (check ($ "你好世界hello" :take-while (@ _ :equals ($ "你" 0))) =\<gtr\> ($ "你"))
 
     (check ($ "aaaaa" :take-while (@ _ :equals (rich-char #\\a)) :get) =\<gtr\> "aaaaa")
 
     (check ($ "" :take-while (@ _ :digit?)) =\<gtr\> "")
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-string%drop-while>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%drop-while pred)
+
+    \ \ (let1 index (%index-where (lambda (c) (not (pred c))))
+
+    \ \ \ \ (if (= index -1)
+
+    \ \ \ \ \ \ \ \ (rich-string "")
+
+    \ \ \ \ \ \ \ \ (%slice index N))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ " \ \ hello" :drop-while (@ _ :equals (rich-char #\\space))) =\<gtr\> "hello")
+
+    (check ($ "123abc" :drop-while (@ _ :digit?)) =\<gtr\> "abc")
+
+    (check ($ "你好世界" :drop-while (@ _ :equals ($ "你" 0))) =\<gtr\> "好世界")
+
+    (check ($ "" :drop-while (@ _ :equals (rich-char #\\a))) =\<gtr\> "")
+
+    (check ($ "aaaa" :drop-while (@ _ :equals (rich-char #\\a))) =\<gtr\> "")
 
     \;
   </goldfish-chunk>

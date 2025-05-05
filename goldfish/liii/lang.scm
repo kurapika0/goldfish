@@ -693,6 +693,12 @@
         (%this)
         (%slice 0 stop-index))))
 
+(chained-define (%drop-while pred)
+  (let1 index (%index-where (lambda (c) (not (pred c))))
+    (if (= index -1)
+        (rich-string "")
+        (%slice index N))))
+
 (define (%to-string)
   data)
 

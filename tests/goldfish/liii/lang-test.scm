@@ -566,9 +566,15 @@
 (check ($ "" :take-while (@ _ :ascii?)) => "")
 (check ($ "ABC" :take-while (@ _ :upper?)) => "ABC")
 (check ($ "123abc" :take-while (@ _ :digit?)) => ($ "123"))
-(check ($ "你好世界hello" :take-while (@ _ :equals (rich-char #x4F60))) => ($ "你"))
+(check ($ "你好世界hello" :take-while (@ _ :equals ($ "你" 0))) => ($ "你"))
 (check ($ "aaaaa" :take-while (@ _ :equals (rich-char #\a)) :get) => "aaaaa")
 (check ($ "" :take-while (@ _ :digit?)) => "")
+
+(check ($ "   hello" :drop-while (@ _ :equals (rich-char #\space))) => "hello")
+(check ($ "123abc" :drop-while (@ _ :digit?)) => "abc")
+(check ($ "你好世界" :drop-while (@ _ :equals ($ "你" 0))) => "好世界")
+(check ($ "" :drop-while (@ _ :equals (rich-char #\a))) => "")
+(check ($ "aaaa" :drop-while (@ _ :equals (rich-char #\a))) => "")
 
 (check ((rich-string "hello") :to-string) => "hello")
 
