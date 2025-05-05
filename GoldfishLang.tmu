@@ -6865,6 +6865,68 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-list%max-by>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (typed-define (%max-by (f procedure?))
+
+    \ \ (if (null? data)
+
+    \ \ \ \ \ \ (value-error "rich-list%max-by: empty list is not allowed")
+
+    \ \ \ \ \ \ (let loop ((rest (cdr data))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (max-elem (car data))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (max-val (let ((val (f (car data))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unless (real? val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-error "rich-list%max-by: procedure must return real number but got"
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (object-\<gtr\>string val)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ val)))
+
+    \ \ \ \ \ \ \ \ (if (null? rest)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ max-elem
+
+    \ \ \ \ \ \ \ \ \ \ \ \ (let* ((current (car rest))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (current-val (let ((val (f current)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unless (real? val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-error "rich-list%max-by: procedure must return real number but got"
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (object-\<gtr\>string val)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ val)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (\<gtr\> current-val max-val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (cdr rest) current current-val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (cdr rest) max-elem max-val)))))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ '(1 2 3) :max-by identity) =\<gtr\> 3)
+
+    (check ($ '((1) (3) (2)) :max-by car) =\<gtr\> '(3))
+
+    (check-catch 'value-error ($ '() :max-by identity))
+
+    (check-catch 'type-error ($ '(1 2 3) :max-by "not-function"))
+
+    (check-catch 'type-error ($ '("a" "b" "c") :max-by identity))
+
+    \;
+  </goldfish-chunk>
+
   <section|转换器>
 
   <paragraph|rich-list%to-string>
@@ -8110,7 +8172,9 @@
   <paragraph|rich-vector%max-by>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%max-by f)
+    (typed-define (%max-by (f procedure?))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
 
     \ \ (let ((vec data)
 
@@ -8118,7 +8182,7 @@
 
     \ \ \ \ (if (zero? len)
 
-    \ \ \ \ \ \ \ \ (value-error "max-by of empty vector")
+    \ \ \ \ \ \ \ \ (value-error "rich-vector%max-by: empty list is not allowed")
 
     \ \ \ \ \ \ \ \ (let loop ((i 1)
 
@@ -8126,19 +8190,23 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (max-val (f (vector-ref vec 0))))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (if (\<gtr\>= i len)
+    \ \ \ \ \ \ \ \ \ \ (if (\<gtr\>= i len)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ max-elem
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ max-elem
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let* ((current-elem (vector-ref vec i))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let* ((current-elem (vector-ref vec i))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (current-val (f current-elem)))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (current-val (f current-elem)))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (\<less\> current-val max-val)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unless (number? current-val)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ i 1) max-elem max-val)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-error "f must return a number"))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ i 1) current-elem current-val))))))))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (\<less\> current-val max-val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ i 1) max-elem max-val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ i 1) current-elem current-val))))))))
 
     \;
   </goldfish-chunk>
@@ -8149,6 +8217,10 @@
     (check ($ #("apple" "banana" "pear") :max-by string-length) =\<gtr\> "banana")
 
     (check-catch 'value-error ($ #() :max-by identity))
+
+    (check-catch 'type-error ($ #(1 2 3) :max-by "not-a-function"))
+
+    (check-catch 'type-error ($ #(1 2 3) :max-by (lambda (x) "not-a-number")))
 
     \;
   </goldfish-chunk>

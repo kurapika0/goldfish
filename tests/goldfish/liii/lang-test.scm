@@ -1070,6 +1070,12 @@
   (check (xs :index-where (@ > _ 5)) => #f)
 )
 
+(check ($ '(1 2 3) :max-by identity) => 3)
+(check ($ '((1) (3) (2)) :max-by car) => '(3))
+(check-catch 'value-error ($ '() :max-by identity))
+(check-catch 'type-error ($ '(1 2 3) :max-by "not-function"))
+(check-catch 'type-error ($ '("a" "b" "c") :max-by identity))
+
 (check (object->string ($ '(1 2 3))) => "(1 2 3)")
 
 (let1 l (rich-list (list 1 2 3))
@@ -1296,6 +1302,8 @@
 (check ($ #(1 2 3 4 5) :max-by identity) => 5)
 (check ($ #("apple" "banana" "pear") :max-by string-length) => "banana")
 (check-catch 'value-error ($ #() :max-by identity))
+(check-catch 'type-error ($ #(1 2 3) :max-by "not-a-function"))
+(check-catch 'type-error ($ #(1 2 3) :max-by (lambda (x) "not-a-number")))
 
 (check (object->string ($ #(1 2 3))) => "#(1 2 3)")
 

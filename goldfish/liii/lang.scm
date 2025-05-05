@@ -1139,6 +1139,28 @@
 (define (%index-where pred)
   (list-index pred data))
 
+(typed-define (%max-by (f procedure?))
+  (if (null? data)
+      (value-error "rich-list%max-by: empty list is not allowed")
+      (let loop ((rest (cdr data))
+                 (max-elem (car data))
+                 (max-val (let ((val (f (car data))))
+                           (unless (real? val)
+                             (type-error "rich-list%max-by: procedure must return real number but got"
+                                        (object->string val)))
+                           val)))
+        (if (null? rest)
+            max-elem
+            (let* ((current (car rest))
+                   (current-val (let ((val (f current)))
+                                 (unless (real? val)
+                                   (type-error "rich-list%max-by: procedure must return real number but got"
+                                              (object->string val)))
+                                 val)))
+              (if (> current-val max-val)
+                  (loop (cdr rest) current current-val)
+                  (loop (cdr rest) max-elem max-val)))))))
+
 (define (%to-string)
   (object->string data))
 
@@ -1407,21 +1429,24 @@
          (idx (vector-index (lambda (x) (not (pred x))) vec)))
     (rich-vector (vector-copy vec 0 (or idx len)))))
 
-(chained-define (%max-by f)
+(typed-define (%max-by (f procedure?))
+              
   (let ((vec data)
         (len (length data)))
     (if (zero? len)
-        (value-error "max-by of empty vector")
+        (value-error "rich-vector%max-by: empty list is not allowed")
         (let loop ((i 1)
                    (max-elem (vector-ref vec 0))
                    (max-val (f (vector-ref vec 0))))
-             (if (>= i len)
-                 max-elem
-                 (let* ((current-elem (vector-ref vec i))
-                        (current-val (f current-elem)))
-                   (if (< current-val max-val)
-                       (loop (+ i 1) max-elem max-val)
-                       (loop (+ i 1) current-elem current-val))))))))
+          (if (>= i len)
+              max-elem
+              (let* ((current-elem (vector-ref vec i))
+                     (current-val (f current-elem)))
+                (unless (number? current-val)
+                  (type-error "f must return a number"))
+                (if (< current-val max-val)
+                    (loop (+ i 1) max-elem max-val)
+                    (loop (+ i 1) current-elem current-val))))))))
 
 (define (%to-string)
   ((%map object->string)
