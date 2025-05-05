@@ -1126,6 +1126,10 @@
   (let ((result (take-while pred data)))
     (rich-list result)))
 
+(chained-define (%drop-while pred)
+  (let ((result (drop-while pred data)))
+    (rich-list result)))
+
 (define (%to-string)
   (object->string data))
 

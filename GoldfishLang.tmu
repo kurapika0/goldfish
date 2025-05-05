@@ -6787,6 +6787,30 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-list%drop-while>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%drop-while pred)
+
+    \ \ (let ((result (drop-while pred data)))
+
+    \ \ \ \ (rich-list result)))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ '(1 2 3 4 5 6 7) :drop-while (@ \<less\> _ 5) :collect) =\<gtr\> '(5 6 7))
+
+    (check ($ '() :drop-while (@ \<less\> _ 5) :collect) =\<gtr\> '())
+
+    (check ($ '(1 2 3) :drop-while number? :collect) =\<gtr\> '())
+
+    (check ($ '(5 1 2 3) :drop-while (@ \<less\> _ 3) :collect) =\<gtr\> '(5 1 2 3))
+
+    \;
+  </goldfish-chunk>
+
   <section|转换器>
 
   <paragraph|rich-list%to-string>

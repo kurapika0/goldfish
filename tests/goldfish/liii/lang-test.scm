@@ -1053,6 +1053,11 @@
 (check ($ '(1 2 3) :take-while number? :collect) => '(1 2 3))
 (check ($ '(5 1 2 3) :take-while (@ < _ 3) :collect) => '())
 
+(check ($ '(1 2 3 4 5 6 7) :drop-while (@ < _ 5) :collect) => '(5 6 7))
+(check ($ '() :drop-while (@ < _ 5) :collect) => '())
+(check ($ '(1 2 3) :drop-while number? :collect) => '())
+(check ($ '(5 1 2 3) :drop-while (@ < _ 3) :collect) => '(5 1 2 3))
+
 (check (object->string ($ '(1 2 3))) => "(1 2 3)")
 
 (let1 l (rich-list (list 1 2 3))
