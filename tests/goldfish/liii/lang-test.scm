@@ -1058,6 +1058,12 @@
 (check ($ '(1 2 3) :drop-while number? :collect) => '())
 (check ($ '(5 1 2 3) :drop-while (@ < _ 3) :collect) => '(5 1 2 3))
 
+(let ((xs ($ '(1 2 3 4 5))))
+  (check (xs :index-where even?) => 1)
+  (check (xs :index-where (@ > _ 3)) => 3)
+  (check (xs :index-where (@ > _ 5)) => #f)
+)
+
 (check (object->string ($ '(1 2 3))) => "(1 2 3)")
 
 (let1 l (rich-list (list 1 2 3))

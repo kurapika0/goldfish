@@ -6811,6 +6811,30 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-list%index-where>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%index-where pred)
+
+    \ \ (list-index pred data))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let ((xs ($ '(1 2 3 4 5))))
+
+    \ \ (check (xs :index-where even?) =\<gtr\> 1)
+
+    \ \ (check (xs :index-where (@ \<gtr\> _ 3)) =\<gtr\> 3)
+
+    \ \ (check (xs :index-where (@ \<gtr\> _ 5)) =\<gtr\> #f)
+
+    )
+
+    \;
+  </goldfish-chunk>
+
   <section|转换器>
 
   <paragraph|rich-list%to-string>

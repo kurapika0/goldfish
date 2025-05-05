@@ -1130,6 +1130,9 @@
   (let ((result (drop-while pred data)))
     (rich-list result)))
 
+(define (%index-where pred)
+  (list-index pred data))
+
 (define (%to-string)
   (object->string data))
 
