@@ -1310,6 +1310,14 @@
   
   (rich-vector (scala-drop-right data n)))
 
+(chained-define (%drop-while pred)
+  (let1 len (vector-length data)
+    (let loop ((i 0))
+      (cond
+        ((>= i len) (rich-vector :empty))  ; 所有元素都被丢弃
+        ((pred (vector-ref data i)) (loop (+ i 1)))  ; 继续丢弃
+        (else (rich-vector (vector-copy data i)))))))  ; 返回剩余部分
+
   (define (%fold initial f)
     (vector-fold f initial data))
 

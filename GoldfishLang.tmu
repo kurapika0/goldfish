@@ -7613,7 +7613,43 @@
     \;
   </goldfish-chunk>
 
-  \;
+  <paragraph|rich-vector%drop-while>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%drop-while pred)
+
+    \ \ (let1 len (vector-length data)
+
+    \ \ \ \ (let loop ((i 0))
+
+    \ \ \ \ \ \ (cond
+
+    \ \ \ \ \ \ \ \ ((\<gtr\>= i len) (rich-vector :empty)) \ ; 所有元素都被丢弃
+
+    \ \ \ \ \ \ \ \ ((pred (vector-ref data i)) (loop (+ i 1))) \ ; 继续丢弃
+
+    \ \ \ \ \ \ \ \ (else (rich-vector (vector-copy data i))))))) \ ; 返回剩余部分
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let ((vec (array #(1 2 3 4 5))) (empty-vec ($ #())))
+
+    \ \ (check (vec :drop-while (@ \<less\> _ 3) :collect) =\<gtr\> #(3 4 5))
+
+    \ \ (check (vec :drop-while (@ \<gtr\> _ 3) :collect) =\<gtr\> #(1 2 3 4 5))
+
+    \ \ (check (vec :drop-while (@ \<less\> _ 3) :drop 1 :collect) =\<gtr\> #(4 5))
+
+    \ \ (check (empty-vec :drop-while (@ \<less\> _ 3) :drop 1 :collect) =\<gtr\> #())
+
+    \ \ (check (vec :drop-while (@ \<less\> _ 100) :collect) =\<gtr\> #())
+
+    )
+
+    \;
+  </goldfish-chunk>
 
   <paragraph|rich-vector%fold>
 

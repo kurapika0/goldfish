@@ -1189,6 +1189,14 @@
   (check (vec :drop-right 10 :collect) => #()) 
 )
 
+(let ((vec (array #(1 2 3 4 5))) (empty-vec ($ #())))
+  (check (vec :drop-while (@ < _ 3) :collect) => #(3 4 5))
+  (check (vec :drop-while (@ > _ 3) :collect) => #(1 2 3 4 5))
+  (check (vec :drop-while (@ < _ 3) :drop 1 :collect) => #(4 5))
+  (check (empty-vec :drop-while (@ < _ 3) :drop 1 :collect) => #())
+  (check (vec :drop-while (@ < _ 100) :collect) => #())
+)
+
 (let ((vec (array #(1 2 3 4 5))))
   (check (vec :fold 0 +) => 15)
   (check (vec :fold '() (lambda (x acc) (cons x acc))) => '(5 4 3 2 1))
