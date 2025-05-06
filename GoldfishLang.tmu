@@ -2807,6 +2807,56 @@
 
   <paragraph|rich-integer%to>
 
+  <scm|rich-integer%to> 是富整数(<scm|rich-integer>)的实例方法，用于生成从当前整数值到目标整数的连续整数序列，返回封装为富列表(<scm|rich-list>)的序列结果。若目标值小于当前值，返回空列表。
+
+  \;
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|生成序列>返回从当前整数值 <scm|data> 到 <scm|n> 的连续整数序列
+
+    <item*|边界处理>
+
+    <\itemize-minus>
+      <item>当 <scm|n \<gtr\>= data> 时，生成 <scm|[data, data+1, ..., n]> 的闭区间序列
+
+      <item>当 <scm|n \<less\> data> 时，返回空列表 <scm|()>
+    </itemize-minus>
+
+    <item*|返回值>封装为 <scm|rich-list> 样本类，支持链式操作
+
+    <item*|不变性保证>原 <scm|rich-integer> 值不会被修改
+  </description>
+
+  \;
+
+  <subparagraph|使用场景>
+
+  <\itemize-minus>
+    <item>生成连续的ID范围
+
+    <item>数值模拟时的离散化采样
+
+    <item>循环边界初始化
+
+    <item>测试数据生成（如 (<scm|$ 1 :to 100>) 生成1-100的测试输入）
+  </itemize-minus>
+
+  \;
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|性能>大范围序列（如 <scm|1 :to 1e6>）会预分配内存
+
+    <item*|类型限制>参数 <scm|n> 必须为整数（<scm|integer?>）
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (typed-define (%to (n integer?))
 
@@ -2818,6 +2868,8 @@
 
     \;
   </goldfish-chunk>
+
+  <subparagraph|测试用例>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check (($ 1 :to 2) :collect) =\<gtr\> (list 1 2))
@@ -2831,6 +2883,66 @@
 
   <paragraph|rich-integer%until>
 
+  <scm|rich-integer%until> 是富整数(<scm|rich-integer>)的实例方法，用于生成从当前整数值开始到终止值(不包含)的整数序列，返回封装为富列表(<scm|rich-list>)的序列结果。若当前值大于等于终止值，则返回空列表。
+
+  \;
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|生成序列>返回从当前整数值 <scm|data> 到 <scm|n-1> 的连续整数序列
+
+    <item*|边界处理>
+
+    <\itemize-minus>
+      <item>若 <scm|n <textless|>= data>，返回空列表
+
+      <item>若 <scm|n <textgreater|> data>，返回 <scm|[data, data+1, ..., n-1]>
+    </itemize-minus>
+
+    <item*|返回值>封装为 <scm|rich-list> 样本类，支持链式操作
+
+    <item*|不变性保证>原 <scm|rich-integer> 值不会被修改
+  </description>
+
+  \;
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|范围迭代>快速生成需要迭代的整数范围（如循环边界）。
+
+    <item*|序列生成>结合 <scm|rich-list> 的方法（如 <scm|:map、:filter>）进行数据处理。
+
+    <item*|边界检查>避免手动处理空序列或无效范围。
+  </description>
+
+  \;
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|与 <scm|:to> 的区别>
+
+    <\itemize-minus>
+      <item><scm|:until> 不包含结束值（<scm|n>），而 <scm|:to> 包含结束值。
+
+      <item>示例对比：
+
+      <\scm>
+        ($ 1 :until 3) =\<gtr\> (1 2) \ \ ; 不包含 3
+
+        ($ 1 :to 3) \ \ \ =\<gtr\> (1 2 3) ; 包含 3
+      </scm>
+    </itemize-minus>
+
+    <item*|性能>基于 <scm|iota> 实现，时间复杂度为 O(n)，适合小范围序列。
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (typed-define (%until (n integer?))
 
@@ -2842,6 +2954,8 @@
 
     \;
   </goldfish-chunk>
+
+  <subparagraph|测试用例>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check (($ 1 :until 3) :collect) =\<gtr\> (list 1 2))
