@@ -18,7 +18,7 @@
 (import (liii base) (liii string) (liii vector) (liii sort)
         (liii list) (liii hash-table) (liii bitwise))
 (export
-  @ typed-define define-case-class define-object
+  @ typed-define define-case-class define-object define-class
   case-class? == != chained-define display* object->string
   option none either left right
   rich-integer rich-float rich-char rich-string
@@ -275,6 +275,49 @@
 
 (define-macro (define-object object-name . methods)
   `(define-case-class ,object-name () ,@methods))
+
+(define-macro (define-class class-name private-fields . private-fields-and-methods)
+  (let* ((field-defs '())
+         (getter-defs '())
+         (setter-defs '())
+         
+         ;; generate define, getter, setter
+         (process-fields
+          (map (lambda (field-spec)
+                 (let* ((field-name (car field-spec))
+                        (type-pred (cadr field-spec))
+                        (default-value (if (>= (length field-spec) 3)
+                                          (caddr field-spec)
+                                          ''()))
+                        (getter-name (string->symbol 
+                                      (string-append "%get-" (symbol->string field-name))))
+                        (setter-name (string->symbol 
+                                      (string-append "%set-" (symbol->string field-name) "!"))))
+                   
+                   (set! field-defs 
+                         (cons `(define ,field-name ,default-value) field-defs))
+                   
+                   (set! getter-defs 
+                         (cons `(define (,getter-name) ,field-name) getter-defs))
+                   
+                   (set! setter-defs 
+                         (cons `(typed-define (,setter-name (x ,type-pred))
+                                  (set! ,field-name x))
+                               setter-defs))))
+               private-fields)))
+    
+    `(define-case-class ,class-name ()
+       ;; define
+       ,@(reverse field-defs)
+       
+       ;; Getter
+       ,@(reverse getter-defs)
+       
+       ;; Setter
+       ,@(reverse setter-defs)
+       
+       ;; else
+       ,@private-fields-and-methods)))
 
 (define (case-class? x)
   (and-let* ((is-proc? (procedure? x))

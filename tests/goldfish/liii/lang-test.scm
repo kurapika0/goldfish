@@ -219,6 +219,35 @@
 
 (check (string-utils :concat "a" "b") => "ab")
 
+;; Test define-class (可变类)
+(let ()
+  (define-class person
+    ((name string? "")
+     (age integer? 0))
+    
+    (define (@apply name)
+      (let1 r (person)
+        (r :set-name! name)
+        (r :set-age! 10)
+        r)))
+  
+  ;; 测试@apply
+  (define p1 (person))
+  (define p2 (person "Bob"))
+  
+  ;; 测试setter和getter
+  (p1 :set-name! "Alice")
+  (p1 :set-age! 25)
+  (check (p1 :get-name) => "Alice")
+  (check (p1 :get-age) => 25)
+  (check (p2 :get-name) => "Bob")
+  (check (p2 :get-age) => 10)
+
+  ;; 测试类型检查
+  (check-catch 'type-error (p1 :set-name! 123))
+  (check-catch 'type-error (p1 :set-age! "invalid"))
+)
+
 (check-false (case-class? (lambda (x) x)))
 (check-false (case-class? +))
 (check-false (case-class? identity))

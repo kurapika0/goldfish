@@ -96,7 +96,7 @@
 
     (export
 
-    \ \ @ typed-define define-case-class define-object
+    \ \ @ typed-define define-case-class define-object define-class
 
     \ \ case-class? == != chained-define display* object-\<gtr\>string
 
@@ -1395,6 +1395,252 @@
     \;
 
     (check (string-utils :concat "a" "b") =\<gtr\> "ab")
+
+    \;
+  </goldfish-chunk>
+
+  \;
+
+  <paragraph|define-class>
+
+  \ \ <scm|><scm|define-class> 是一个成员变量可变的类，所有成员变量均为私有成员（即在define-case-class的内部通过define来定义），通过 get-name, set-name! 来给变量赋值和获取变量。
+
+  例如：
+
+  <\scm-code>
+    (define-class Student
+
+    \ \ ((name string? "未命名") \ ; 字段名、类型断言、默认值
+
+    \ \ \ (age integer? 18) \ \ \ \ \ \ ; 字段名、类型断言、默认值
+
+    \ \ \ (scores list? '())) \ \ \ \ ; 字段名、类型断言、默认值
+
+    \;
+
+    \ \ ; 自定义方法
+
+    \ \ (define (%add-score! score)
+
+    \ \ \ \ (set! scores (cons score scores))
+
+    \ \ \ \ scores)
+
+    \ \ 
+
+    \ \ (define (%average)
+
+    \ \ \ \ (if (null? scores)
+
+    \ \ \ \ \ \ \ \ 0
+
+    \ \ \ \ \ \ \ \ (/ (apply + scores) (length scores))))
+
+    )
+  </scm-code>
+
+  等价于：
+
+  <\scm-code>
+    (define-case-class Student ()
+
+    \ \ ; 字段定义
+
+    \ \ (define name "未命名")
+
+    \ \ (define age 18)
+
+    \ \ (define scores '())
+
+    \ \ 
+
+    \ \ ; Getter 方法
+
+    \ \ (define (%get-name) name)
+
+    \ \ (define (%get-age) age)
+
+    \ \ (define (%get-scores) scores)
+
+    \ \ 
+
+    \ \ ; Setter 方法（带类型检查）
+
+    \ \ (typed-define (%set-name! (x string?)) (set! name x))
+
+    \ \ (typed-define (%set-age! (x integer?)) (set! age x))
+
+    \ \ (typed-define (%set-scores! (x list?)) (set! scores x))
+
+    \ \ 
+
+    \ \ ; 用户自定义方法
+
+    \ \ (define (%add-score! score)
+
+    \ \ \ \ (set! scores (cons score scores))
+
+    \ \ \ \ scores)
+
+    \ \ 
+
+    \ \ (define (%average)
+
+    \ \ \ \ (if (null? scores)
+
+    \ \ \ \ \ \ \ \ 0
+
+    \ \ \ \ \ \ \ \ (/ (apply + scores) (length scores))))
+
+    )
+  </scm-code>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define-macro (define-class class-name private-fields . private-fields-and-methods)
+
+    \ \ (let* ((field-defs '())
+
+    \ \ \ \ \ \ \ \ \ (getter-defs '())
+
+    \ \ \ \ \ \ \ \ \ (setter-defs '())
+
+    \ \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ \ ;; generate define, getter, setter
+
+    \ \ \ \ \ \ \ \ \ (process-fields
+
+    \ \ \ \ \ \ \ \ \ \ (map (lambda (field-spec)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let* ((field-name (car field-spec))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-pred (cadr field-spec))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (default-value (if (\<gtr\>= (length field-spec) 3)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (caddr field-spec)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ''()))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (getter-name (string-\<gtr\>symbol\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-append "%get-" (symbol-\<gtr\>string field-name))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (setter-name (string-\<gtr\>symbol\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-append "%set-" (symbol-\<gtr\>string field-name) "!"))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (set! field-defs\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cons `(define ,field-name ,default-value) field-defs))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (set! getter-defs\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cons `(define (,getter-name) ,field-name) getter-defs))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (set! setter-defs\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cons `(typed-define (,setter-name (x ,type-pred))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (set! ,field-name x))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setter-defs))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ private-fields)))
+
+    \ \ \ \ 
+
+    \ \ \ \ `(define-case-class ,class-name ()
+
+    \ \ \ \ \ \ \ ;; define
+
+    \ \ \ \ \ \ \ ,@(reverse field-defs)
+
+    \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ ;; Getter
+
+    \ \ \ \ \ \ \ ,@(reverse getter-defs)
+
+    \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ ;; Setter
+
+    \ \ \ \ \ \ \ ,@(reverse setter-defs)
+
+    \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ ;; else
+
+    \ \ \ \ \ \ \ ,@private-fields-and-methods)))
+
+    \;
+  </goldfish-chunk>
+
+  \;
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    ;; Test define-class (可变类)
+
+    (let ()
+
+    \ \ (define-class person
+
+    \ \ \ \ ((name string? "")
+
+    \ \ \ \ \ (age integer? 0))
+
+    \ \ \ \ 
+
+    \ \ \ \ (define (@apply name)
+
+    \ \ \ \ \ \ (let1 r (person)
+
+    \ \ \ \ \ \ \ \ (r :set-name! name)
+
+    \ \ \ \ \ \ \ \ (r :set-age! 10)
+
+    \ \ \ \ \ \ \ \ r)))
+
+    \ \ 
+
+    \ \ ;; 测试@apply
+
+    \ \ (define p1 (person))
+
+    \ \ (define p2 (person "Bob"))
+
+    \ \ 
+
+    \ \ ;; 测试setter和getter
+
+    \ \ (p1 :set-name! "Alice")
+
+    \ \ (p1 :set-age! 25)
+
+    \ \ (check (p1 :get-name) =\<gtr\> "Alice")
+
+    \ \ (check (p1 :get-age) =\<gtr\> 25)
+
+    \ \ (check (p2 :get-name) =\<gtr\> "Bob")
+
+    \ \ (check (p2 :get-age) =\<gtr\> 10)
+
+    \;
+
+    \ \ ;; 测试类型检查
+
+    \ \ (check-catch 'type-error (p1 :set-name! 123))
+
+    \ \ (check-catch 'type-error (p1 :set-age! "invalid"))
+
+    )
 
     \;
   </goldfish-chunk>
@@ -9014,7 +9260,7 @@
   <\collection>
     <associate|font-base-size|12>
     <associate|page-height|auto>
-    <associate|page-orientation|landscape>
+    <associate|page-orientation|portrait>
     <associate|page-screen-margin|false>
     <associate|page-type|a4>
     <associate|page-width|auto>
