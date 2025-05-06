@@ -18,8 +18,8 @@
 (import (liii base) (liii string) (liii vector) (liii sort)
         (liii list) (liii hash-table) (liii bitwise))
 (export
-  @ typed-define
-  define-case-class case-class? == != chained-define display* object->string
+  @ typed-define define-case-class define-object
+  case-class? == != chained-define display* object->string
   option none either left right
   rich-integer rich-float rich-char rich-string
   rich-list rich-vector array rich-hash-table
@@ -103,6 +103,7 @@
               fields))
         
          (field-names (map car fields))
+         (field-count (length field-names))
 
          (private-fields (filter (lambda (x)
                                    (and (list? x)
@@ -261,13 +262,19 @@
 (if (null? args)
     (,f-make-case-class)
     (let ((msg (car args)))
-      (if (in? msg (list ,@static-messages :is-type-of))
-          (apply static-dispatcher args)
-          (apply ,f-make-case-class args))))
+      (cond ((in? msg (list ,@static-messages :is-type-of))
+             (apply static-dispatcher args))
+            ((and (zero? ,field-count) (in? :apply (list ,@static-messages)))
+             (apply static-dispatcher (cons :apply args)))
+            (else
+             (apply ,f-make-case-class args)))))
 
 ) ; end of define
 ) ; end of let
 ) ; end of define-macro
+
+(define-macro (define-object object-name . methods)
+  `(define-case-class ,object-name () ,@methods))
 
 (define (case-class? x)
   (and-let* ((is-proc? (procedure? x))

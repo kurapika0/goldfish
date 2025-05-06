@@ -96,9 +96,9 @@
 
     (export
 
-    \ \ @ typed-define
+    \ \ @ typed-define define-case-class define-object
 
-    \ \ define-case-class case-class? == != chained-define display* object-\<gtr\>string
+    \ \ case-class? == != chained-define display* object-\<gtr\>string
 
     \ \ option none either left right
 
@@ -567,7 +567,7 @@
     <item><with|font-series|bold|internal-method-name>: 内部方法，没有前缀，只能在样本类内部调用。
   </itemize-minus>
 
-  <paragraph|示例>
+  <subparagraph|示例>
 
   <\goldfish-code>
     (define-case-class my-vector ((vec vector?) (size integer?))
@@ -681,6 +681,8 @@
     \ \ \ \ \ \ \ \ 
 
     \ \ \ \ \ \ \ \ \ (field-names (map car fields))
+
+    \ \ \ \ \ \ \ \ \ (field-count (length field-names))
 
     \;
 
@@ -998,11 +1000,17 @@
 
     \ \ \ \ (let ((msg (car args)))
 
-    \ \ \ \ \ \ (if (in? msg (list ,@static-messages :is-type-of))
+    \ \ \ \ \ \ (cond ((in? msg (list ,@static-messages :is-type-of))
 
-    \ \ \ \ \ \ \ \ \ \ (apply static-dispatcher args)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (apply static-dispatcher args))
 
-    \ \ \ \ \ \ \ \ \ \ (apply ,f-make-case-class args))))
+    \ \ \ \ \ \ \ \ \ \ \ \ ((and (zero? ,field-count) (in? :apply (list ,@static-messages)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (apply static-dispatcher (cons :apply args)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ (else
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (apply ,f-make-case-class args)))))
 
     \;
 
@@ -1155,7 +1163,7 @@
 
   测试：不带公开方法的样本类
 
-  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|false>
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (define-case-class anonymous ()
 
     \ \ (define name "")
@@ -1179,6 +1187,66 @@
     \ \ (p :set-name! "Alice")
 
     \ \ (check (p :get-name) =\<gtr\> "Alice"))
+
+    \;
+  </goldfish-chunk>
+
+  测试：在没有公开方法的时候，可以使用<scm|@apply>自定义构造函数
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (define-case-class my-bool ()
+
+    \ \ (define data #t)
+
+    \;
+
+    \ \ (define (%set-true!)
+
+    \ \ \ \ (set! data #t))
+
+    \ \ (define (%set-false!)
+
+    \ \ \ \ (set! data #f))
+
+    \ 
+
+    \ \ (define (%true?) data)
+
+    \ \ (define (%false?) (not (%true?)))
+
+    \ \ 
+
+    \ \ (define (@apply x)
+
+    \ \ \ \ (let1 r (my-bool)
+
+    \ \ \ \ \ \ (cond ((eq? x 'true)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (r :set-true!))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ ((eq? x 'false)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (r :set-false!))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ ((boolean? x)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (if x (r :set-true!) (r :set-false!)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ (else (r :set-false!)))
+
+    \ \ \ \ \ \ r))
+
+    )
+
+    \;
+
+    (check-true ((my-bool 'true) :true?))
+
+    (check-true ((my-bool 'false) :false?))
+
+    (check-true ((my-bool #t) :true?))
+
+    (check-true ((my-bool #f) :false?))
 
     \;
   </goldfish-chunk>
@@ -1301,6 +1369,32 @@
     \ \ (check (person :default :set-both! "Bob" "Russia" :to-string :get) =\<gtr\> "Hello Bob from Russia")
 
     \ \ (check-catch 'value-error (person :default :set-country! "French")))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|define-object>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define-macro (define-object object-name . methods)
+
+    \ \ `(define-case-class ,object-name () ,@methods))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (define-object string-utils
+
+    \ \ (define (@concat x y)
+
+    \ \ \ \ (string-append x y))
+
+    )
+
+    \;
+
+    (check (string-utils :concat "a" "b") =\<gtr\> "ab")
 
     \;
   </goldfish-chunk>
@@ -3478,13 +3572,13 @@
       <goldfish-result|#\\return>
     </unfolded-io>
 
-    <\unfolded-io>
+    <\folded-io>
       \<gtr\>\ 
-    <|unfolded-io>
+    <|folded-io>
       (char-\<gtr\>integer #\\return)
-    <|unfolded-io>
+    <|folded-io>
       <goldfish-result|13>
-    </unfolded-io>
+    </folded-io>
 
     <\folded-io>
       \<gtr\>\ 

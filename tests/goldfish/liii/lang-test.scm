@@ -129,6 +129,34 @@
   (p :set-name! "Alice")
   (check (p :get-name) => "Alice"))
 
+(define-case-class my-bool ()
+  (define data #t)
+
+  (define (%set-true!)
+    (set! data #t))
+  (define (%set-false!)
+    (set! data #f))
+ 
+  (define (%true?) data)
+  (define (%false?) (not (%true?)))
+  
+  (define (@apply x)
+    (let1 r (my-bool)
+      (cond ((eq? x 'true)
+             (r :set-true!))
+            ((eq? x 'false)
+             (r :set-false!))
+            ((boolean? x)
+             (if x (r :set-true!) (r :set-false!)))
+            (else (r :set-false!)))
+      r))
+)
+
+(check-true ((my-bool 'true) :true?))
+(check-true ((my-bool 'false) :false?))
+(check-true ((my-bool #t) :true?))
+(check-true ((my-bool #f) :false?))
+
 (define-case-class test-case-class
   ((name string?))
   
@@ -183,6 +211,13 @@
   (check (person :default :to-string :get) => "Hello Andy from China")
   (check (person :default :set-both! "Bob" "Russia" :to-string :get) => "Hello Bob from Russia")
   (check-catch 'value-error (person :default :set-country! "French")))
+
+(define-object string-utils
+  (define (@concat x y)
+    (string-append x y))
+)
+
+(check (string-utils :concat "a" "b") => "ab")
 
 (check-false (case-class? (lambda (x) x)))
 (check-false (case-class? +))
