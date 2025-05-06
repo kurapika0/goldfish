@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.8>>
+<TMU|<tuple|1.1.0|2025.0.9>>
 
 <style|<tuple|book|chinese|literate|goldfish|reduced-margins|guile|smart-ref|preview-ref|python>>
 
@@ -3433,7 +3433,59 @@
 
   <paragraph|path%file?>
 
-  判断当前的路径是否是文件。
+  判断当前的路径是否是文件。注意哪怕文件没有后缀名，例如<with|font-family|tt|/tmp/test>,其中test是个无后缀名的文件，<with|font-family|tt|file?>依旧可以判断其为file返回<with|font-family|tt|#t>。同样，如果<with|font-family|tt|/tmp/test>,其中test是个空文件夹，<with|font-family|tt|file?>依旧可以判断其非file返回<with|font-family|tt|#f>。此api设计参考Python, 示例如下：
+
+  <\session|python|default>
+    <\input>
+      \<gtr\>\<gtr\>\<gtr\>\ 
+    <|input>
+      from pathlib import Path
+    </input>
+
+    <\input>
+      \<gtr\>\<gtr\>\<gtr\>\ 
+    <|input>
+      import os
+    </input>
+
+    <\input>
+      \<gtr\>\<gtr\>\<gtr\>\ 
+    <|input>
+      # Change to home directory
+
+      home_dir = os.path.expanduser("~")
+
+      os.chdir(home_dir)
+    </input>
+
+    <\input>
+      \<gtr\>\<gtr\>\<gtr\>\ 
+    <|input>
+      os.mkdir("emptydir")
+    </input>
+
+    <\unfolded-io>
+      \<gtr\>\<gtr\>\<gtr\>\ 
+    <|unfolded-io>
+      Path("emptydir").is_dir()
+    <|unfolded-io>
+      True
+    </unfolded-io>
+
+    <\unfolded-io>
+      \<gtr\>\<gtr\>\<gtr\>\ 
+    <|unfolded-io>
+      Path("emptydir").is_file()
+    <|unfolded-io>
+      False
+    </unfolded-io>
+
+    <\input>
+      \<gtr\>\<gtr\>\<gtr\>\ 
+    <|input>
+      Path("emptydir").rmdir()
+    </input>
+  </session>
 
   <\goldfish-chunk|goldfish/liii/path.scm|true|true>
     (define (%file?)
@@ -3444,29 +3496,51 @@
   </goldfish-chunk>
 
   <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
-    (when (os-linux?)
+    (when (or (os-linux?) (os-macos?))
 
-    \ \ (check-false (path :/ "tmp" :file?)))
+    \ \ (check-false (path :/ "tmp" :file?))
+
+    \ \ (chdir "/tmp")
+
+    \ \ (mkdir "tmpxxxx")\ 
+
+    \ \ (check (path :from-string "/tmp/tmpxxxx" :file?) =\<gtr\> #f)
+
+    \ \ (rmdir "tmpxxxx"))
 
     \;
   </scm-chunk>
 
   <paragraph|path%dir?>
 
-  判断当前的路径是否是目录。
+  判断当前的路径是否是目录。注意在Goldfish Scheme中，不存在的路径均被视为非目录。
 
   <\goldfish-chunk|goldfish/liii/path.scm|true|true>
     (define (%dir?)
 
-    \ \ (path-dir? (%to-string)))
+    \ \ (path-dir? (%to-string)))\ 
 
     \;
   </goldfish-chunk>
 
   <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
-    (when (os-linux?)
+    (when (or (os-linux?) (os-macos?))
 
-    \ \ (check-true (path :/ "tmp" :dir?)))
+    \ \ (check-true (path :/ "tmp" :dir?))
+
+    \ \ (check-true (path :/ "tmp/" :dir?))
+
+    \ \ (check (path :from-string "/tmpxxxx" :dir?) =\<gtr\> #f)
+
+    \ \ (check (path :from-string "/tmpxxxx/" :dir?) =\<gtr\> #f)
+
+    \ \ (chdir "/tmp")
+
+    \ \ (mkdir "tmpxxxx")\ 
+
+    \ \ (check (path :from-string "/tmp/tmpxxxx/" :dir?) =\<gtr\> #t)
+
+    \ \ (rmdir "tmpxxxx"))
 
     \;
   </scm-chunk>
@@ -3645,8 +3719,6 @@
     (when (or (os-linux?) (os-macos?))
 
     \ \ (check (path :from-string "a/b") =\<gtr\> (path :./ "a" :/ "b")))
-
-    \;
 
     \;
   </scm-chunk>

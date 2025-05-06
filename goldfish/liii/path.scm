@@ -67,7 +67,7 @@
   (path-file? (%to-string)))
 
 (define (%dir?)
-  (path-dir? (%to-string)))
+  (path-dir? (%to-string))) 
 
 (define (%absolute?)
   (case type
