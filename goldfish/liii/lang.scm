@@ -888,9 +888,10 @@
       default))
 
 (define (%get-or-else default)
-  (if (%right?)
-      value
-      default))
+  (cond ((%right?) value)
+        ((and (procedure? default) (not (case-class? default)))
+         (default))
+        (else default)))
 
 (typed-define (%filter-or-else (pred procedure?) (zero any?))
   (if (%right?)

@@ -840,6 +840,7 @@
 
 (check ((right 1) :get-or-else 2) => 1)
 (check ((left "error") :get-or-else 2) => 2)
+(check ((left "error") :get-or-else ($ 2)) => ($ 2))
 
 (let1 r ((right 12) :filter-or-else (lambda (x) (> x 10)) -1)
   (check-true (r :right?))
