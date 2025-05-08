@@ -662,10 +662,18 @@
   ((%to-rich-vector) :exists pred))
 
 (define (%contains elem)
-  (cond ((string? elem)
+  (cond ((rich-string :is-type-of elem)
+         (string-contains data (elem :get)))
+    
+        ((string? elem)
          (string-contains data elem))
+        
+        ((rich-char :is-type-of elem)
+         (string-contains data (elem :make-string)))
+        
         ((char? elem)
          (string-contains data (string elem)))
+        
         (else (type-error "elem must be char or string"))))
 
 (define* (%index-of str/char (start-index 0))

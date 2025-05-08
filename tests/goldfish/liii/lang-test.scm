@@ -598,7 +598,15 @@
 (let1 str (rich-string "Hello, World!")
   (check-true (str :contains #\W))
   (check-true (str :contains "Hello"))
-  (check-true (str :contains "")))
+  (check-true (str :contains ""))
+  (check-true (str :contains (rich-char #\W)))
+  (check-true (str :contains ($ "")))
+  (check-true (str :contains ($ "Hello"))))
+
+(let1 str (rich-string "你好世界")
+  (check-true (str :contains "好世"))
+  (check-true (str :contains "你"))
+  (check-true (str :contains ($ "你" 0))))
 
 (let1 str (rich-string "你好，世界！")
   (check (str :index-of ($ "你")) => 0)
