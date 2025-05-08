@@ -1507,6 +1507,10 @@
 (chained-define (%sort-with less-p)
   (rich-vector (vector-stable-sort less-p data)))
 
+(chained-define (%sort-by f)
+  (let ((sorted-data (vector-stable-sort (lambda (x y) (< (f x) (f y))) data)))
+    (rich-vector sorted-data)))
+
 (define (%group-by func)
   (let ((group (make-hash-table)))
     (for-each
