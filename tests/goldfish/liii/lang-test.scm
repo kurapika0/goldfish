@@ -1265,6 +1265,18 @@
 (let1 vec (array #(1 2 3 4 5))
   (check (vec :flat-map (lambda (x) (vector x x))) => #(1 1 2 2 3 3 4 4 5 5)))
 
+(let ((vec (rich-vector #(1 2 3 4 5))))
+  (check (vec :reverse :collect) => #(5 4 3 2 1)))
+
+(let ((vec (rich-vector #(a b c d e))))
+  (check (vec :reverse :collect) => #(e d c b a)))
+
+(let ((vec (rich-vector #())))
+  (check (vec :reverse :collect) => #()))
+
+(let ((vec (rich-vector #("/" "tmp" "/" "tmp2"))))
+  (check (vec :reverse :collect) => #("tmp2" "/" "tmp" "/")))
+
 (let ((vec (array #(1 2 3 4 5))))
   (check (vec :take -1 :collect) => #())
   (check (vec :take 0 :collect) => #())

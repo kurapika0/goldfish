@@ -1349,6 +1349,9 @@
 (define (%for-each x)
   (vector-for-each x data))
 
+(chained-define (%reverse)
+  (rich-vector (reverse data)))
+
 (define (%count . xs)
   (cond ((null? xs) (vector-length data))
         ((length=? 1 xs) (vector-count (car xs) data))

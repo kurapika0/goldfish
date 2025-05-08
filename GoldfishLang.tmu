@@ -8207,6 +8207,42 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-vector%reverse>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%reverse)
+
+    \ \ (rich-vector (reverse data)))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let ((vec (rich-vector #(1 2 3 4 5))))
+
+    \ \ (check (vec :reverse :collect) =\<gtr\> #(5 4 3 2 1)))
+
+    \;
+
+    (let ((vec (rich-vector #(a b c d e))))
+
+    \ \ (check (vec :reverse :collect) =\<gtr\> #(e d c b a)))
+
+    \;
+
+    (let ((vec (rich-vector #())))
+
+    \ \ (check (vec :reverse :collect) =\<gtr\> #()))
+
+    \;
+
+    (let ((vec (rich-vector #("/" "tmp" "/" "tmp2"))))
+
+    \ \ (check (vec :reverse :collect) =\<gtr\> #("tmp2" "/" "tmp" "/")))
+
+    \;
+  </goldfish-chunk>
+
   <paragraph|rich-vector%count>
 
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
