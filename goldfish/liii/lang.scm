@@ -1287,6 +1287,9 @@
                   (loop (cdr rest) current current-val)
                   (loop (cdr rest) min-elem min-val)))))))
 
+(define (%append l)
+  (rich-list (append data l)))
+
 (define (%to-string)
   (object->string data))
 

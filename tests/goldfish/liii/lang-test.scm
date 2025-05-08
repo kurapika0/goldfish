@@ -1219,6 +1219,10 @@
 (check-catch 'type-error ($ '(1 2 3) :min-by "not-function"))
 (check-catch 'type-error ($ '("a" "b" "c") :min-by identity))
 
+(check (rich-list :empty :append (list 1 2)) => ($ (list 1 2)))
+(check ($ (list 1 2) :append (list )) => ($ (list 1 2)))
+(check ($ (list 1 2) :append (list 3 4)) => ($ (list 1 2 3 4)))
+
 (check (object->string ($ '(1 2 3))) => "(1 2 3)")
 
 (let1 l (rich-list (list 1 2 3))
