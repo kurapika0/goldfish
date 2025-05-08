@@ -744,6 +744,9 @@
                 :map (@ _ :make-string)
                 :make-string)))
 
+(define (%for-each f)
+  ((%to-rich-vector) :for-each f))
+
 (define (%count pred?)
   ((%to-rich-vector) :count pred?))
 

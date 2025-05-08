@@ -5009,6 +5009,16 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-string%for-each>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%for-each f)
+
+    \ \ ((%to-rich-vector) :for-each f))
+
+    \;
+  </goldfish-chunk>
+
   <paragraph|rich-string%count>
 
   计算字符串中满足给定谓词的字符的数量
