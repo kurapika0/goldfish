@@ -9336,9 +9336,7 @@
   <paragraph|rich-vector%max-by>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (typed-define (%max-by (f procedure?))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+    (typed-define (%max-by (f procedure?)) \ \ \ \ \ \ \ 
 
     \ \ (let ((vec data)
 
@@ -9385,6 +9383,60 @@
     (check-catch 'type-error ($ #(1 2 3) :max-by "not-a-function"))
 
     (check-catch 'type-error ($ #(1 2 3) :max-by (lambda (x) "not-a-number")))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-vector%min-by>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (typed-define (%min-by (f procedure?)) \ \ \ \ \ \ \ 
+
+    \ \ (let ((vec data)
+
+    \ \ \ \ \ \ \ \ (len (length data)))
+
+    \ \ \ \ (if (zero? len)
+
+    \ \ \ \ \ \ \ \ (value-error "rich-vector%min-by: empty list is not allowed")
+
+    \ \ \ \ \ \ \ \ (let loop ((i 1)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (min-elem (vector-ref vec 0))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (min-val (f (vector-ref vec 0))))
+
+    \ \ \ \ \ \ \ \ \ \ (if (\<gtr\>= i len)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ min-elem
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let* ((current-elem (vector-ref vec i))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (current-val (f current-elem)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unless (number? current-val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-error "f must return a number"))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (\<gtr\> current-val min-val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ i 1) min-elem min-val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ i 1) current-elem current-val))))))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ #(1 2 3 4 5) :min-by identity) =\<gtr\> 1)
+
+    (check ($ #("apple" "banana" "pear") :min-by string-length) =\<gtr\> "pear")
+
+    (check-catch 'value-error ($ #() :min-by identity))
+
+    (check-catch 'type-error ($ #(1 2 3) :min-by "not-a-function"))
+
+    (check-catch 'type-error ($ #(1 2 3) :min-by (lambda (x) "not-a-number")))
 
     \;
   </goldfish-chunk>

@@ -1589,8 +1589,7 @@
          (idx (vector-index (lambda (x) (not (pred x))) vec)))
     (rich-vector (vector-copy vec 0 (or idx len)))))
 
-(typed-define (%max-by (f procedure?))
-              
+(typed-define (%max-by (f procedure?))        
   (let ((vec data)
         (len (length data)))
     (if (zero? len)
@@ -1606,6 +1605,24 @@
                   (type-error "f must return a number"))
                 (if (< current-val max-val)
                     (loop (+ i 1) max-elem max-val)
+                    (loop (+ i 1) current-elem current-val))))))))
+
+(typed-define (%min-by (f procedure?))        
+  (let ((vec data)
+        (len (length data)))
+    (if (zero? len)
+        (value-error "rich-vector%min-by: empty list is not allowed")
+        (let loop ((i 1)
+                   (min-elem (vector-ref vec 0))
+                   (min-val (f (vector-ref vec 0))))
+          (if (>= i len)
+              min-elem
+              (let* ((current-elem (vector-ref vec i))
+                     (current-val (f current-elem)))
+                (unless (number? current-val)
+                  (type-error "f must return a number"))
+                (if (> current-val min-val)
+                    (loop (+ i 1) min-elem min-val)
                     (loop (+ i 1) current-elem current-val))))))))
 
 (define (%to-string)

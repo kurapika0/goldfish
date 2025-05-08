@@ -1494,6 +1494,12 @@
 (check-catch 'type-error ($ #(1 2 3) :max-by "not-a-function"))
 (check-catch 'type-error ($ #(1 2 3) :max-by (lambda (x) "not-a-number")))
 
+(check ($ #(1 2 3 4 5) :min-by identity) => 1)
+(check ($ #("apple" "banana" "pear") :min-by string-length) => "pear")
+(check-catch 'value-error ($ #() :min-by identity))
+(check-catch 'type-error ($ #(1 2 3) :min-by "not-a-function"))
+(check-catch 'type-error ($ #(1 2 3) :min-by (lambda (x) "not-a-number")))
+
 (check (object->string ($ #(1 2 3))) => "#(1 2 3)")
 
 (let ((vec ($ #("Hello" "World"))))
