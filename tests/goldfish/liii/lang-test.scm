@@ -1277,6 +1277,15 @@
 (let ((empty-vec (array #())))
   (check (empty-vec :forall (lambda (x) (> x 0))) => #t))
 
+(let1 vec (rich-vector #(1 2 3))
+  (check-true (vec :contains 1))
+  (check-false (vec :contains 4)))
+
+(let1 vec (rich-vector #("/" "tmp" "/"))
+  (check-true (vec :contains "tmp"))
+  (check-true (vec :contains "/"))
+  (check-false (vec :contains "tmpxx")))
+
 (let1 vec (array #(1 2 3 4 5))
   (check (vec :map (lambda (x) (vector x x))) => #(#(1 1) #(2 2) #(3 3) #(4 4) #(5 5))))
 

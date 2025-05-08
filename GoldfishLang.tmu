@@ -8239,6 +8239,36 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-vector%contains><typehint|(elem) =\<gtr\> boolean?>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%contains elem)
+
+    \ \ (%exists (lambda (x) (equal? x elem))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let1 vec (rich-vector #(1 2 3))
+
+    \ \ (check-true (vec :contains 1))
+
+    \ \ (check-false (vec :contains 4)))
+
+    \;
+
+    (let1 vec (rich-vector #("/" "tmp" "/"))
+
+    \ \ (check-true (vec :contains "tmp"))
+
+    \ \ (check-true (vec :contains "/"))
+
+    \ \ (check-false (vec :contains "tmpxx")))
+
+    \;
+  </goldfish-chunk>
+
   <section|高阶函数>
 
   <paragraph|rich-vector%map>

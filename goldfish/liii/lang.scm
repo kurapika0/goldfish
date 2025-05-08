@@ -1357,6 +1357,9 @@
 (define (%exists p)
   (vector-any p data))
 
+(define (%contains elem)
+  (%exists (lambda (x) (equal? x elem))))
+
 (chained-define (%map x)
   (rich-vector (vector-map x data)))
 
