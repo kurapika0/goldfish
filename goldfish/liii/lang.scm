@@ -1540,25 +1540,39 @@
       group)
     (rich-hash-table group)))
 
-(define (%sliding size)
-  (unless (integer? size)
-    (type-error "rich-vector%sliding: size must be an integer" size))
-  (unless (> size 0)
-    (value-error "rich-vector%sliding: size must be a positive integer" size))
+(define (%sliding size . step-arg)
+  (unless (integer? size) (type-error "rich-vector%sliding: size must be an integer " size))
+  (unless (> size 0) (value-error "rich-vector%sliding: size must be a positive integer " size))
+
   (let ((N (vector-length data)))
-    (cond
-      ((zero? N)
-       #())
-      ((< N size)
-       ;; returns a vector containing the source collection itself.
-       (vector data))
-      (else
-       (let* ((num-windows (+ (- N size) 1))
-              ;; Create a list of starting indices for the windows
-              (indices (iota num-windows 0 1)))
-         (list->vector
-           (map (lambda (i) (vector-copy data i (+ i size)))
-                indices)))))))
+    (if (zero? N)
+        #()
+        (let* ((is-single-arg-case (null? step-arg))
+               (step (if is-single-arg-case 1 (car step-arg))))
+
+          ;; Validate step if provided
+          (when (and (not is-single-arg-case)
+                     (or (not (integer? step)) (<= step 0)))
+            (if (not (integer? step))
+                (type-error "rich-vector%sliding: step must be an integer " step)
+                (value-error "rich-vector%sliding: step must be a positive integer " step)))
+          
+          ;; single-argument version when N < size
+          (if (and is-single-arg-case (< N size))
+              (vector data)
+              (let collect-windows ((current-idx 0) (result-windows '()))
+                (cond
+                  ;; Stop if current_idx is out of bounds
+                  ((>= current-idx N) (list->vector (reverse result-windows)))
+                  ;; For single-arg case
+                  ((and is-single-arg-case (> (+ current-idx size) N))
+                   (list->vector (reverse result-windows)))
+                  (else
+                   (let* ((window-end (if is-single-arg-case
+                                          (+ current-idx size)      ;; Single-arg: always takes full 'size'
+                                          (min (+ current-idx size) N))) ;; Two-arg: can be partial
+                          (current-window (vector-copy data current-idx window-end)))
+                     (collect-windows (+ current-idx step) (cons current-window result-windows)))))))))))
 
 (chained-define (%zip-with-index)
   (let* ((n (vector-length data))
