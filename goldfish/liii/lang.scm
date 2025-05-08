@@ -730,6 +730,12 @@
                 :map (@ _ :make-string)
                 :make-string)))
 
+(chained-define (%reverse)
+  (rich-string ((%to-rich-vector)
+                :reverse
+                :map (@ _ :make-string)
+                :make-string)))
+
 (define (%count pred?)
   ((%to-rich-vector) :count pred?))
 

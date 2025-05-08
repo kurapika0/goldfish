@@ -4949,6 +4949,34 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-string%reverse>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%reverse)
+
+    \ \ (rich-string ((%to-rich-vector)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :reverse
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (@ _ :make-string)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :make-string)))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ "Hello123" :filter (@ _ :ascii?) :reverse) =\<gtr\> "321olleH")
+
+    (check ($ "123abc" :filter (@ _ :digit?) :reverse) =\<gtr\> "321")
+
+    (check ($ "ABCabc" :filter (@ _ :upper?) :reverse) =\<gtr\> "CBA")
+
+    (check ($ "你好世界" :drop-while (@ _ :equals ($ "你" 0)) :reverse) =\<gtr\> "界世好")
+
+    \;
+  </goldfish-chunk>
+
   <paragraph|rich-string%count>
 
   计算字符串中满足给定谓词的字符的数量
