@@ -1588,11 +1588,20 @@
 (let1 v ($ #(1 2 3))
   (v :set! 0 2)
   (check (v 0) => 2)
-  (check-catch 'out-of-range (v -1))
-  (check-catch 'out-of-range (v 3)))
+  (check-catch 'index-error (v -1))
+  (check-catch 'index-error (v 3)))
 
-(check-catch 'out-of-range (array :empty :set! 0 1))
+(check-catch 'index-error (array :empty :set! 0 1))
 
+(check (rich-vector :empty :append #(1)) => #(1))
+(check (rich-vector :empty :append ($ #(1))) => #(1))
+
+(check ($ #(1) :append #()) => #(1))
+(check ($ #(1) :append (rich-vector :empty)) => #(1))
+
+(check ($ #(1) :append #(2 3)) => #(1 2 3))
+(check ($ #(1) :append ($ #(2 3))) => #(1 2 3))
+       
 (check (rich-hash-table :empty) => ($ (hash-table)))
 (check (rich-hash-table :empty :collect) => (hash-table))
 

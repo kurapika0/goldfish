@@ -8276,9 +8276,13 @@
   <paragraph|rich-vector%apply>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define (%apply n)
+    (define (%apply i)
 
-    \ \ (vector-ref data n))
+    \ \ (when (or (\<less\> i 0) (\<gtr\>= i (vector-length data)))
+
+    \ \ \ \ (index-error "rich-vector%apply: out of range with index" i))
+
+    \ \ (vector-ref data i))
 
     \;
   </goldfish-chunk>
@@ -9849,14 +9853,14 @@
 
   <section|修改器>
 
-  <paragraph|rich-vector%set!>
+  <paragraph|rich-vector%set!><index|rich-vector%set!>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%set! i x)
 
     \ \ (when (or (\<less\> i 0) (\<gtr\>= i (length data)))
 
-    \ \ \ \ (error 'out-of-range "rich-vector%set! out of range at index" i))
+    \ \ \ \ (index-error "rich-vector%set! out of range at index" i))
 
     \ \ (vector-set! data i x))
 
@@ -9870,15 +9874,55 @@
 
     \ \ (check (v 0) =\<gtr\> 2)
 
-    \ \ (check-catch 'out-of-range (v -1))
+    \ \ (check-catch 'index-error (v -1))
 
-    \ \ (check-catch 'out-of-range (v 3)))
+    \ \ (check-catch 'index-error (v 3)))
+
+    \;
+
+    (check-catch 'index-error (array :empty :set! 0 1))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-vector%append><index|rich-vector%append>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%append v)
+
+    \ \ (when (not (or (vector? v) (rich-vector :is-type-of v)))
+
+    \ \ \ \ (type-error "rich-vector%append: input is not vector or rich-vector"))
+
+    \ \ 
+
+    \ \ (if (vector? v)
+
+    \ \ \ \ \ \ (rich-vector (vector-append data v))
+
+    \ \ \ \ \ \ (rich-vector (vector-append data (v :collect)))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check (rich-vector :empty :append #(1)) =\<gtr\> #(1))
+
+    (check (rich-vector :empty :append ($ #(1))) =\<gtr\> #(1))
 
     \;
 
-    (check-catch 'out-of-range (array :empty :set! 0 1))
+    (check ($ #(1) :append #()) =\<gtr\> #(1))
+
+    (check ($ #(1) :append (rich-vector :empty)) =\<gtr\> #(1))
 
     \;
+
+    (check ($ #(1) :append #(2 3)) =\<gtr\> #(1 2 3))
+
+    (check ($ #(1) :append ($ #(2 3))) =\<gtr\> #(1 2 3))
+
+    \ \ \ \ \ \ \ 
   </goldfish-chunk>
 
   <section|结尾>

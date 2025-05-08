@@ -1368,8 +1368,10 @@
 (define (%size)
   (vector-length data))
 
-(define (%apply n)
-  (vector-ref data n))
+(define (%apply i)
+  (when (or (< i 0) (>= i (vector-length data)))
+    (index-error "rich-vector%apply: out of range with index" i))
+  (vector-ref data i))
 
 (define (%index-of x)
   (or (vector-index (@ == x _) data)
@@ -1708,8 +1710,16 @@
 
 (define (%set! i x)
   (when (or (< i 0) (>= i (length data)))
-    (error 'out-of-range "rich-vector%set! out of range at index" i))
+    (index-error "rich-vector%set! out of range at index" i))
   (vector-set! data i x))
+
+(define (%append v)
+  (when (not (or (vector? v) (rich-vector :is-type-of v)))
+    (type-error "rich-vector%append: input is not vector or rich-vector"))
+  
+  (if (vector? v)
+      (rich-vector (vector-append data v))
+      (rich-vector (vector-append data (v :collect)))))
 
 )
 
