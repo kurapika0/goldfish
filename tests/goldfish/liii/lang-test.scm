@@ -548,6 +548,11 @@
           => ($ "你" 0))
   (check-true ((s :find (@ _ :equals ($ "师" 0))) :empty?)))
 
+(check ($ "你好" :head) => ($ "你" 0))
+(check-catch 'index-error (rich-string :empty :head))
+(check ($ "hello" :head-option) => (option #\h))
+(check (rich-string :empty :head-option) => (none))
+
 (let1 str ($ "Hello，世界")
    (check (str :slice 0 5) => ($ "Hello"))
    (check (str :slice -10 5) => ($ "Hello"))

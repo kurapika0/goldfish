@@ -4465,6 +4465,48 @@
     \;
   </scm-chunk>
 
+  <paragraph|rich-string%head>
+
+  <\scm-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%head)
+
+    \ \ (if (string-null? data)
+
+    \ \ \ \ \ \ (index-error "rich-string%head: string is empty")
+
+    \ \ \ \ \ \ ($ data 0)))
+
+    \;
+  </scm-chunk>
+
+  <paragraph|rich-string%head-option>
+
+  <\scm-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%head-option)
+
+    \ \ (if (string-null? data)
+
+    \ \ \ \ \ \ (none)
+
+    \ \ \ \ \ \ (option ($ data 0))))
+
+    \;
+  </scm-chunk>
+
+  \;
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ "你好" :head) =\<gtr\> ($ "你" 0))
+
+    (check-catch 'index-error (rich-string :empty :head))
+
+    (check ($ "hello" :head-option) =\<gtr\> (option #\\h))
+
+    (check (rich-string :empty :head-option) =\<gtr\> (none))
+
+    \;
+  </goldfish-chunk>
+
   <paragraph|rich-string%slice>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>

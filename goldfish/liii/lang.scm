@@ -626,6 +626,16 @@
 
 (define (%find pred) ((%to-rich-vector) :find pred))
 
+(define (%head)
+  (if (string-null? data)
+      (index-error "rich-string%head: string is empty")
+      ($ data 0)))
+
+(define (%head-option)
+  (if (string-null? data)
+      (none)
+      (option ($ data 0))))
+
 (chained-define (%slice from until)
   (let* ((start (max 0 from))
          (end (min N until)))
