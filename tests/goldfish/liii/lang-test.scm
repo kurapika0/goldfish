@@ -1257,6 +1257,11 @@
 (check ($ #(1 2 3) 1) => 2)
 
 (let ((vec (array #(1 2 3 4 5))))
+  (check (vec :index-of 1) => 0)
+  (check (vec :index-of 5) => 4)
+  (check (vec :index-of 6) => -1))
+
+(let ((vec (array #(1 2 3 4 5))))
   (check ((vec :find (lambda (x) (= x 3))) :get) => 3)
   (check ((vec :find (lambda (x) (> x 2))) :get) => 3)
   (check ((vec :find (lambda (x) (> x 10))) :empty?) => #t)

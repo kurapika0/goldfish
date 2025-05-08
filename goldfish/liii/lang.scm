@@ -1354,6 +1354,10 @@
 (define (%apply n)
   (vector-ref data n))
 
+(define (%index-of x)
+  (or (vector-index (@ == x _) data)
+       -1))
+
 (define (%find p)
   (let loop ((i 0))
     (cond
