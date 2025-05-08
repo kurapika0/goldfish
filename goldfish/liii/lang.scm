@@ -1360,7 +1360,11 @@
 
 (define (%index-of x)
   (or (vector-index (@ == x _) data)
-       -1))
+      -1))
+
+(define (%last-index-of x)
+  (or (vector-index-right (@ == x _) data)
+      -1))
 
 (define (%find p)
   (let loop ((i 0))
