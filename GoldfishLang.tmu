@@ -4445,6 +4445,26 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-string%find>
+
+  <\scm-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%find pred) ((%to-rich-vector) :find pred))
+
+    \;
+  </scm-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let1 s ($ "你好世界HelloWord")
+
+    \ \ (check ((s :find (@ _ :equals ($ "你" 0))) :get)\ 
+
+    \ \ \ \ \ \ \ \ \ \ =\<gtr\> ($ "你" 0))
+
+    \ \ (check-true ((s :find (@ _ :equals ($ "师" 0))) :empty?)))
+
+    \;
+  </scm-chunk>
+
   <paragraph|rich-string%slice>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>

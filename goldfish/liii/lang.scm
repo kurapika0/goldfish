@@ -624,6 +624,8 @@
 (typed-define (%apply (i integer?))
   (%char-at i))
 
+(define (%find pred) ((%to-rich-vector) :find pred))
+
 (chained-define (%slice from until)
   (let* ((start (max 0 from))
          (end (min N until)))

@@ -543,6 +543,11 @@
    (check (str 0) => ($ #\H))
    (check (str 7) => (rich-char :from-string "#\\界")))
 
+(let1 s ($ "你好世界HelloWord")
+  (check ((s :find (@ _ :equals ($ "你" 0))) :get) 
+          => ($ "你" 0))
+  (check-true ((s :find (@ _ :equals ($ "师" 0))) :empty?)))
+
 (let1 str ($ "Hello，世界")
    (check (str :slice 0 5) => ($ "Hello"))
    (check (str :slice -10 5) => ($ "Hello"))
