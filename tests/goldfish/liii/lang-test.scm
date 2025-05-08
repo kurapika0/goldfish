@@ -1621,5 +1621,9 @@
   (check total => 342)                          
 )
 
+(let1 ht ($ (hash-table 'a 1 'b 2 'c 3))
+  (let1 r (ht :filter (lambda (k v) (even? v)) :collect)
+    (check r => (hash-table 'b 2))))
+
 (check-report)
 

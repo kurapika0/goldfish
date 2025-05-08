@@ -1697,6 +1697,14 @@
 (define (%for-each proc)
   (hash-table-for-each proc data))
 
+(chained-define (%filter f)
+  (let1 r (make-hash-table)
+    (hash-table-for-each
+       (lambda (k v)
+         (when (f k v) (hash-table-set! r k v)))
+       data)
+    (rich-hash-table r)))
+
 )
 
 ) ; end of begin

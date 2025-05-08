@@ -9939,6 +9939,38 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-hash-table%filter>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (chained-define (%filter f)
+
+    \ \ (let1 r (make-hash-table)
+
+    \ \ \ \ (hash-table-for-each
+
+    \ \ \ \ \ \ \ (lambda (k v)
+
+    \ \ \ \ \ \ \ \ \ (when (f k v) (hash-table-set! r k v)))
+
+    \ \ \ \ \ \ \ data)
+
+    \ \ \ \ (rich-hash-table r)))
+
+    \;
+  </goldfish-chunk>
+
+  \;
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let1 ht ($ (hash-table 'a 1 'b 2 'c 3))
+
+    \ \ (let1 r (ht :filter (lambda (k v) (even? v)) :collect)
+
+    \ \ \ \ (check r =\<gtr\> (hash-table 'b 2))))
+
+    \;
+  </goldfish-chunk>
+
   <section|结尾>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
