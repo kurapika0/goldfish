@@ -104,6 +104,12 @@
   (check (path "/tmp/") => (path :/ "tmp"))
   (check (path "/tmp/tmp2") => (path :/ "tmp" :/ "tmp2")))
 
+(when (os-linux?)
+  (check (path :from-env "HOME" :to-string) => (path :home :to-string)))
+
+(when (os-windows?)
+  (check (path :from-env "USERPROFILE" :to-string) => (path :home :to-string)))
+
 (when (or (os-linux?) (os-macos?))
   (check-false (path :/ "tmp" :file?))
   (chdir "/tmp")

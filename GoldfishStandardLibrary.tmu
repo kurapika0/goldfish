@@ -3679,6 +3679,30 @@
     \;
   </scm-chunk>
 
+  <paragraph|path@from-env>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (chained-define (@from-env name)
+
+    \ \ (path (getenv name)))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    (when (os-linux?)
+
+    \ \ (check (path :from-env "HOME" :to-string) =\<gtr\> (path :home :to-string)))
+
+    \;
+
+    (when (os-windows?)
+
+    \ \ (check (path :from-env "USERPROFILE" :to-string) =\<gtr\> (path :home :to-string)))
+
+    \;
+  </scm-chunk>
+
   \;
 
   <subsection|谓词>

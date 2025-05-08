@@ -140,6 +140,9 @@
                  (else
                   (loop ($ iter :drop 1 :get))))))))
 
+(chained-define (@from-env name)
+  (path (getenv name)))
+
 (define (%file?)
   (path-file? (%to-string)))
 
