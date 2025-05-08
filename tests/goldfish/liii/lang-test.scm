@@ -1252,7 +1252,7 @@
 (check (array :empty :head-option) => (none))
 
 (check ($ (vector 1 2 3) :last) => 3)
-(check-catch 'out-of-range (array :empty :last))
+(check-catch 'index-error (array :empty :last))
 (check ($ (vector 1 2 3) :last-option) => (option 3))
 (check (array :empty :last-option) => (none))
 

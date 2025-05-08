@@ -8105,9 +8105,7 @@
 
   <paragraph|rich-vector%last>
 
-  <paragraph|rich-vector%last-option>
-
-  <\scm-chunk|goldfish/liii/lang.scm|true|true>
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%last)
 
     \ \ (let ((len (vector-length data)))
@@ -8116,10 +8114,14 @@
 
     \ \ \ \ \ \ (vector-ref data (- len 1))
 
-    \ \ \ \ \ \ (error 'out-of-range "out-of-range"))))
+    \ \ \ \ \ \ (index-error "rich-vector%last: empty vector"))))
 
     \;
+  </goldfish-chunk>
 
+  <paragraph|rich-vector%last-option>
+
+  <\scm-chunk|goldfish/liii/lang.scm|true|true>
     (define (%last-option)
 
     \ \ (let ((len (vector-length data)))
@@ -8136,7 +8138,7 @@
   <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ (vector 1 2 3) :last) =\> 3)
 
-    (check-catch 'out-of-range (array :empty :last))
+    (check-catch 'index-error (array :empty :last))
 
     (check ($ (vector 1 2 3) :last-option) =\> (option 3))
 

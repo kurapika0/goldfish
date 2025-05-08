@@ -1333,7 +1333,7 @@
   (let ((len (vector-length data)))
     (if (> len 0)
       (vector-ref data (- len 1))
-      (error 'out-of-range "out-of-range"))))
+      (index-error "rich-vector%last: empty vector"))))
 
 (define (%last-option)
   (let ((len (vector-length data)))
