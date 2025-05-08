@@ -78,20 +78,26 @@
 (check ((path) :get-type) => 'posix)
 (check ((path) :get-parts) => #("."))
 
-(check (path :of-drive #\C :to-string) => "C:\\")
+(check (path :of-drive #\D :to-string) => "D:\\")
+(check (path :of-drive #\d :to-string) => "D:\\")
 
 (check (path :root :to-string) => "/")
 
-(check (path :from-parts #("/" "tmp")) => (path :/ "tmp"))
-(check (path :from-parts #("/" "tmp" "/" "test")) => (path :/ "tmp" :/ "test"))
-(check (path :from-parts #("/", "tmp") :to-string) => "/tmp")
+(when (not (os-windows?))
+  (check (path :from-parts #("/" "tmp")) => (path :/ "tmp"))
+  (check (path :from-parts #("/" "tmp" "/" "test")) => (path :/ "tmp" :/ "test"))
+  (check (path :from-parts #("/", "tmp") :to-string) => "/tmp"))
 
-(check (path :/ "C:" :to-string) => "C:\\")
-(check (path :/ "root" :to-string) => "/root")
+(when (os-windows?)
+  (check (path :/ "C:" :to-string) => "C:\\"))
+
+(when (not (os-windows?))
+  (check (path :/ "root" :to-string) => "/root"))
 
 (when (os-windows?)
   (check (path "a\\b") => (path :./ "a" :/ "b"))
-  (check (path "C:\\") => (path :of-drive #\C)))
+  (check (path "C:\\") => (path :of-drive #\C))
+  (check (path "C:\\Users") => (path :of-drive #\C :/ "Users")))
 
 (when (or (os-linux?) (os-macos?))
   (check (path "a/b") => (path :./ "a" :/ "b"))
@@ -117,7 +123,6 @@
 
 (check-false ((path) :absolute?))
 (check (path :/ "C:" :get-type) => 'windows)
-(check (path :/ "C:" :to-string) => "C:\\")
 (check (path :/ "C:" :get-parts) => #())
 (check-true (path :/ "C:" :absolute?))
 (check-true (path :from-parts #("/" "tmp") :absolute?))
@@ -126,10 +131,16 @@
 (when (or (os-linux?) (os-macos?))
   (check-true (path :/ "tmp" :exists?)))
 
-(check (path :/ "etc" :/ "passwd" :to-string) => "/etc/passwd")
+(when (not (os-windows?))
+  (check (path :/ "etc" :/ "passwd" :to-string) => "/etc/passwd"))
 
-(check (path :/ "etc" :/ "host" :to-string) => "/etc/host")
-(check (path :/ (path "a/b")) => (path "/a/b"))
+(when (os-windows?)
+  (check (path :of-drive #\C :to-string) => "C:\\"))
+
+(when (not (os-windows?))
+  (check (path :/ "etc" :/ "host" :to-string) => "/etc/host")
+  (check (path :/ (path "a/b")) => (path "/a/b")))
+
 (check-catch 'value-error (path :/ (path "/a/b")))
 
 (when (or (os-linux?) (os-macos?))
@@ -137,12 +148,19 @@
   (check (path "" :parent :to-string) => ".")
   (check (path "/tmp/" :parent :to-string) => "/")
   (check (path "/tmp/test" :parent :parent :to-string) => "/")
-  (check (path "tmp/test" :parent :to-string) => "tmp")
+  (check (path "tmp/test" :parent :to-string) => "tmp/")
   (check (path "tmp" :parent :to-string) => ".")
   (check (path "tmp" :parent :parent :to-string) => "."))
 
+(when (os-windows?)
+  (check (path "C:" :parent :to-string) => "C:\\")
+  (check (path "C:\\Users" :parent :to-string) => "C:\\")
+  (check (path "a\\b" :parent :to-string) => "a\\"))
+
 (check (path :./ "a" :to-string) => "a")
-(check (path :./ "a" :/ "b" :/ "c" :to-string) => "a/b/c")
+
+(when (not (os-windows?))
+  (check (path :./ "a" :/ "b" :/ "c" :to-string) => "a/b/c"))
 
 (when (or (os-linux?) (os-macos?))
   (check-true (path :cwd :dir?)))

@@ -114,19 +114,21 @@
              ((string=? x "/") (path :root))
             
              (else
-               (path :from-parts (vector-append #("/") (vector x)))))))
+               (path :from-parts (vector-append (vector (string (os-sep))) (vector x)))))))
 
 (chained-define (@apply s)
   (cond ((and (or (os-linux?) (os-macos?))
               (string-starts? s "/"))
          (path :/ (@apply ($ s :drop 1 :get))))
-        
         ((and (os-windows?)
-              (>= (string-length s) 2)
+              (= (string-length s) 2)
               (char=? (s 1) #\:))
+         (path :of-drive (s 0)))
+        ((and (os-windows?) (>= (string-length s) 3)
+              (char=? (s 1) #\:)
+              (char=? (s 2) #\\))
          (path :of-drive (s 0)
-               :/ (@apply ($ s :drop 2 :get))))
-        
+               :/ (@apply ($ s :drop 3 :get))))
         (else
          (let loop ((iter s))
            (cond ((or (string-null? iter) (string=? iter "."))
@@ -163,8 +165,8 @@
 (define (%to-string)
   (case type
     ((posix)
-     (let1 s ($ parts :make-string "/")
-        (if (string-starts? s "//")
+     (let1 s ($ parts :make-string (string (os-sep)))
+        (if (and (> ($ s :length) 1) (string-starts? s (string (os-sep))))
             (string-drop s 1)
             s)))
     ((windows)
@@ -200,33 +202,41 @@
                 (%this))
                (else (let ((new-path (%copy))
                            (x-parts (x :get-parts)))
-                       (new-path :set-parts! (vector-append #("/") x-parts))
+                       (if (os-windows?)
+                           (new-path :set-parts! x-parts)
+                           (new-path :set-parts! (vector-append (vector (string (os-sep))) x-parts)))
                        new-path))))
         
         (else (type-error "only string?, path is allowed"))))
 
-(chained-define (%parent)
-             
+(chained-define (%parent)   
   (define (parts-drop-right parts x)
-     (let1 path-vec ($ parts :drop-right x :collect)
-       (if (equal? path-vec #())
-           (path)
-           (let1 new-path (%copy)
-                 (new-path :set-parts! path-vec)
-                 new-path))))              
+     (let1 path-vec ($ parts :drop-right x)
+       (let1 new-path (%copy)
+         (if (path-vec :empty?)
+             (if (os-windows?)
+                 (new-path :set-parts! #(""))
+                 (new-path :set-parts! #(".")))
+             (new-path :set-parts! (path-vec :append #(""))))
+         new-path)))
                 
-  (cond 
-    ;; Root and cwd
+  (cond
     ((or (equal? #("/") parts) (equal? #(".") parts))
      (%this))
-    
     ((or (os-macos?) (os-linux?))
      (let1 last-part (($ parts) :take-right 1 :collect)
            (if (equal? last-part #(""))
                (parts-drop-right parts 2)
                (parts-drop-right parts 1))))
+    ((os-windows?)
+     (if ($ parts :empty?)
+         (%this)
+         (let1 last-part (($ parts) :take-right 1 :collect)
+           (if (equal? last-part #(""))
+               (parts-drop-right parts 2)
+               (parts-drop-right parts 1)))))
     
-    (else (value-error "windows is not supported yet"))))
+    (else (??? "Unsupported platform"))))
 
 (chained-define (@./ x)
   (let1 p (path x)
