@@ -1158,6 +1158,39 @@
   (check (result :collect) 
           => (hash-table 3 '("cat" "dog") 5 '("apple") 6 '("banana"))))
 
+;; Single-argument sliding for rich-list
+(check ($ '() :sliding 2) => #())
+(check ($ '(1) :sliding 2) => #((1)))
+(check ($ '(1 2) :sliding 2) => #((1 2)))
+(check ($ '(1 2 3) :sliding 2) => #((1 2) (2 3)))
+(check ($ '(1 2 3 4 5) :sliding 3) => #((1 2 3) (2 3 4) (3 4 5)))
+(check ($ '(1 2 3 4 5) :sliding 1) => #((1) (2) (3) (4) (5)))
+(check ($ '(1 2 3) :sliding 3) => #((1 2 3)))
+(check ($ '(1 2 3) :sliding 4) => #((1 2 3)))
+
+;; Error cases for size (single-arg) for rich-list
+(check-catch 'value-error ($ '(1 2 3) :sliding 0))
+(check-catch 'value-error ($ '(1 2 3) :sliding -1))
+(check-catch 'type-error ($ '(1 2 3) :sliding 1.5))
+
+;; Two-argument sliding for rich-list
+(check ($ '() :sliding 2 2) => #())
+(check ($ '(1 2 3 4 5) :sliding 2 2) => #((1 2) (3 4) (5)))
+(check ($ '(1 2 3 4 5 6) :sliding 2 3) => #((1 2) (4 5)))
+(check ($ '(1 2 3 4 5) :sliding 3 1) => #((1 2 3) (2 3 4) (3 4 5) (4 5) (5)))
+(check ($ '(1 2 3 4) :sliding 2 2) => #((1 2) (3 4)))
+(check ($ '(1 2) :sliding 3 1) => #((1 2) (2)))
+(check ($ '(1 2 3 4 5) :sliding 3 2) => #((1 2 3) (3 4 5) (5)))
+(check ($ '(1 2 3 4 5 6 7) :sliding 3 3) => #((1 2 3) (4 5 6) (7)))
+(check ($ '(1 2 3 4 5) :sliding 5 1) => #((1 2 3 4 5) (2 3 4 5) (3 4 5) (4 5) (5)))
+(check ($ '(1 2 3 4 5) :sliding 6 1) => #((1 2 3 4 5) (2 3 4 5) (3 4 5) (4 5) (5)))
+
+
+;; Error cases for step (two-arg) for rich-list
+(check-catch 'value-error ($ '(1 2 3) :sliding 2 0))
+(check-catch 'value-error ($ '(1 2 3) :sliding 2 -1))
+(check-catch 'type-error ($ '(1 2 3) :sliding 2 1.5))
+
 (check (($ '(1 2 3)) :zip '(a b c) :collect) => '((1 . a) (2 . b) (3 . c)))
 (check (($ '(1 2 3)) :zip '(a b) :collect) => '((1 . a) (2 . b)))
 

@@ -1197,6 +1197,40 @@
       group)
   (rich-hash-table group)))
 
+(define (%sliding size . step-arg)
+  (unless (integer? size) (type-error "rich-list%sliding: size must be an integer " size))
+  (unless (> size 0) (value-error "rich-list%sliding: size must be a positive integer " size))
+
+  (let ((N (length data)))
+    (if (null? data)
+        #()
+        (let* ((is-single-arg-case (null? step-arg))
+               (step (if is-single-arg-case 1 (car step-arg))))
+
+          (when (and (not is-single-arg-case)
+                     (or (not (integer? step)) (<= step 0)))
+            (if (not (integer? step))
+                (type-error "rich-list%sliding: step must be an integer " step)
+                (value-error "rich-list%sliding: step must be a positive integer " step)))
+          
+          (if (and is-single-arg-case (< N size))
+              (vector data)
+              (let collect-windows ((current-list-segment data) (result-windows '()))
+                (cond
+                  ((null? current-list-segment) (list->vector (reverse result-windows)))
+                  ((and is-single-arg-case (< (length current-list-segment) size))
+                   (list->vector (reverse result-windows)))
+                  (else
+                   (let* ((elements-to-take (if is-single-arg-case
+                                                size
+                                                (min size (length current-list-segment))))
+                          (current-window (take current-list-segment elements-to-take))
+                          (next-list-segment (if (>= step (length current-list-segment))
+                                                 '()
+                                                 (drop current-list-segment step))))
+                     (collect-windows next-list-segment
+                                      (cons current-window result-windows)))))))))))
+
 (chained-define (%zip l) (box (apply map cons (list data l))))
 
 (chained-define (%zip-with-index)

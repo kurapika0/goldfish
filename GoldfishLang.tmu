@@ -7521,6 +7521,150 @@
     \;
   </goldfish-chunk>
 
+  \;
+
+  <paragraph|rich-list%sliding>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%sliding size . step-arg)
+
+    \ \ (unless (integer? size) (type-error "rich-list%sliding: size must be an integer " size))
+
+    \ \ (unless (\<gtr\> size 0) (value-error "rich-list%sliding: size must be a positive integer " size))
+
+    \;
+
+    \ \ (let ((N (length data)))
+
+    \ \ \ \ (if (null? data)
+
+    \ \ \ \ \ \ \ \ #()
+
+    \ \ \ \ \ \ \ \ (let* ((is-single-arg-case (null? step-arg))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (step (if is-single-arg-case 1 (car step-arg))))
+
+    \;
+
+    \ \ \ \ \ \ \ \ \ \ (when (and (not is-single-arg-case)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (or (not (integer? step)) (\<less\>= step 0)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ (if (not (integer? step))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-error "rich-list%sliding: step must be an integer " step)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (value-error "rich-list%sliding: step must be a positive integer " step)))
+
+    \ \ \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ \ \ (if (and is-single-arg-case (\<less\> N size))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (vector data)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let collect-windows ((current-list-segment data) (result-windows '()))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cond
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ((null? current-list-segment) (list-\<gtr\>vector (reverse result-windows)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ((and is-single-arg-case (\<less\> (length current-list-segment) size))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (list-\<gtr\>vector (reverse result-windows)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (else
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let* ((elements-to-take (if is-single-arg-case
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ size
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (min size (length current-list-segment))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (current-window (take current-list-segment elements-to-take))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (next-list-segment (if (\<gtr\>= step (length current-list-segment))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ '()
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (drop current-list-segment step))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (collect-windows next-list-segment
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cons current-window result-windows)))))))))))
+
+    \;
+  </goldfish-chunk>
+
+  \;
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    ;; Single-argument sliding for rich-list
+
+    (check ($ '() :sliding 2) =\<gtr\> #())
+
+    (check ($ '(1) :sliding 2) =\<gtr\> #((1)))
+
+    (check ($ '(1 2) :sliding 2) =\<gtr\> #((1 2)))
+
+    (check ($ '(1 2 3) :sliding 2) =\<gtr\> #((1 2) (2 3)))
+
+    (check ($ '(1 2 3 4 5) :sliding 3) =\<gtr\> #((1 2 3) (2 3 4) (3 4 5)))
+
+    (check ($ '(1 2 3 4 5) :sliding 1) =\<gtr\> #((1) (2) (3) (4) (5)))
+
+    (check ($ '(1 2 3) :sliding 3) =\<gtr\> #((1 2 3)))
+
+    (check ($ '(1 2 3) :sliding 4) =\<gtr\> #((1 2 3)))
+
+    \;
+
+    ;; Error cases for size (single-arg) for rich-list
+
+    (check-catch 'value-error ($ '(1 2 3) :sliding 0))
+
+    (check-catch 'value-error ($ '(1 2 3) :sliding -1))
+
+    (check-catch 'type-error ($ '(1 2 3) :sliding 1.5))
+
+    \;
+
+    ;; Two-argument sliding for rich-list
+
+    (check ($ '() :sliding 2 2) =\<gtr\> #())
+
+    (check ($ '(1 2 3 4 5) :sliding 2 2) =\<gtr\> #((1 2) (3 4) (5)))
+
+    (check ($ '(1 2 3 4 5 6) :sliding 2 3) =\<gtr\> #((1 2) (4 5)))
+
+    (check ($ '(1 2 3 4 5) :sliding 3 1) =\<gtr\> #((1 2 3) (2 3 4) (3 4 5) (4 5) (5)))
+
+    (check ($ '(1 2 3 4) :sliding 2 2) =\<gtr\> #((1 2) (3 4)))
+
+    (check ($ '(1 2) :sliding 3 1) =\<gtr\> #((1 2) (2)))
+
+    (check ($ '(1 2 3 4 5) :sliding 3 2) =\<gtr\> #((1 2 3) (3 4 5) (5)))
+
+    (check ($ '(1 2 3 4 5 6 7) :sliding 3 3) =\<gtr\> #((1 2 3) (4 5 6) (7)))
+
+    (check ($ '(1 2 3 4 5) :sliding 5 1) =\<gtr\> #((1 2 3 4 5) (2 3 4 5) (3 4 5) (4 5) (5)))
+
+    (check ($ '(1 2 3 4 5) :sliding 6 1) =\<gtr\> #((1 2 3 4 5) (2 3 4 5) (3 4 5) (4 5) (5)))
+
+    \;
+
+    \;
+
+    ;; Error cases for step (two-arg) for rich-list
+
+    (check-catch 'value-error ($ '(1 2 3) :sliding 2 0))
+
+    (check-catch 'value-error ($ '(1 2 3) :sliding 2 -1))
+
+    (check-catch 'type-error ($ '(1 2 3) :sliding 2 1.5))
+
+    \;
+  </goldfish-chunk>
+
   <paragraph|rich-list%zip>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
