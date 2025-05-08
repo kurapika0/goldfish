@@ -8939,6 +8939,86 @@
 
   \;
 
+  <paragraph|rich-vector%sliding>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%sliding size)
+
+    \ \ (unless (integer? size)
+
+    \ \ \ \ (type-error "rich-vector%sliding: size must be an integer" size))
+
+    \ \ (unless (\<gtr\> size 0)
+
+    \ \ \ \ (value-error "rich-vector%sliding: size must be a positive integer" size))
+
+    \ \ (let ((N (vector-length data)))
+
+    \ \ \ \ (cond
+
+    \ \ \ \ \ \ ((zero? N)
+
+    \ \ \ \ \ \ \ #())
+
+    \ \ \ \ \ \ ((\<less\> N size)
+
+    \ \ \ \ \ \ \ ;; returns a vector containing the source collection itself.
+
+    \ \ \ \ \ \ \ (vector data))
+
+    \ \ \ \ \ \ (else
+
+    \ \ \ \ \ \ \ (let* ((num-windows (+ (- N size) 1))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ ;; Create a list of starting indices for the windows
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (indices (iota num-windows 0 1)))
+
+    \ \ \ \ \ \ \ \ \ (list-\<gtr\>vector
+
+    \ \ \ \ \ \ \ \ \ \ \ (map (lambda (i) (vector-copy data i (+ i size)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indices)))))))
+
+    \;
+  </goldfish-chunk>
+
+  \;
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ #() :sliding 2) =\<gtr\> #())
+
+    (check ($ #(1) :sliding 2) =\<gtr\> #(#(1)))
+
+    (check ($ #(1 2) :sliding 2) =\<gtr\> #(#(1 2)))
+
+    (check ($ #(1 2 3) :sliding 2) =\<gtr\> #(#(1 2) #(2 3)))
+
+    (check ($ #(1 2 3 4 5) :sliding 3) =\<gtr\> #(#(1 2 3) #(2 3 4) #(3 4 5)))
+
+    (check ($ #(1 2 3 4 5) :sliding 1) =\<gtr\> #(#(1) #(2) #(3) #(4) #(5)))
+
+    (check ($ #(1 2 3) :sliding 3) =\<gtr\> #(#(1 2 3)))
+
+    (check ($ #(1 2 3) :sliding 4) =\<gtr\> #(#(1 2 3)))
+
+    \;
+
+    ;; Error cases for size
+
+    (check-catch 'value-error ($ #(1 2 3) :sliding 0))
+
+    (check-catch 'value-error ($ #(1 2 3) :sliding -1))
+
+    (check-catch 'type-error ($ #(1 2 3) :sliding 1.5))
+
+    (check-catch 'type-error ($ #(1 2 3) :sliding "a"))
+
+    \;
+  </goldfish-chunk>
+
+  \;
+
   <paragraph|rich-vector%zip-with-index>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>

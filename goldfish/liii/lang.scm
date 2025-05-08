@@ -1511,6 +1511,26 @@
       group)
     (rich-hash-table group)))
 
+(define (%sliding size)
+  (unless (integer? size)
+    (type-error "rich-vector%sliding: size must be an integer" size))
+  (unless (> size 0)
+    (value-error "rich-vector%sliding: size must be a positive integer" size))
+  (let ((N (vector-length data)))
+    (cond
+      ((zero? N)
+       #())
+      ((< N size)
+       ;; returns a vector containing the source collection itself.
+       (vector data))
+      (else
+       (let* ((num-windows (+ (- N size) 1))
+              ;; Create a list of starting indices for the windows
+              (indices (iota num-windows 0 1)))
+         (list->vector
+           (map (lambda (i) (vector-copy data i (+ i size)))
+                indices)))))))
+
 (chained-define (%zip-with-index)
   (let* ((n (vector-length data))
          (result (make-vector n)))

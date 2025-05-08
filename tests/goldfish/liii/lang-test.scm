@@ -1403,6 +1403,21 @@
   (check (result :collect) 
           => (hash-table 3 #("cat" "dog") 5 #("apple") 6 #("banana"))))
 
+(check ($ #() :sliding 2) => #())
+(check ($ #(1) :sliding 2) => #(#(1)))
+(check ($ #(1 2) :sliding 2) => #(#(1 2)))
+(check ($ #(1 2 3) :sliding 2) => #(#(1 2) #(2 3)))
+(check ($ #(1 2 3 4 5) :sliding 3) => #(#(1 2 3) #(2 3 4) #(3 4 5)))
+(check ($ #(1 2 3 4 5) :sliding 1) => #(#(1) #(2) #(3) #(4) #(5)))
+(check ($ #(1 2 3) :sliding 3) => #(#(1 2 3)))
+(check ($ #(1 2 3) :sliding 4) => #(#(1 2 3)))
+
+;; Error cases for size
+(check-catch 'value-error ($ #(1 2 3) :sliding 0))
+(check-catch 'value-error ($ #(1 2 3) :sliding -1))
+(check-catch 'type-error ($ #(1 2 3) :sliding 1.5))
+(check-catch 'type-error ($ #(1 2 3) :sliding "a"))
+
 (check  ($ #(a b c) :zip-with-index :collect)  
         => #((0 . a) (1 . b) (2 . c)))
 
