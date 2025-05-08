@@ -9358,7 +9358,9 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%index-where pred)
 
-    \ \ (vector-index pred data))
+    \ \ (or (vector-index pred data)
+
+    \ \ \ \ \ \ -1))
 
     \;
   </goldfish-chunk>
@@ -9370,9 +9372,31 @@
 
     \ \ (check (vec :index-where (@ \<gtr\> _ 3)) =\<gtr\> 3)
 
-    \ \ (check (vec :index-where (@ \<gtr\> _ 5)) =\<gtr\> #f)
+    \ \ (check (vec :index-where (@ \<gtr\> _ 5)) =\<gtr\> -1))
 
-    )
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-vector%last-index-where>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%last-index-where pred)
+
+    \ \ (or (vector-index-right pred data)
+
+    \ \ \ \ \ \ -1))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let ((vec (array #(1 2 3 4 5))))
+
+    \ \ (check (vec :last-index-where even?) =\<gtr\> 3)
+
+    \ \ (check (vec :last-index-where (@ \<gtr\> _ 3)) =\<gtr\> 4)
+
+    \ \ (check (vec :last-index-where (@ \<gtr\> _ 5)) =\<gtr\> -1))
 
     \;
   </goldfish-chunk>

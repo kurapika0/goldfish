@@ -1588,7 +1588,12 @@
               (loop (f acc (vector-ref data i)) (+ i 1)))))))
 
 (define (%index-where pred)
-  (vector-index pred data))
+  (or (vector-index pred data)
+      -1))
+
+(define (%last-index-where pred)
+  (or (vector-index-right pred data)
+      -1))
 
 (chained-define (%take-while pred)
   (let* ((vec data)

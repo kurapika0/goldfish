@@ -1501,8 +1501,12 @@
 (let ((vec (array #(1 2 3 4 5))))
   (check (vec :index-where even?) => 1)
   (check (vec :index-where (@ > _ 3)) => 3)
-  (check (vec :index-where (@ > _ 5)) => #f)
-)
+  (check (vec :index-where (@ > _ 5)) => -1))
+
+(let ((vec (array #(1 2 3 4 5))))
+  (check (vec :last-index-where even?) => 3)
+  (check (vec :last-index-where (@ > _ 3)) => 4)
+  (check (vec :last-index-where (@ > _ 5)) => -1))
 
 (check ($ #(2 4 6 7 8 9) :take-while even?) => #(2 4 6))
 (check ($ #(1 3 5 7) :take-while odd?) => #(1 3 5 7))
