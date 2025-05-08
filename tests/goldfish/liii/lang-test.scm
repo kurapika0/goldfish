@@ -634,6 +634,11 @@
 
 (check ($ "abc中文" :map (lambda (c) (c :to-upper))) => "ABC中文")
 
+(check ($ "Hello123" :filter (@ _ :ascii?)) => "Hello123")
+(check ($ "123abc" :filter (@ _ :digit?)) => "123")
+(check ($ "ABCabc" :filter (@ _ :upper?)) => "ABC")
+(check ($ "你好世界hello" :filter (@ _ :equals ($ "你" 0))) => ($ "你"))
+
 (check ($ "" :count (@ == _ #\A)) => 0)
 (check ($ "hello" :count (@ == _ #\l)) => 2)
 (check ($ "你好，我是韩梅梅" :count (@ == _ (rich-char :from-string "#\\梅"))) => 2)

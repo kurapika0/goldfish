@@ -719,10 +719,16 @@
           (else (type-error "rich-string%index-of: first parameter must be string/rich-string/char/rich-char")))))
 
 (chained-define (%map f)
-  (box ((%to-rich-vector)
-        :map f
-        :map (@ _ :make-string)
-        :make-string)))
+  (rich-string ((%to-rich-vector)
+                :map f
+                :map (@ _ :make-string)
+                :make-string)))
+
+(chained-define (%filter pred)
+  (rich-string ((%to-rich-vector)
+                :filter pred
+                :map (@ _ :make-string)
+                :make-string)))
 
 (define (%count pred?)
   ((%to-rich-vector) :count pred?))
