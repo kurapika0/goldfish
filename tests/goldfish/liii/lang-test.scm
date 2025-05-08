@@ -553,6 +553,12 @@
 (check ($ "hello" :head-option) => (option #\h))
 (check (rich-string :empty :head-option) => (none))
 
+(check ($ "你好" :last) => ($ "好" 0))
+(check-catch 'index-error (rich-string :empty :last))
+
+(check ($ "hello" :last-option) => (option #\o))
+(check (rich-string :empty :last-option) => (none))
+
 (let1 str ($ "Hello，世界")
    (check (str :slice 0 5) => ($ "Hello"))
    (check (str :slice -10 5) => ($ "Hello"))

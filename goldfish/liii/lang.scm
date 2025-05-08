@@ -636,6 +636,16 @@
       (none)
       (option ($ data 0))))
 
+(define (%last)
+  (if (string-null? data)
+      (index-error "rich-string%last: string is empty")
+      ($ data (- N 1))))
+
+(define (%last-option)
+  (if (string-null? data)
+      (none)
+      (option ($ data (- N 1)))))
+
 (chained-define (%slice from until)
   (let* ((start (max 0 from))
          (end (min N until)))

@@ -4465,7 +4465,7 @@
     \;
   </scm-chunk>
 
-  <paragraph|rich-string%head>
+  <paragraph|rich-string%head><index|rich-string%head>
 
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
     (define (%head)
@@ -4479,7 +4479,7 @@
     \;
   </scm-chunk>
 
-  <paragraph|rich-string%head-option>
+  <paragraph|rich-string%head-option><index|rich-string%head-option>
 
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
     (define (%head-option)
@@ -4493,8 +4493,6 @@
     \;
   </scm-chunk>
 
-  \;
-
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ "你好" :head) =\<gtr\> ($ "你" 0))
 
@@ -4503,6 +4501,50 @@
     (check ($ "hello" :head-option) =\<gtr\> (option #\\h))
 
     (check (rich-string :empty :head-option) =\<gtr\> (none))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-string%last><index|rich-string%last>
+
+  <\scm-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%last)
+
+    \ \ (if (string-null? data)
+
+    \ \ \ \ \ \ (index-error "rich-string%last: string is empty")
+
+    \ \ \ \ \ \ ($ data (- N 1))))
+
+    \;
+  </scm-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ "你好" :last) =\<gtr\> ($ "好" 0))
+
+    (check-catch 'index-error (rich-string :empty :last))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-string%last-option><index|rich-string%last-option>
+
+  <\scm-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%last-option)
+
+    \ \ (if (string-null? data)
+
+    \ \ \ \ \ \ (none)
+
+    \ \ \ \ \ \ (option ($ data (- N 1)))))
+
+    \;
+  </scm-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ "hello" :last-option) =\<gtr\> (option #\\o))
+
+    (check (rich-string :empty :last-option) =\<gtr\> (none))
 
     \;
   </goldfish-chunk>
