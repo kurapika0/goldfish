@@ -1127,6 +1127,24 @@
      :collect)
   => '((1 . b) (1 . d) (2 . c) (3 . a)))
 
+  ;; 测试按绝对值排序
+(check ($ '(-3 1 -2 4 0) :sort-by abs :collect) => '(0 1 -2 -3 4))
+  
+  ;; 测试按结构体字段排序
+(let ((people ($ '((name . "Alice") (name . "Bob") (name . "Charlie")))))
+  (check (people :sort-by (lambda (p) (string-length (cdr p))) :collect)
+         => '((name . "Bob") (name . "Alice") (name . "Charlie"))))
+  
+  ;; 测试空列表
+(check ($ '() :sort-by identity :collect) => '())
+  
+  ;; 测试链式调用
+(check ($ '(-3 1 -2 4 0) 
+         :sort-by abs 
+         :filter positive? 
+         :collect)
+       => '(1 4))
+
 (check  (($ '(1 2 3 4 5 6) :group-by (@ modulo _ 2)) :collect)
         =>  (hash-table 0 '(2 4 6) 1 '(1 3 5)))
 

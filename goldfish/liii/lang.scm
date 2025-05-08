@@ -1177,6 +1177,10 @@
   (let ((sorted-data (list-stable-sort less-p data)))
         (rich-list sorted-data)))
 
+(chained-define (%sort-by f)
+  (let ((sorted-data (list-stable-sort (lambda (x y) (< (f x) (f y))) data)))
+    (rich-list sorted-data)))
+
 (define (%group-by func)
   (let ((group (make-hash-table)))
     (for-each
