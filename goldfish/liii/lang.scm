@@ -1290,6 +1290,16 @@
 (define (%append l)
   (rich-list (append data l)))
 
+(define (%max-by-option f)
+  (if (null? data)
+      (none)
+      (option (%max-by f))))
+
+(define (%min-by-option f)
+  (if (null? data)
+      (none)
+      (option (%min-by f))))
+
 (define (%to-string)
   (object->string data))
 

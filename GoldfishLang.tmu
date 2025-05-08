@@ -7917,6 +7917,46 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-list%max-by-option>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%max-by-option f)
+
+    \ \ (if (null? data)
+
+    \ \ \ \ \ \ (none)
+
+    \ \ \ \ \ \ (option (%max-by f))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ '() :max-by-option identity) =\<gtr\> (none))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-list%min-by-option>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|false>
+    (define (%min-by-option f)
+
+    \ \ (if (null? data)
+
+    \ \ \ \ \ \ (none)
+
+    \ \ \ \ \ \ (option (%min-by f))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|false>
+    (check ($ '() :min-by-option identity) =\<gtr\> (none))
+
+    \;
+  </goldfish-chunk>
+
   <section|转换器>
 
   <paragraph|rich-list%to-string>

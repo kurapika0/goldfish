@@ -1223,6 +1223,10 @@
 (check ($ (list 1 2) :append (list )) => ($ (list 1 2)))
 (check ($ (list 1 2) :append (list 3 4)) => ($ (list 1 2 3 4)))
 
+(check ($ '() :max-by-option identity) => (none))
+
+(check ($ '() :min-by-option identity) => (none))
+
 (check (object->string ($ '(1 2 3))) => "(1 2 3)")
 
 (let1 l (rich-list (list 1 2 3))
