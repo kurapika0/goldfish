@@ -100,6 +100,11 @@
         (r :set-parts! #("/"))
         r))
 
+(chained-define (@from-parts x) 
+   (let1 r (path)
+     (r :set-parts! x)
+     r))
+
 (chained-define (@/ x) 
    (if (path :is-type-of x)
        (path :root :/ x)
@@ -108,10 +113,8 @@
             
              ((string=? x "/") (path :root))
             
-             (else 
-               (let1 r (path)
-                 (r :set-parts! (vector-append #("/") (vector x)))
-                   r)))))
+             (else
+               (path :from-parts (vector-append #("/") (vector x)))))))
 
 (chained-define (@apply s)
   (cond ((and (or (os-linux?) (os-macos?))
@@ -128,10 +131,10 @@
          (let loop ((iter s))
            (cond ((or (string-null? iter) (string=? iter "."))
                   (path))
+                 
                  ((not (char=? (iter 0) (os-sep)))
-                  (let1 p (path)
-                    (p :set-parts! ($ iter :split (string (os-sep))))
-                    p))
+                  (path :from-parts ($ iter :split (string (os-sep)))))
+                 
                  (else
                   (loop ($ iter :drop 1 :get))))))))
 

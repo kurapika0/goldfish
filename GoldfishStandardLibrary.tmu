@@ -3481,14 +3481,6 @@
     (check ((path) :get-parts) =\<gtr\> #("."))
 
     \;
-
-    (check (let1 p (path)\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (p :set-parts! #("/", "tmp"))\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (p :to-string)) =\<gtr\> "/tmp")
-
-    \;
   </scm-chunk>
 
   <subsection|构造器>
@@ -3545,6 +3537,30 @@
     \;
   </scm-chunk>
 
+  <paragraph|path@from-parts>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (chained-define (@from-parts x)\ 
+
+    \ \ \ (let1 r (path)
+
+    \ \ \ \ \ (r :set-parts! x)
+
+    \ \ \ \ \ r))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    (check (path :from-parts #("/" "tmp")) =\<gtr\> (path :/ "tmp"))
+
+    (check (path :from-parts #("/" "tmp" "/" "test")) =\<gtr\> (path :/ "tmp" :/ "test"))
+
+    (check (path :from-parts #("/", "tmp") :to-string) =\<gtr\> "/tmp")
+
+    \;
+  </scm-chunk>
+
   <paragraph|path@/>
 
   <\goldfish-chunk|goldfish/liii/path.scm|true|true>
@@ -3564,13 +3580,9 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ 
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (else\ 
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (else
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let1 r (path)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (r :set-parts! (vector-append #("/") (vector x)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ r)))))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (path :from-parts (vector-append #("/") (vector x)))))))
 
     \;
   </goldfish-chunk>
@@ -3616,13 +3628,13 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (path))
 
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ((not (char=? (iter 0) (os-sep)))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let1 p (path)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (path :from-parts ($ iter :split (string (os-sep)))))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :set-parts! ($ iter :split (string (os-sep))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ p))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (else
 
@@ -3728,11 +3740,7 @@
 
     \ \ (mkdir "tmpxxxx")\ 
 
-    \ \ (check-false (let1 p (path)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :set-parts! #("/" "tmp" "/" "tmpxxxx"))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :file?)))
+    \ \ (check-false (path :from-parts #("/" "tmp" "/" "tmpxxxx") :file?))
 
     \ \ (rmdir "tmpxxxx"))
 
@@ -3758,27 +3766,15 @@
 
     \ \ (check-true (path :/ "tmp/" :dir?))
 
-    \ \ (check-false (let1 p (path)
+    \ \ (check-false (path :from-parts #("/" "tmpxxxx") :dir?))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :set-parts! #("/" "tmpxxxx"))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :dir?)))
-
-    \ \ (check-true (let1 p (path)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :set-parts! #("/" "tmp" ""))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :dir?)))
+    \ \ (check-true (path :from-parts #("/" "tmp" "") :dir?))
 
     \ \ (chdir "/tmp")
 
     \ \ (mkdir "tmpxxxx")
 
-    \ \ (check-true (let1 p (path)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :set-parts! #("/" "tmp" "/" "tmpxxxx" ""))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :dir?)))
+    \ \ (check-true (path :from-parts #("/" "tmp" "/" "tmpxxxx" "") :dir?))
 
     \ \ (rmdir "tmpxxxx"))
 
@@ -3822,17 +3818,9 @@
 
     (check-true (path :/ "C:" :absolute?))
 
-    (check-true (let1 p (path)
+    (check-true (path :from-parts #("/" "tmp") :absolute?))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :set-parts! #("/" "tmp"))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :absolute?)))
-
-    (check-false (let1 p (path)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :set-parts! #("tmp"))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (p :absolute?)))\ 
+    (check-false (path :from-parts #("tmp") :absolute?))
 
     \;
   </scm-chunk>
