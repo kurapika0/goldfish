@@ -1195,6 +1195,12 @@
 (check-catch 'type-error ($ '(1 2 3) :max-by "not-function"))
 (check-catch 'type-error ($ '("a" "b" "c") :max-by identity))
 
+(check ($ '(1 2 3) :min-by identity) => 1)
+(check ($ '((1) (3) (2)) :min-by car) => '(1))
+(check-catch 'value-error ($ '() :min-by identity))
+(check-catch 'type-error ($ '(1 2 3) :min-by "not-function"))
+(check-catch 'type-error ($ '("a" "b" "c") :min-by identity))
+
 (check (object->string ($ '(1 2 3))) => "(1 2 3)")
 
 (let1 l (rich-list (list 1 2 3))

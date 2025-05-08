@@ -7781,6 +7781,68 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-list%min-by>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|false>
+    (typed-define (%min-by (f procedure?))
+
+    \ \ (if (null? data)
+
+    \ \ \ \ \ \ (value-error "rich-list%min-by: empty list is not allowed")
+
+    \ \ \ \ \ \ (let loop ((rest (cdr data))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (min-elem (car data))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (min-val (let ((val (f (car data))))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unless (real? val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-error "rich-list%min-by: procedure must return real number but got"
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (object-\<gtr\>string val)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ val)))
+
+    \ \ \ \ \ \ \ \ (if (null? rest)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ min-elem
+
+    \ \ \ \ \ \ \ \ \ \ \ \ (let* ((current (car rest))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (current-val (let ((val (f current)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unless (real? val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-error "rich-list%min-by: procedure must return real number but got"
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (object-\<gtr\>string val)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ val)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (\<less\> current-val min-val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (cdr rest) current current-val)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (cdr rest) min-elem min-val)))))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|false>
+    (check ($ '(1 2 3) :min-by identity) =\<gtr\> 1)
+
+    (check ($ '((1) (3) (2)) :min-by car) =\<gtr\> '(1))
+
+    (check-catch 'value-error ($ '() :min-by identity))
+
+    (check-catch 'type-error ($ '(1 2 3) :min-by "not-function"))
+
+    (check-catch 'type-error ($ '("a" "b" "c") :min-by identity))
+
+    \;
+  </goldfish-chunk>
+
   <section|转换器>
 
   <paragraph|rich-list%to-string>

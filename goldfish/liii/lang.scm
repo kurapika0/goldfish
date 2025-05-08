@@ -1261,6 +1261,28 @@
                   (loop (cdr rest) current current-val)
                   (loop (cdr rest) max-elem max-val)))))))
 
+(typed-define (%min-by (f procedure?))
+  (if (null? data)
+      (value-error "rich-list%min-by: empty list is not allowed")
+      (let loop ((rest (cdr data))
+                 (min-elem (car data))
+                 (min-val (let ((val (f (car data))))
+                            (unless (real? val)
+                              (type-error "rich-list%min-by: procedure must return real number but got"
+                                         (object->string val)))
+                            val)))
+        (if (null? rest)
+            min-elem
+            (let* ((current (car rest))
+                   (current-val (let ((val (f current)))
+                                  (unless (real? val)
+                                    (type-error "rich-list%min-by: procedure must return real number but got"
+                                               (object->string val)))
+                                  val)))
+              (if (< current-val min-val)
+                  (loop (cdr rest) current current-val)
+                  (loop (cdr rest) min-elem min-val)))))))
+
 (define (%to-string)
   (object->string data))
 
