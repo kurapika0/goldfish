@@ -7899,7 +7899,7 @@
 
   <paragraph|rich-list%append>
 
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|false>
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%append l)
 
     \ \ (rich-list (append data l)))
@@ -7907,7 +7907,7 @@
     \;
   </goldfish-chunk>
 
-  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|false>
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check (rich-list :empty :append (list 1 2)) =\<gtr\> ($ (list 1 2)))
 
     (check ($ (list 1 2) :append (list )) =\<gtr\> ($ (list 1 2)))
@@ -7939,7 +7939,7 @@
 
   <paragraph|rich-list%min-by-option>
 
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|false>
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%min-by-option f)
 
     \ \ (if (null? data)
@@ -7951,7 +7951,7 @@
     \;
   </goldfish-chunk>
 
-  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|false>
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ '() :min-by-option identity) =\<gtr\> (none))
 
     \;
@@ -9639,6 +9639,46 @@
     (check-catch 'type-error ($ #(1 2 3) :min-by "not-a-function"))
 
     (check-catch 'type-error ($ #(1 2 3) :min-by (lambda (x) "not-a-number")))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-vector%max-by-option>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (typed-define (%max-by-option (f procedure?))
+
+    \ \ (if (zero? (vector-length data))
+
+    \ \ \ \ \ \ (none)
+
+    \ \ \ \ \ \ (option (%max-by f))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ #() :max-by-option identity) =\<gtr\> (none))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|rich-vector%min-by-option>
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (typed-define (%min-by-option (f procedure?))
+
+    \ \ (if (zero? (vector-length data))
+
+    \ \ \ \ \ \ (none)
+
+    \ \ \ \ \ \ (option (%min-by f))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ #() :min-by-option identity) =\<gtr\> (none))
 
     \;
   </goldfish-chunk>

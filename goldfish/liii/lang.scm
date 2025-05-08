@@ -1661,6 +1661,16 @@
                     (loop (+ i 1) min-elem min-val)
                     (loop (+ i 1) current-elem current-val))))))))
 
+(typed-define (%max-by-option (f procedure?))
+  (if (zero? (vector-length data))
+      (none)
+      (option (%max-by f))))
+
+(typed-define (%min-by-option (f procedure?))
+  (if (zero? (vector-length data))
+      (none)
+      (option (%min-by f))))
+
 (define (%to-string)
   ((%map object->string)
    :make-string "#(" " " ")"))
