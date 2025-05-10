@@ -90,7 +90,7 @@
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
     (define-library (liii lang)
 
-    (import (liii base) (liii string) (liii vector) (liii sort)
+    (import (liii base) (liii oop) (liii string) (liii vector) (liii sort)
 
     \ \ \ \ \ \ \ \ (liii list) (liii hash-table) (liii bitwise))
 
@@ -224,68 +224,6 @@
 
     部分应用的结果在定义时即固定，不受后续环境变化影响。
   </description>
-
-  \;
-
-  <subparagraph|实现函数>
-
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define-macro (@ . paras)
-
-    \ \ (letrec*
-
-    \ \ \ \ (
-
-    \ \ \ \ \ \ (slot? (lambda (x) (equal? '_ x)))
-
-    \ \ \ \ \ \ (exprs (filter (lambda (x) (not (slot? x))) paras))
-
-    \ \ \ \ \ \ (slots (filter slot? paras))
-
-    \;
-
-    \ \ \ \ \ \ (exprs-sym-list (map (lambda (x) (gensym)) exprs)) \ 
-
-    \ \ \ \ \ \ (slots-sym-list (map (lambda (x) (gensym)) slots))
-
-    \;
-
-    \ \ \ \ \ \ (lets (map list exprs-sym-list exprs))
-
-    \;
-
-    \ \ \ \ \ \ (parse
-
-    \ \ \ \ \ \ \ \ (lambda (exprs-sym-list slots-sym-list paras)
-
-    \ \ \ \ \ \ \ \ \ \ (cond
-
-    \ \ \ \ \ \ \ \ \ \ \ \ ((null? paras) paras)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ ((not (list? paras)) paras)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ ((slot? (car paras))\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ `(,(car slots-sym-list)\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,@(parse exprs-sym-list (cdr slots-sym-list) (cdr paras))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ (else\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ `(,(car exprs-sym-list)\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,@(parse (cdr exprs-sym-list) slots-sym-list (cdr paras))))))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
-
-    \ \ `(let ,lets\ 
-
-    \ \ \ \ \ \ \ \ (lambda ,slots-sym-list\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,(parse exprs-sym-list slots-sym-list paras)))))
-
-    \;
-  </goldfish-chunk>
 
   <subparagraph|测试用例>
 
@@ -432,96 +370,6 @@
   <subparagraph|实现细节>
 
   <scm|typed-define> 在宏展开时会生成类型检查代码，并在运行时对每个参数进行类型验证。如果参数类型不匹配，会抛出一个类型错误，错误信息中会包含参数名、期望的类型和实际的值。
-
-  \;
-
-  <subparagraph|实现函数>
-
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define-macro (typed-define name-and-params body . rest)
-
-    \ \ (let* ((name (car name-and-params))
-
-    \ \ \ \ \ \ \ \ \ \ (params (cdr name-and-params))
-
-    \ \ \ \ \ \ \ \ \ \ (param-names (map car params)))
-
-    \;
-
-    \ \ \ \ \ \ \ \ `(define*\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ (,name\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ ,@(map \ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (lambda (param)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let \ ((param-name (car param))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-pred (cadr param))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (default-value (cddr param)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (null? default-value)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ param-name
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ `(,param-name ,(car default-value)))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ params))
-
-    \;
-
-    \ \ \ \ \ \ \ \ ;; Runtime type check \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ \ ,@(map (lambda (param)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let* ((param-name (car param))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-pred (cadr param))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ;;remove the '?' in 'type?'
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-name-str\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let ((s (symbol-\<gtr\>string type-pred)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (and (positive? (string-length s))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (char=? (string-ref s (- (string-length s) 1)) #\\?))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (substring s 0 (- (string-length s) 1))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ s))))
-
-    \;
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ `(unless\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (,type-pred ,param-name)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-error\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (format #f "In funtion #\<less\>~a ~a\<gtr\>: argument *~a* must be *~a*! \ \ \ **Got ~a**"
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,name
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ',param-names
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ',param-name
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,type-name-str
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (object-\<gtr\>string ,param-name))))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ params)
-
-    \ \ \ \ \ \ \ ,body
-
-    \ \ \ \ \ \ \ ,@rest)))
-
-    \;
-  </goldfish-chunk>
 
   <subparagraph|测试用例>
 
@@ -696,364 +544,6 @@
   <subparagraph|实现细节>
 
   <scm|define-case-class> 在宏展开时会生成样本类的构造函数、字段访问器、实例方法和静态方法。实例方法通过分发器（dispatcher）实现，支持链式调用和动态方法查找。
-
-  <subparagraph|实现函数>
-
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define-macro (define-case-class class-name fields . private-fields-and-methods)
-
-    \ \ (let* ((key-fields
-
-    \ \ \ \ \ \ \ \ \ (map (lambda (field) (string-\<gtr\>symbol (string-append ":" (symbol-\<gtr\>string (car field)))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ fields))
-
-    \ \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ \ \ (field-names (map car fields))
-
-    \ \ \ \ \ \ \ \ \ (field-count (length field-names))
-
-    \;
-
-    \ \ \ \ \ \ \ \ \ (private-fields (filter (lambda (x)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (and (list? x)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\<gtr\>= (length x) 2)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (symbol? (x 1))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ private-fields-and-methods))
-
-    \;
-
-    \ \ \ \ \ \ \ \ \ (methods (filter (lambda (x)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (and (list? x)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\<gtr\>= (length x) 2)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (pair? (x 1))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ private-fields-and-methods))
-
-    \ \ \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ \ \ (method-names
-
-    \ \ \ \ \ \ \ \ \ \ \ (map (lambda (method)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let* ((method-sym (caadr method))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (method-name (symbol-\<gtr\>string method-sym)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cond
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ((string-starts? method-name "@")
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-remove-prefix method-name "@"))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ((string-starts? method-name "%")
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-remove-prefix method-name "%"))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (else method-name))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ methods))
-
-    \ \ \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ \ \ (conflicts-names
-
-    \ \ \ \ \ \ \ \ \ \ (filter (lambda (method-name)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let ((name (string-\<gtr\>symbol method-name)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (member name field-names)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ method-names))
-
-    \ \ \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ \ \ (check-conflicts-names (unless (null? conflicts-names)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let ((conflict-str (apply string-append\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (map (lambda (c) (string-append " \<less\>" c "\<gtr\>"))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conflicts-names))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (error 'syntax-error (string-append "In class ["
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (symbol-\<gtr\>string class-name)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "]: Method name"\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (= (length conflicts-names) 1) "" "s")
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conflict-str
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ " conflicts with field name"
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (= (length conflicts-names) 1) "" "s"))))))
-
-    \ \ \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ \ \ (instance-methods
-
-    \ \ \ \ \ \ \ \ \ \ (filter (lambda (method) (string-starts? (symbol-\<gtr\>string (caadr method)) "%"))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ methods))
-
-    \ \ \ \ \ \ \ \ \ (instance-method-symbols (map caadr instance-methods))
-
-    \ \ \ \ \ \ \ \ \ (instance-messages
-
-    \ \ \ \ \ \ \ \ \ \ (map (lambda (method)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let1 name (string-remove-prefix (symbol-\<gtr\>string method) "%")
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-\<gtr\>symbol (string-append ":" name))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ instance-method-symbols))
-
-    \ \ \ \ \ \ \ \ \ (static-methods
-
-    \ \ \ \ \ \ \ \ \ \ (filter (lambda (method) (string-starts? (symbol-\<gtr\>string (caadr method)) "@"))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ methods))
-
-    \ \ \ \ \ \ \ \ \ (static-method-symbols (map caadr static-methods))
-
-    \ \ \ \ \ \ \ \ \ (static-messages
-
-    \ \ \ \ \ \ \ \ \ \ (map (lambda (method)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let1 name (string-remove-prefix (symbol-\<gtr\>string method) "@")
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-\<gtr\>symbol (string-append ":" name))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ static-method-symbols))
-
-    \ \ \ \ \ \ \ \ \ ;(default-static-messages '(:is-type-of))
-
-    \ \ \ \ \ \ \ \ \ (internal-methods
-
-    \ \ \ \ \ \ \ \ \ \ \ (filter (lambda (method) (not (or (string-starts? (symbol-\<gtr\>string (caadr method)) "%")
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-starts? (symbol-\<gtr\>string (caadr method)) "@"))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ methods))
-
-    \ \ \ \ \ \ \ \ \ (this-symbol (gensym))
-
-    \ \ \ \ \ \ \ \ \ (f-make-case-class (string-\<gtr\>symbol (string-append "make-case-class-" (symbol-\<gtr\>string class-name)))))
-
-    \;
-
-    `(define (,class-name . args)
-
-    \;
-
-    (define (@is-type-of obj)
-
-    \ \ (and (case-class? obj)
-
-    \ \ \ \ \ \ \ (obj :is-instance-of ',class-name)))
-
-    \ \ \ 
-
-    ,@static-methods
-
-    \;
-
-    (define (is-normal-function? msg)
-
-    \ \ (and \ (symbol? msg)\ 
-
-    \ \ \ \ \ \ \ \ (char=? (string-ref (symbol-\<gtr\>string msg) 0) #\\:)))
-
-    \;
-
-    (define (static-dispatcher msg . args)
-
-    \ \ \ \ (cond
-
-    \ \ \ \ \ ((eq? msg :is-type-of) (apply @is-type-of args))
-
-    \ \ \ \ \ ,@(map (lambda (method expected) `((eq? msg ,expected) (apply ,method args)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ static-method-symbols static-messages)
-
-    \ \ \ \ \ (else (value-error "No such static method " msg))))
-
-    \;
-
-    (typed-define (,f-make-case-class ,@fields)
-
-    \ \ (define ,this-symbol #f)
-
-    \ \ (define (%this . xs)
-
-    \ \ \ \ (if (null? xs)
-
-    \ \ \ \ \ \ ,this-symbol
-
-    \ \ \ \ \ \ (apply ,this-symbol xs)))
-
-    \;
-
-    \ \ (define (%is-instance-of x)
-
-    \ \ \ \ (eq? x ',class-name))
-
-    \ \ \ \ \ \ \ \ \ 
-
-    \ \ (typed-define (%equals (that case-class?))
-
-    \ \ \ \ (and (that :is-instance-of ',class-name)
-
-    \ \ \ \ \ \ \ \ \ ,@(map (lambda (field) `(equal? ,(car field) (that ',(car field))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fields)))
-
-    \ \ \ \ \ \ \ \ \ 
-
-    \ \ (define (%apply . args)
-
-    \ \ \ \ (cond ((null? args)
-
-    \ \ \ \ \ \ \ \ \ \ \ (value-error ,class-name "Apply on zero args is not implemented"))
-
-    \ \ \ \ \ \ \ \ \ \ ((equal? ((symbol-\<gtr\>string (car args)) 0) #\\:)
-
-    \ \ \ \ \ \ \ \ \ \ \ (value-error ,class-name "No such method: " (car args)))
-
-    \ \ \ \ \ \ \ \ \ \ (else (value-error ,class-name "No such field: " (car args)))))
-
-    \ \ \ \ \ \ \ \ \ 
-
-    \ \ (define (%to-string)
-
-    \ \ \ \ (let ((field-strings
-
-    \ \ \ \ \ \ \ \ \ \ \ (list ,@(map (lambda (field key-field)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ `(string-append
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,(symbol-\<gtr\>string key-field) " "
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (object-\<gtr\>string ,(car field))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fields key-fields))))
-
-    \ \ \ \ \ \ (let loop ((strings field-strings)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (acc ""))
-
-    \ \ \ \ \ \ \ \ (if (null? strings)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ (string-append "(" ,(symbol-\<gtr\>string class-name) " " acc ")")
-
-    \ \ \ \ \ \ \ \ \ \ \ \ (loop (cdr strings)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (zero? (string-length acc))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (car strings)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-append acc " " (car strings))))))))
-
-    \;
-
-    \ \ ,@private-fields
-
-    \ \ ,@internal-methods
-
-    \ \ ,@instance-methods
-
-    \ 
-
-    \ \ (define (instance-dispatcher)
-
-    \ \ \ \ (lambda (msg . args)
-
-    \ \ \ \ \ \ (cond
-
-    \ \ \ \ \ \ \ \ ((eq? msg :is-instance-of) (apply %is-instance-of args))
-
-    \ \ \ \ \ \ \ \ ((eq? msg :equals) (apply %equals args))
-
-    \ \ \ \ \ \ \ \ ((eq? msg :to-string) (%to-string))
-
-    \ \ \ \ \ \ \ \ ((eq? msg :this) (apply %this args))
-
-    \ \ \ \ \ \ \ \ ,@(map (lambda (field key-field)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ `((eq? msg ,key-field)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (,class-name
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,@(map (lambda (f) (if (eq? (car f) (car field)) '(car args) (car f)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fields))))
-
-    \ \ \ \ \ \ \ \ \ \ fields key-fields)
-
-    \ \ \ \ \ \ \ \ ((is-normal-function? msg)
-
-    \ \ \ \ \ \ \ \ \ (case msg
-
-    \ \ \ \ \ \ \ \ \ \ \ ,@(map (lambda (method expected)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ `((,expected) (apply ,method args)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ instance-method-symbols instance-messages)
-
-    \ \ \ \ \ \ \ \ \ \ \ (else (value-error ,class-name "No such method: " msg))))
-
-    \ \ \ \ \ \ \ \ ,@(map (lambda (field) `((eq? msg ',(car field)) ,(car field))) fields)
-
-    \ \ \ \ \ \ \ \ (else (apply %apply (cons msg args))))))
-
-    \;
-
-    \ \ (set! ,this-symbol (instance-dispatcher))
-
-    \ \ ,this-symbol
-
-    ) ; end of the internal typed define
-
-    \;
-
-    (if (null? args)
-
-    \ \ \ \ (,f-make-case-class)
-
-    \ \ \ \ (let ((msg (car args)))
-
-    \ \ \ \ \ \ (cond ((in? msg (list ,@static-messages :is-type-of))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (apply static-dispatcher args))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ ((and (zero? ,field-count) (in? :apply (list ,@static-messages)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (apply static-dispatcher (cons :apply args)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ (else
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (apply ,f-make-case-class args)))))
-
-    \;
-
-    ) ; end of define
-
-    ) ; end of let
-
-    ) ; end of define-macro
-
-    \;
-  </goldfish-chunk>
 
   <subparagraph|测试用例>
 
@@ -1519,18 +1009,6 @@
 
   <tformat|<cwith|1|5|1|1|cell-lborder|1ln>|<cwith|1|5|1|1|cell-halign|l>|<cwith|1|5|1|1|cell-rborder|1ln>|<cwith|1|5|2|2|cell-halign|l>|<cwith|1|5|2|2|cell-rborder|1ln>|<cwith|1|5|3|3|cell-halign|l>|<cwith|1|5|3|3|cell-rborder|1ln>|<cwith|1|5|1|3|cell-valign|c>|<cwith|1|1|1|3|cell-tborder|1ln>|<cwith|1|1|1|3|cell-bborder|1ln>|<cwith|2|2|1|3|cell-bborder|1ln>|<cwith|3|3|1|3|cell-bborder|1ln>|<cwith|4|4|1|3|cell-bborder|1ln>|<cwith|5|5|1|3|cell-bborder|1ln>|<table|<row|<cell|特性>|<cell|<scm|define-object>>|<cell|<scm|define-case-class>>>|<row|<cell|字段支持>|<cell|不支持>|<cell|支持类型化字段>>|<row|<cell|方法前缀>|<cell|强制要求>|<cell|可选>>|<row|<cell|初始化>|<cell|无参构造>|<cell|字段初始化构造>>|<row|<cell|适用场景>|<cell|行为抽象>|<cell|数据+行为封装>>>>
 
-  \;
-
-  <subparagraph|实现函数>
-
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define-macro (define-object object-name . methods)
-
-    \ \ `(define-case-class ,object-name () ,@methods))
-
-    \;
-  </goldfish-chunk>
-
   <subparagraph|测试用例>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
@@ -1644,96 +1122,6 @@
 
     )
   </scm-code>
-
-  <subparagraph|实现函数>
-
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define-macro (define-class class-name private-fields . private-fields-and-methods)
-
-    \ \ (let* ((field-defs '())
-
-    \ \ \ \ \ \ \ \ \ (getter-defs '())
-
-    \ \ \ \ \ \ \ \ \ (setter-defs '())
-
-    \ \ \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ \ \ ;; generate define, getter, setter
-
-    \ \ \ \ \ \ \ \ \ (process-fields
-
-    \ \ \ \ \ \ \ \ \ \ (map (lambda (field-spec)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (let* ((field-name (car field-spec))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (type-pred (cadr field-spec))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (default-value (if (\<gtr\>= (length field-spec) 3)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (caddr field-spec)
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ''()))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (getter-name (string-\<gtr\>symbol\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-append "%get-" (symbol-\<gtr\>string field-name))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (setter-name (string-\<gtr\>symbol\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string-append "%set-" (symbol-\<gtr\>string field-name) "!"))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (set! field-defs\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cons `(define ,field-name ,default-value) field-defs))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (set! getter-defs\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cons `(define (,getter-name) ,field-name) getter-defs))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (set! setter-defs\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cons `(typed-define (,setter-name (x ,type-pred))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (set! ,field-name x))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setter-defs))))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ private-fields)))
-
-    \ \ \ \ 
-
-    \ \ \ \ `(define-case-class ,class-name ()
-
-    \ \ \ \ \ \ \ ;; define
-
-    \ \ \ \ \ \ \ ,@(reverse field-defs)
-
-    \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ ;; Getter
-
-    \ \ \ \ \ \ \ ,@(reverse getter-defs)
-
-    \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ ;; Setter
-
-    \ \ \ \ \ \ \ ,@(reverse setter-defs)
-
-    \ \ \ \ \ \ \ 
-
-    \ \ \ \ \ \ \ ;; else
-
-    \ \ \ \ \ \ \ ,@private-fields-and-methods)))
-
-    \;
-  </goldfish-chunk>
 
   <subparagraph|测试用例>
 
@@ -1877,34 +1265,6 @@
 
   \;
 
-  <strong|实现函数>
-
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define (case-class? x)
-
-    \ \ (and-let* ((is-proc? (procedure? x))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (source (procedure-source x))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (source-at-least-3? (and (list? source) (\<gtr\>= (length source) 3)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (body (source 2))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (body-at-least-3? (and (list? body) (\<gtr\>= (length body) 3)))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (is-cond? (eq? (car body) 'cond))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (pred1 ((body 1) 0))
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (pred2 ((body 2) 0)))
-
-    \ \ \ \ (and (equal? pred1 '(eq? msg :is-instance-of))
-
-    \ \ \ \ \ \ \ \ \ (equal? pred2 '(eq? msg :equals)))))
-
-    \;
-  </goldfish-chunk>
-
   <strong|测试用例>
 
   测试：匿名函数、内置函数或普通自定义函数会返回 <scm|#f>。
@@ -2009,32 +1369,6 @@
 
   \;
 
-  <strong|实现函数>
-
-  <\scm-chunk|goldfish/liii/lang.scm|true|true>
-    (define (== left right)
-
-    \ \ (cond
-
-    \ \ \ \ ((and (case-class? left) (case-class? right))
-
-    \ \ \ \ \ (left :equals right))
-
-    \ \ \ \ ((case-class? left)
-
-    \ \ \ \ \ (left :equals ($ right)))
-
-    \ \ \ \ ((case-class? right)
-
-    \ \ \ \ \ ($ left :equals right))
-
-    \ \ \ \ (else
-
-    \ \ \ \ \ (equal? left right))))
-
-    \;
-  </scm-chunk>
-
   <strong|测试用例>
 
   <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
@@ -2121,16 +1455,6 @@
     <item><with|font-series|bold|一致性>: 与 <scm|==> 共享相同的比较逻辑，确保行为的一致性。
   </itemize-minus>
 
-  <strong|实现函数>
-
-  <\scm-chunk|goldfish/liii/lang.scm|true|true>
-    (define (!= left right)
-
-    \ \ (not (== left right)))
-
-    \;
-  </scm-chunk>
-
   <strong|测试用例>
 
   <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
@@ -2210,30 +1534,6 @@
 
     <item><with|font-series|bold|简化方法定义>: 通过 <scm|chained-define>，可以更简洁地定义支持链式调用的方法。
   </itemize-minus>
-
-  \;
-
-  <strong|实现函数>
-
-  <\scm-chunk|goldfish/liii/lang.scm|true|true>
-    (define-macro (chained-define head . body)
-
-    \ \ (let ((xs (gensym))
-
-    \ \ \ \ \ \ \ \ (result (gensym)))
-
-    \ \ \ \ `(define ,(append head xs)
-
-    \ \ \ \ \ \ \ (let ((,result (begin ,@body)))
-
-    \ \ \ \ \ \ \ \ \ (if (null? ,xs)
-
-    \ \ \ \ \ \ \ \ \ \ \ ,result
-
-    \ \ \ \ \ \ \ \ \ \ \ (apply ,result ,xs))))))
-
-    \;
-  </scm-chunk>
 
   <strong|测试用例>
 
@@ -2323,28 +1623,6 @@
     <item><scm|display*> 适用于需要展示多个对象的场景，特别是当这些对象中包含样本类时。
   </itemize-minus>
 
-  \;
-
-  <strong|实现函数>
-
-  <scm|display*>可以正确展示样本类，以及接受多个参数，是<scm|display>的加强版。
-
-  <\scm-chunk|goldfish/liii/lang.scm|true|true>
-    (define (display* . params)
-
-    \ \ (define (%display x)
-
-    \ \ \ \ (if (case-class? x)
-
-    \ \ \ \ \ \ \ \ (display (x :to-string))
-
-    \ \ \ \ \ \ \ \ (display x)))
-
-    \ \ (for-each %display params))
-
-    \;
-  </scm-chunk>
-
   <strong|测试用例>
 
   <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
@@ -2416,26 +1694,6 @@
   <strong|设计意义>
 
   <verbatim|object-<textgreater|>string> 提供了一种统一的机制，用于将对象转换为字符串表示。它特别适用于调试、日志记录和展示对象内容的场景。通过支持样本类，<scm|object-<textgreater|>string> 能够更好地与 Goldfish Scheme 的样本类系统集成。
-
-  \;
-
-  <strong|实现函数>
-
-  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define s7-object-\<gtr\>string object-\<gtr\>string)
-
-    \;
-
-    (define (object-\<gtr\>string x)
-
-    \ \ (if (case-class? x)
-
-    \ \ \ \ \ \ (x :to-string)
-
-    \ \ \ \ \ \ (s7-object-\<gtr\>string x)))
-
-    \;
-  </goldfish-chunk>
 
   <strong|测试用例>
 
