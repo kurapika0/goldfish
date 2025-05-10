@@ -3705,6 +3705,44 @@
 
   <subsection|选择器>
 
+  <paragraph|path%name>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (define (%name)
+
+    \ \ (if (string=? "." ($ parts :last))
+
+    \ \ \ \ \ \ ""
+
+    \ \ \ \ \ \ ($ parts :last)))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    (check (path "file.txt" :name) =\<gtr\> "file.txt")
+
+    (check (path "archive.tar.gz" :name) =\<gtr\> "archive.tar.gz")\ 
+
+    (check (path ".hidden" :name) =\<gtr\> ".hidden")\ 
+
+    (check (path "noext" :name) =\<gtr\> "noext") \ 
+
+    (check (path "/path/to/file.txt" :name) =\<gtr\> "file.txt") \ 
+
+    (check (path "C:/path/to/file.txt" :name) =\<gtr\> "file.txt") \ ; Windows路径
+
+    (check (path "" :name) =\<gtr\> "") \ ; 空路径
+
+    (check (path "." :name) =\<gtr\> "") \ ; 当前目录
+
+    (check (path ".." :name) =\<gtr\> "..") \ ; 上级目录
+
+    \;
+  </scm-chunk>
+
+  \;
+
   <paragraph|path%stem>
 
   <\goldfish-chunk|goldfish/liii/path.scm|true|true>
@@ -3746,7 +3784,7 @@
 
     \ \ 
 
-    \ \ (drop-suffix last-part-str))
+    \ \ (drop-suffix (%name)))
 
     \;
   </goldfish-chunk>

@@ -143,6 +143,11 @@
 (chained-define (@from-env name)
   (path (getenv name)))
 
+(define (%name)
+  (if (string=? "." ($ parts :last))
+      ""
+      ($ parts :last)))
+
 (define (%stem)
   (define last-part-str 
     (if (> (vector-length parts) 0)
@@ -162,7 +167,7 @@
             (else  ; 正常多后缀情况
              (rich-splits :take (- count 1) :make-string ".")))))
   
-  (drop-suffix last-part-str))
+  (drop-suffix (%name)))
 
 (define (%file?)
   (path-file? (%to-string)))
