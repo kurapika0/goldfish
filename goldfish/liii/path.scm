@@ -169,6 +169,20 @@
   
   (drop-suffix (%name)))
 
+(define (%suffix)
+  (let* ((name (%name))
+         (rich-str ($ name))
+         (rich-splits (rich-str :split "."))
+         (count (rich-splits :count)))
+    (cond ((<= count 1) "")  ; 无后缀
+          ((string=? name ".") "")  ; 当前目录
+          ((string=? name "..") "") ; 上级目录
+          ((and (string=? (rich-splits 0) "")  ; 以点开头
+                (= count 2))  ; 且只有一个点（纯隐藏文件）
+           "")
+          (else 
+           (string-append "." (rich-splits :last))))))  ; 返回最后一部分
+
 (define (%file?)
   (path-file? (%to-string)))
 

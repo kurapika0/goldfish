@@ -130,6 +130,16 @@
 (check (path "." :stem) => "")  ; 当前目录
 (check (path ".." :stem) => "..")  ; 上级目录
 
+(check (path "file.txt" :suffix) => ".txt")
+(check (path "archive.tar.gz" :suffix) => ".gz")  ; 只保留最后一个后缀
+(check (path ".hidden" :suffix) => "")  
+(check (path "noext" :suffix) => "")  
+(check (path "/path/to/file.txt" :suffix) => ".txt")  ; 绝对路径
+(check (path "C:/path/to/file.txt" :suffix) => ".txt")  ; Windows路径
+(check (path "" :suffix) => "")  ; 空路径
+(check (path "." :suffix) => "")  ; 当前目录
+(check (path ".." :suffix) => "")  ; 上级目录
+
 (when (or (os-linux?) (os-macos?))
   (check-false (path :/ "tmp" :file?))
   (chdir "/tmp")
