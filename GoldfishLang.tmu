@@ -1002,15 +1002,15 @@
 
     \ \ \ \ \ \ \ \ ((is-normal-function? msg)
 
-    \ \ \ \ \ \ \ \ \ \ (cond
+    \ \ \ \ \ \ \ \ \ (case msg
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,@(map (lambda (method expected) `((eq? msg ,expected) (apply ,method args)))
+    \ \ \ \ \ \ \ \ \ \ \ ,@(map (lambda (method expected)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ instance-method-symbols instance-messages)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ `((,expected) (apply ,method args)))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (else (value-error ,class-name "No such method: " msg))))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ instance-method-symbols instance-messages)
 
-    \ \ \ \ \ \ \ \ 
+    \ \ \ \ \ \ \ \ \ \ \ (else (value-error ,class-name "No such method: " msg))))
 
     \ \ \ \ \ \ \ \ ,@(map (lambda (field) `((eq? msg ',(car field)) ,(car field))) fields)
 

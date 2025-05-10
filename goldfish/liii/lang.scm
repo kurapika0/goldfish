@@ -248,11 +248,11 @@
                       fields))))
           fields key-fields)
         ((is-normal-function? msg)
-          (cond
-              ,@(map (lambda (method expected) `((eq? msg ,expected) (apply ,method args)))
-               instance-method-symbols instance-messages)
-              (else (value-error ,class-name "No such method: " msg))))
-        
+         (case msg
+           ,@(map (lambda (method expected)
+                    `((,expected) (apply ,method args)))
+                  instance-method-symbols instance-messages)
+           (else (value-error ,class-name "No such method: " msg))))
         ,@(map (lambda (field) `((eq? msg ',(car field)) ,(car field))) fields)
         (else (apply %apply (cons msg args))))))
 
