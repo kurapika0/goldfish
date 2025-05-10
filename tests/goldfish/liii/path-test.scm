@@ -110,6 +110,16 @@
 (when (os-windows?)
   (check (path :from-env "USERPROFILE" :to-string) => (path :home :to-string)))
 
+(check (path "file.txt" :stem) => "file")
+(check (path "archive.tar.gz" :stem) => "archive.tar")  ; 只去掉最后一个后缀
+(check (path ".hidden" :stem) => ".hidden")  ; 隐藏文件保留完整名称
+(check (path "noext" :stem) => "noext")  ; 无后缀名保留完整名称
+(check (path "/path/to/file.txt" :stem) => "file")  ; 绝对路径
+(check (path "C:/path/to/file.txt" :stem) => "file")  ; Windows路径
+(check (path "" :stem) => "")  ; 空路径
+(check (path "." :stem) => "")  ; 当前目录
+(check (path ".." :stem) => "..")  ; 上级目录
+
 (when (or (os-linux?) (os-macos?))
   (check-false (path :/ "tmp" :file?))
   (chdir "/tmp")
