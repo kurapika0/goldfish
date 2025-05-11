@@ -11,42 +11,39 @@
         (proc)
         (repeat (- n 1) proc)))
 
-
-(timing "prim%to-string: " (lambda () (repeat 10000 (lambda () (number->string 65536)))))
+(define (prim-sqrt data)
+  (if (< data 0)
+      (value-error
+        (format #f "sqrt of negative integer is undefined!         ** Got ~a **" data))
+      (inexact->exact (floor (sqrt data)))))
 
 (define-case-class rich-integer2 ((data integer?))
   (define (%to-string)
     (number->string data)))
 
-(timing "rich-integer%to-string: " (lambda () (repeat 10000 (lambda () ((rich-integer 65536) :to-string)))))
-(timing "rich-integer2%to-string: " (lambda () (repeat 10000 (lambda () ((rich-integer2 65536) :to-string)))))
-
 (define (rint x)
   (lambda (msg . args)
     (let ((env (funclet rint)))
-      (case msg
-        ((:to-string)
-         (begin
-           (varlet env 'data x)
-           ((env '%to-string)) 
-           (cutlet env 'data)))
-        ((:to-rich-string)
-         (begin
-           (varlet env 'data x)
-           ((env '%to-rich-string))
-           (cutlet env 'data)))))))
+      (varlet env 'data x)
+      (let1 r (case msg
+                ((:to-string)
+                 ((env '%to-string)))
+                ((:to-rich-string)
+                 ((env '%to-rich-string)))
+                ((:sqrt)
+                 ((env '%sqrt))))
+        (cutlet env 'data)
+        r))))
 
 (with-let (funclet rint)
   (define (%to-string)
     (number->string data))
-  (varlet (funclet rint) '%to-string %to-string))
-
-(with-let (funclet rint)
+  (varlet (funclet rint) '%to-string %to-string)
+  
   (define (%to-rich-string)
     (rich-string (%to-string)))
-  (varlet (funclet rint) '%to-rich-string %to-rich-string))
-
-(with-let (funclet rint)
+  (varlet (funclet rint) '%to-rich-string %to-rich-string)
+  
   (define (%sqrt)
         (if (< data 0)
             (value-error
@@ -54,19 +51,22 @@
             (inexact->exact (floor (sqrt data)))))
   (varlet (funclet rint) '%sqrt %sqrt))
 
+(display* "Bench of number->string:\n")
+(timing "prim%to-string:\t\t\t" (lambda () (repeat 10000 (lambda () (number->string 65536)))))
+(timing "rich-integer%to-string:\t\t" (lambda () (repeat 10000 (lambda () ((rich-integer 65536) :to-string)))))
+(timing "rich-integer2%to-string:\t" (lambda () (repeat 10000 (lambda () ((rich-integer2 65536) :to-string)))))
+(timing "rint%to-string:\t\t\t" (lambda () (repeat 10000 (lambda () ((rint 65536) :to-string)))))
 
+(display* ((rint 65535) :to-string))
+(newline)
 
-(timing "rint%to-string: " (lambda () (repeat 10000 (lambda () ((rint 65536) :to-string)))))
+(display* "\n\nBench of SQRT:\n")
+(timing "prim%sqrt:\t\t\t" (lambda () (repeat 10000 (lambda () (prim-sqrt 65536)))))
+(timing "rint%sqrt:\t\t\t" (lambda () (repeat 10000 (lambda () ((rint 65536) :sqrt)))))
+(timing "rich-integer%sqrt:\t\t" (lambda () (repeat 10000 (lambda () ((rich-integer 65536) :sqrt)))))
 
-(define (prim-sqrt data)
-  (if (< data 0)
-      (value-error
-        (format #f "sqrt of negative integer is undefined!         ** Got ~a **" data))
-      (inexact->exact (floor (sqrt data)))))
-
-(timing "prim%sqrt: " (lambda () (repeat 10000 (lambda () (prim-sqrt 65536)))))
-(timing "rint%sqrt: " (lambda () (repeat 10000 (lambda () ((rint 65536) :sqrt)))))
-(timing "rich-integer%sqrt: " (lambda () (repeat 10000 (lambda () ((rich-integer 65536) :sqrt)))))
+(display* ((rint 65535) :sqrt))
+(newline)
 
 ; slow because of rich-string
-(timing "rint%to-rich-string " (lambda () (repeat 1000 (lambda () (((rint 65536) :to-rich-string) :length)))))
+; (timing "rint%to-rich-string " (lambda () (repeat 1000 (lambda () (((rint 65536) :to-rich-string) :length)))))
