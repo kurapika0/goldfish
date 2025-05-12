@@ -3562,7 +3562,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (@empty . args)
 
-    \ \ (chain-zero args (rich-string "")))
+    \ \ (chain-apply args (rich-string "")))
 
     \;
   </goldfish-chunk>
@@ -3590,7 +3590,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (@value-of v . args)
 
-    \ \ (chain-one v args
+    \ \ (chain-apply args
 
     \ \ \ \ (cond ((char? v) (rich-string (string v)))
 
@@ -3854,7 +3854,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%slice from until . args)
 
-    \ \ (chain-two from until args
+    \ \ (chain-apply args
 
     \ \ \ \ (let* ((start (max 0 from))
 
@@ -3902,7 +3902,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%take n . args)
 
-    \ \ (chain-one n args
+    \ \ (chain-apply args
 
     \ \ \ \ (%slice 0 n)))
 
@@ -3930,7 +3930,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%take-right n . args)
 
-    \ \ (chain-one n args
+    \ \ (chain-apply args
 
     \ \ \ \ (%slice (- N n) N)))
 
@@ -3958,7 +3958,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%drop n . args)
 
-    \ \ (chain-one n args
+    \ \ (chain-apply args
 
     \ \ \ \ (%slice n N)))
 
@@ -3994,7 +3994,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%drop-right n . args)
 
-    \ \ (chain-one n args
+    \ \ (chain-apply args
 
     \ \ \ \ (%slice 0 (- N n))))
 
@@ -4342,7 +4342,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%map f . args)
 
-    \ \ (chain-one f args
+    \ \ (chain-apply args
 
     \ \ \ \ (rich-string ((%to-rich-vector)
 
@@ -4374,7 +4374,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%filter pred . args)
 
-    \ \ (chain-one pred args
+    \ \ (chain-apply args
 
     \ \ \ \ (rich-string ((%to-rich-vector)
 
@@ -4404,7 +4404,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%reverse . args)
 
-    \ \ (chain-zero args
+    \ \ (chain-apply args
 
     \ \ \ \ (rich-string ((%to-rich-vector)
 
@@ -4516,7 +4516,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%take-while pred . args)
 
-    \ \ (chain-one pred args
+    \ \ (chain-apply args
 
     \ \ \ \ (let ((stop-index (%index-where (lambda (c) (not (pred c))))))
 
@@ -4556,7 +4556,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%drop-while pred . args)
 
-    \ \ (chain-one pred args
+    \ \ (chain-apply args
 
     \ \ \ \ (let ((index (%index-where (lambda (c) (not (pred c))))))
 
@@ -4698,7 +4698,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%+ s . args)
 
-    \ \ (chain-one s args
+    \ \ (chain-apply args
 
     \ \ \ \ (cond
 
@@ -4738,7 +4738,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%strip-left . args)
 
-    \ \ (chain-zero args
+    \ \ (chain-apply args
 
     \ \ \ \ (rich-string (string-trim data))))
 
@@ -4766,7 +4766,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%strip-right . args)
 
-    \ \ (chain-zero args
+    \ \ (chain-apply args
 
     \ \ \ \ (rich-string (string-trim-right data))))
 
@@ -4794,7 +4794,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%strip-both . args)
 
-    \ \ (chain-zero args
+    \ \ (chain-apply args
 
     \ \ \ \ (rich-string (string-trim-both data))))
 
@@ -4824,7 +4824,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%strip-prefix prefix . args)
 
-    \ \ (chain-one prefix args
+    \ \ (chain-apply args
 
     \ \ \ \ (rich-string (string-remove-prefix data prefix))))
 
@@ -4866,7 +4866,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%strip-suffix suffix . args)
 
-    \ \ (chain-one suffix args
+    \ \ (chain-apply args
 
     \ \ \ \ (rich-string (string-remove-suffix data suffix))))
 
@@ -4902,7 +4902,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%replace-first old new . args)
 
-    \ \ (chain-two old new args
+    \ \ (chain-apply args
 
     \ \ \ \ (let ((next-pos (%index-of old)))
 
@@ -4950,7 +4950,7 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ old new next-pos))))
 
-    \ \ (chain-two old new args
+    \ \ (chain-apply args
 
     \ \ \ \ (rich-string (replace-helper data old new 0))))
 
@@ -5326,7 +5326,7 @@
 
     \ \ 
 
-    \ \ (chain-one default args
+    \ \ (chain-apply args
 
     \ \ \ \ (if (null? value)
 
@@ -5488,7 +5488,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%map f . args)
 
-    \ \ (chain-one f args
+    \ \ (chain-apply args
 
     \ \ \ \ (if (null? value)
 
@@ -5504,7 +5504,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%flat-map f . args)
 
-    \ \ (chain-one f args
+    \ \ (chain-apply args
 
     \ \ \ \ (if (null? value)
 
@@ -5520,7 +5520,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%filter pred . args)
 
-    \ \ (chain-one pred args
+    \ \ (chain-apply args
 
     \ \ \ \ (if (or (null? value) (not (pred value)))
 
@@ -7685,6 +7685,8 @@
 
   <paragraph|rich-vector@is-type-of>
 
+  该方法由<goldfish-lang|define-case-class>自动生成。
+
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check-true (rich-vector :is-type-of (rich-vector :empty)))
 
@@ -7695,8 +7697,6 @@
     (check-false (rich-vector :is-type-of #(1 2 3)))
 
     (check-false (rich-vector :is-type-of 1))
-
-    \;
 
     \;
   </goldfish-chunk>
@@ -7724,7 +7724,7 @@
 
     \ \ \ \ \ \ (else
 
-    \ \ \ \ \ \ \ (let1 cnt (ceiling (/ (- end start) step-size))
+    \ \ \ \ \ \ \ (let ((cnt (ceiling (/ (- end start) step-size))))
 
     \ \ \ \ \ \ \ \ \ (rich-vector <code|<code*|(list-\>vector>> (iota cnt start step-size))))))))
 
@@ -7754,9 +7754,11 @@
   <paragraph|rich-vector@empty>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (@empty)
+    (define (@empty . args)
 
-    \ \ (rich-vector #()))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-vector #())))
 
     \;
   </goldfish-chunk>
@@ -7772,7 +7774,7 @@
   <paragraph|rich-vector@fill>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (@fill n elem)
+    (define (@fill n elem . args)
 
     \ \ (unless (integer? n)
 
@@ -7782,7 +7784,9 @@
 
     \ \ \ \ (value-error "n must be non-negative" n))
 
-    \ \ (rich-vector (make-vector n elem)))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-vector (make-vector n elem))))
 
     \;
   </goldfish-chunk>
@@ -8063,23 +8067,25 @@
 
   <paragraph|rich-vector%slice>
 
-  <\scm-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%slice from until)
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%slice from until . args)
 
-    \ \ (let* ((len (vector-length data))
+    \ \ (chain-apply args
 
-    \ \ \ \ \ \ \ \ \ (start (max 0 from))
+    \ \ \ \ (let* ((len (vector-length data))
 
-    \ \ \ \ \ \ \ \ \ (end (min len until)))
+    \ \ \ \ \ \ \ \ \ \ \ (start (max 0 from))
 
-    \ \ \ \ (if (\<less\> start end)
+    \ \ \ \ \ \ \ \ \ \ \ (end (min len until)))
 
-    \ \ \ \ \ \ \ \ (rich-vector (vector-copy data start end))
+    \ \ \ \ \ \ (if (\<less\> start end)
 
-    \ \ \ \ \ \ \ \ (rich-vector :empty))))
+    \ \ \ \ \ \ \ \ \ \ (rich-vector (vector-copy data start end))
+
+    \ \ \ \ \ \ \ \ \ \ (rich-vector :empty)))))
 
     \;
-  </scm-chunk>
+  </goldfish-chunk>
 
   <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (let1 vec (array #(1 2 3 4 5))
@@ -8220,9 +8226,11 @@
   <paragraph|rich-vector%map>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%map x)
+    (define (%map x . args)
 
-    \ \ (rich-vector (vector-map x data)))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-vector (vector-map x data))))
 
     \;
   </goldfish-chunk>
@@ -8230,9 +8238,11 @@
   <paragraph|rich-vector%flat-map>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%flat-map f)
+    (define (%flat-map f . args)
 
-    \ \ (rich-vector ((%this) :map f :reduce vector-append)))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-vector (%map f :reduce vector-append))))
 
     \;
   </goldfish-chunk>
@@ -8254,9 +8264,11 @@
   <paragraph|rich-vector%filter>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%filter x)
+    (define (%filter x . args)
 
-    \ \ (rich-vector (vector-filter x data)))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-vector (vector-filter x data))))
 
     \;
   </goldfish-chunk>
@@ -8274,9 +8286,11 @@
   <paragraph|rich-vector%reverse>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%reverse)
+    (define (%reverse . args)
 
-    \ \ (rich-vector (reverse data)))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-vector (reverse data))))
 
     \;
   </goldfish-chunk>
@@ -8324,9 +8338,9 @@
   <paragraph|rich-vector%take>
 
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%take n)
+    (define (%take n . args)
 
-    \ \ (typed-define (scala-take (data vector?) (n integer?))
+    \ \ (define (scala-take data n)
 
     \ \ \ \ (cond
 
@@ -8346,7 +8360,9 @@
 
     \ \ 
 
-    \ \ (rich-vector (scala-take data n)))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-vector (scala-take data n))))
 
     \;
   </scm-chunk>
@@ -8372,9 +8388,9 @@
   <paragraph|rich-vector%take-right>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%take-right n)
+    (define (%take-right n . args)
 
-    \ \ (typed-define (scala-take-right (data vector?) (n integer?))
+    \ \ (define (scala-take-right data n)
 
     \ \ \ \ (let ((len (vector-length data)))
 
@@ -8398,7 +8414,9 @@
 
     \;
 
-    \ \ (rich-vector (scala-take-right data n)))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-vector (scala-take-right data n))))
 
     \;
   </goldfish-chunk>
@@ -8426,9 +8444,9 @@
   <paragraph|rich-vector%drop>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%drop n)
+    (define (%drop n . args)
 
-    \ \ (typed-define (scala-drop (data vector?) (n integer?))
+    \ \ (define (scala-drop data n)
 
     \ \ \ \ (cond
 
@@ -8438,9 +8456,9 @@
 
     \ \ \ \ \ \ (else (vector-copy data n))))
 
-    \ \ 
+    \ \ (chain-apply args
 
-    \ \ (rich-vector (scala-drop data n)))
+    \ \ \ \ (rich-vector (scala-drop data n))))
 
     \;
   </goldfish-chunk>
@@ -8463,14 +8481,12 @@
     \;
   </goldfish-chunk>
 
-  \;
-
   <paragraph|rich-vector%drop-right>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%drop-right n)
+    (define (%drop-right n . args)
 
-    \ \ (typed-define (scala-drop-right (data vector?) (n integer?))
+    \ \ (define (scala-drop-right data n)
 
     \ \ \ \ (cond
 
@@ -8482,7 +8498,9 @@
 
     \ \ 
 
-    \ \ (rich-vector (scala-drop-right data n)))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-vector (scala-drop-right data n))))
 
     \;
   </goldfish-chunk>
@@ -8508,19 +8526,21 @@
   <paragraph|rich-vector%drop-while>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%drop-while pred)
+    (define (%drop-while pred . args)
 
-    \ \ (let1 len (vector-length data)
+    \ \ (chain-apply args
 
-    \ \ \ \ (let loop ((i 0))
+    \ \ \ \ (let ((len (vector-length data)))
 
-    \ \ \ \ \ \ (cond
+    \ \ \ \ \ \ (let loop ((i 0))
 
-    \ \ \ \ \ \ \ \ ((\<gtr\>= i len) (rich-vector :empty)) \ ; 所有元素都被丢弃
+    \ \ \ \ \ \ \ \ (cond
 
-    \ \ \ \ \ \ \ \ ((pred (vector-ref data i)) (loop (+ i 1))) \ ; 继续丢弃
+    \ \ \ \ \ \ \ \ \ \ ((\<gtr\>= i len) (rich-vector :empty)) \ ; 所有元素都被丢弃
 
-    \ \ \ \ \ \ \ \ (else (rich-vector (vector-copy data i))))))) \ ; 返回剩余部分
+    \ \ \ \ \ \ \ \ \ \ ((pred (vector-ref data i)) (loop (+ i 1))) \ ; 继续丢弃
+
+    \ \ \ \ \ \ \ \ \ \ (else (rich-vector (vector-copy data i)))))))) ; 返回剩余部分
 
     \;
   </goldfish-chunk>
@@ -8545,16 +8565,20 @@
 
   <paragraph|rich-vector%fold>
 
-  <\scm-chunk|goldfish/liii/lang.scm|true|true>
-    \ \ (define (%fold initial f)
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%fold initial f)
 
-    \ \ \ \ (vector-fold f initial data))
+    \ \ (vector-fold f initial data))
 
     \;
+  </goldfish-chunk>
 
-    \ \ (define (%fold-right initial f)
+  <paragraph|rich-vector%fold-right>
 
-    \ \ \ \ (vector-fold-right f initial data))
+  <\scm-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%fold-right initial f)
+
+    \ \ (vector-fold-right f initial data))
 
     \;
   </scm-chunk>
@@ -8580,13 +8604,13 @@
   <paragraph|rich-vector%count>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    \ \ (define (%count . xs)
+    (define (%count . xs)
 
-    \ \ \ \ (cond ((null? xs) (vector-length data))
+    \ \ (cond ((null? xs) (vector-length data))
 
-    \ \ \ \ \ \ \ \ \ \ ((length=? 1 xs) (count (car xs) (vector-\<gtr\>list data)))
+    \ \ \ \ \ \ \ \ ((length=? 1 xs) (count (car xs) (vector-\<gtr\>list data)))
 
-    \ \ \ \ \ \ \ \ \ \ (else (error 'wrong-number-of-args "rich-vector%count" xs))))
+    \ \ \ \ \ \ \ \ (else (error 'wrong-number-of-args "rich-vector%count" xs))))
 
     \;
   </goldfish-chunk>
@@ -8606,9 +8630,11 @@
   <paragraph|rich-vector%sort-with>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%sort-with less-p)
+    (define (%sort-with less-p . args)
 
-    \ \ (rich-vector (vector-stable-sort less-p data)))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-vector (vector-stable-sort less-p data))))
 
     \;
   </goldfish-chunk>
@@ -8640,11 +8666,13 @@
   <paragraph|rich-vector%sort-by>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%sort-by f)
+    (define (%sort-by f . args)
 
-    \ \ (let ((sorted-data (vector-stable-sort (lambda (x y) (\<less\> (f x) (f y))) data)))
+    \ \ (chain-apply args
 
-    \ \ \ \ (rich-vector sorted-data)))
+    \ \ \ \ (let ((sorted-data (vector-stable-sort (lambda (x y) (\<less\> (f x) (f y))) data)))
+
+    \ \ \ \ \ \ (rich-vector sorted-data))))
 
     \;
   </goldfish-chunk>
@@ -8906,29 +8934,31 @@
   <paragraph|rich-vector%zip-with-index>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%zip-with-index)
+    (define (%zip-with-index . args)
 
-    \ \ (let* ((n (vector-length data))
+    \ \ (chain-apply args
 
-    \ \ \ \ \ \ \ \ \ (result (make-vector n)))
+    \ \ \ \ (let* ((n (vector-length data))
 
-    \ \ \ \ (let loop ((idx 0))
+    \ \ \ \ \ \ \ \ \ \ \ (result (make-vector n)))
 
-    \ \ \ \ \ \ (if (\<gtr\>= idx n)
+    \ \ \ \ \ \ (let loop ((idx 0))
 
-    \ \ \ \ \ \ \ \ \ \ (rich-vector result)
+    \ \ \ \ \ \ \ \ (if (\<gtr\>= idx n)
 
-    \ \ \ \ \ \ \ \ \ \ (begin
+    \ \ \ \ \ \ \ \ \ \ \ \ (rich-vector result)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ (vector-set!\ 
+    \ \ \ \ \ \ \ \ \ \ \ \ (begin
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result\ 
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (vector-set!\ 
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ idx\ 
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result\ 
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cons idx (vector-ref data idx)))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ idx\ 
 
-    \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ idx 1)))))))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (cons idx (vector-ref data idx)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (+ idx 1))))))))
 
     \;
   </goldfish-chunk>
@@ -8962,31 +8992,33 @@
   为富向量去重，返回值仍旧是富向量。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%distinct)
+    (define (%distinct . args)
 
-    \ \ (let ((ht (make-hash-table))
+    \ \ (chain-apply args
 
-    \ \ \ \ \ \ \ \ (length (vector-length data)))
+    \ \ \ \ (let ((ht (make-hash-table))
 
-    \ \ \ \ (let loop ((result '())
+    \ \ \ \ \ \ \ \ \ \ (length (vector-length data)))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (index 0))
+    \ \ \ \ \ \ (let loop ((result '())
 
-    \ \ \ \ \ \ (if (\<gtr\>= index length)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (index 0))
 
-    \ \ \ \ \ \ \ \ \ \ (rich-vector (list-\<gtr\>vector (reverse result)))
+    \ \ \ \ \ \ \ \ (if (\<gtr\>= index length)
 
-    \ \ \ \ \ \ \ \ \ \ (let ((elem (vector-ref data index)))
+    \ \ \ \ \ \ \ \ \ \ \ \ (rich-vector (list-\<gtr\>vector (reverse result)))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ (if (eq? (hash-table-ref ht elem) #f)
+    \ \ \ \ \ \ \ \ \ \ \ \ (let ((elem (vector-ref data index)))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (begin
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (if (eq? (hash-table-ref ht elem) #f)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (hash-table-set! ht elem #t)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (begin
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (cons elem result) (+ index 1)))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (hash-table-set! ht elem #t)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop result (+ index 1))))))))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop (cons elem result) (+ index 1)))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (loop result (+ index 1)))))))))
 
     \;
   </goldfish-chunk>
@@ -9114,15 +9146,17 @@
   <paragraph|rich-vector%take-while>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%take-while pred)
+    (define (%take-while pred . args)
 
-    \ \ (let* ((vec data)
+    \ \ (chain-apply args
 
-    \ \ \ \ \ \ \ \ \ (len (vector-length vec))
+    \ \ \ \ (let* ((vec data)
 
-    \ \ \ \ \ \ \ \ \ (idx (vector-index (lambda (x) (not (pred x))) vec)))
+    \ \ \ \ \ \ \ \ \ \ \ (len (vector-length vec))
 
-    \ \ \ \ (rich-vector (vector-copy vec 0 (or idx len)))))
+    \ \ \ \ \ \ \ \ \ \ \ (idx (vector-index (lambda (x) (not (pred x))) vec)))
+
+    \ \ \ \ \ \ (rich-vector (vector-copy vec 0 (or idx len))))))
 
     \;
   </goldfish-chunk>
@@ -9144,7 +9178,13 @@
   <paragraph|rich-vector%max-by>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (typed-define (%max-by (f procedure?)) \ \ \ \ \ \ \ 
+    (define (%max-by f)
+
+    \ \ (when (not (procedure? f))
+
+    \ \ \ \ (type-error "rich-vector%max-by: f must be a procedure"))
+
+    \ \ 
 
     \ \ (let ((vec data)
 
@@ -9198,7 +9238,13 @@
   <paragraph|rich-vector%min-by>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (typed-define (%min-by (f procedure?)) \ \ \ \ \ \ \ 
+    (define (%min-by f)
+
+    \ \ (when (not (procedure? f))
+
+    \ \ \ \ (type-error "rich-vector%min-by: f must be a procedure"))
+
+    \;
 
     \ \ (let ((vec data)
 
@@ -9252,7 +9298,13 @@
   <paragraph|rich-vector%max-by-option>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (typed-define (%max-by-option (f procedure?))
+    (define (%max-by-option f)
+
+    \ \ (when (not (procedure? f))
+
+    \ \ \ \ (type-error "rich-vector%max-by-option: f must be a procedure"))
+
+    \;
 
     \ \ (if (zero? (vector-length data))
 
@@ -9272,7 +9324,13 @@
   <paragraph|rich-vector%min-by-option>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (typed-define (%min-by-option (f procedure?))
+    (define (%min-by-option f)
+
+    \ \ (when (not (procedure? f))
+
+    \ \ \ \ (type-error "rich-vector%min-by-option: f must be a procedure"))
+
+    \;
 
     \ \ (if (zero? (vector-length data))
 

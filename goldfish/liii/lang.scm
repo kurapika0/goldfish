@@ -265,10 +265,10 @@
 (define N (u8-string-length data))
 
 (define (@empty . args)
-  (chain-zero args (rich-string "")))
+  (chain-apply args (rich-string "")))
 
 (define (@value-of v . args)
-  (chain-one v args
+  (chain-apply args
     (cond ((char? v) (rich-string (string v)))
           ((number? v) (rich-string (number->string v)))
           ((symbol? v) (rich-string (symbol->string v)))
@@ -319,7 +319,7 @@
       (option ($ data (- N 1)))))
 
 (define (%slice from until . args)
-  (chain-two from until args
+  (chain-apply args
     (let* ((start (max 0 from))
            (end (min N until)))
       (cond ((and (zero? start) (= end N))
@@ -330,19 +330,19 @@
              (rich-string (u8-substring data start end)))))))
 
 (define (%take n . args)
-  (chain-one n args
+  (chain-apply args
     (%slice 0 n)))
 
 (define (%take-right n . args)
-  (chain-one n args
+  (chain-apply args
     (%slice (- N n) N)))
 
 (define (%drop n . args)
-  (chain-one n args
+  (chain-apply args
     (%slice n N)))
 
 (define (%drop-right n . args)
-  (chain-one n args
+  (chain-apply args
     (%slice 0 (- N n))))
 
 (define (%empty?)
@@ -426,21 +426,21 @@
           (else (type-error "rich-string%index-of: first parameter must be string/rich-string/char/rich-char")))))
 
 (define (%map f . args)
-  (chain-one f args
+  (chain-apply args
     (rich-string ((%to-rich-vector)
                   :map f
                   :map (@ _ :make-string)
                   :make-string))))
 
 (define (%filter pred . args)
-  (chain-one pred args
+  (chain-apply args
     (rich-string ((%to-rich-vector)
                   :filter pred
                   :map (@ _ :make-string)
                   :make-string))))
 
 (define (%reverse . args)
-  (chain-zero args
+  (chain-apply args
     (rich-string ((%to-rich-vector)
                   :reverse
                   :map (@ _ :make-string)
@@ -467,14 +467,14 @@
                (loop next-pos (+ char-index 1)))))))))
 
 (define (%take-while pred . args)
-  (chain-one pred args
+  (chain-apply args
     (let ((stop-index (%index-where (lambda (c) (not (pred c))))))
       (if (= stop-index -1)
           (%this)
           (%slice 0 stop-index)))))
 
 (define (%drop-while pred . args)
-  (chain-one pred args
+  (chain-apply args
     (let ((index (%index-where (lambda (c) (not (pred c))))))
       (if (= index -1)
           (rich-string "")
@@ -501,7 +501,7 @@
   (rich-vector (%to-vector)))
 
 (define (%+ s . args)
-  (chain-one s args
+  (chain-apply args
     (cond
       ((string? s)
        (rich-string (string-append data s)))
@@ -513,27 +513,27 @@
         (type-error (string-append (object->string s) "is not string or rich-string or number"))))))
 
 (define (%strip-left . args)
-  (chain-zero args
+  (chain-apply args
     (rich-string (string-trim data))))
 
 (define (%strip-right . args)
-  (chain-zero args
+  (chain-apply args
     (rich-string (string-trim-right data))))
 
 (define (%strip-both . args)
-  (chain-zero args
+  (chain-apply args
     (rich-string (string-trim-both data))))
 
 (define (%strip-prefix prefix . args)
-  (chain-one prefix args
+  (chain-apply args
     (rich-string (string-remove-prefix data prefix))))
 
 (define (%strip-suffix suffix . args)
-  (chain-one suffix args
+  (chain-apply args
     (rich-string (string-remove-suffix data suffix))))
 
 (define (%replace-first old new . args)
-  (chain-two old new args
+  (chain-apply args
     (let ((next-pos (%index-of old)))
       (if (= next-pos -1)
           (%this)
@@ -548,7 +548,7 @@
           str
           (replace-helper ((rich-string str) :replace-first old new :get)
                           old new next-pos))))
-  (chain-two old new args
+  (chain-apply args
     (rich-string (replace-helper data old new 0))))
 
 (define* (%pad-left len (char #\space) . args)
@@ -596,7 +596,7 @@
   (when (not (option :is-type-of default))
     (type-error "The first parameter of option%or-else must be a option case class"))
   
-  (chain-one default args
+  (chain-apply args
     (if (null? value)
         default
         (option value))))
@@ -629,19 +629,19 @@
         (f value)))
 
 (define (%map f . args)
-  (chain-one f args
+  (chain-apply args
     (if (null? value)
         (option '())
         (option (f value)))))
 
 (define (%flat-map f . args)
-  (chain-one f args
+  (chain-apply args
     (if (null? value)
         (option '())
         (f value))))
 
 (define (%filter pred . args)
-  (chain-one pred args
+  (chain-apply args
     (if (or (null? value) (not (pred value)))
         (option '())
         (option value))))
@@ -1094,18 +1094,20 @@
       ((zero? step-size)
        (value-error "Step size cannot be zero"))
       (else
-       (let1 cnt (ceiling (/ (- end start) step-size))
+       (let ((cnt (ceiling (/ (- end start) step-size))))
          (rich-vector (list->vector (iota cnt start step-size))))))))
 
-(chained-define (@empty)
-  (rich-vector #()))
+(define (@empty . args)
+  (chain-apply args
+    (rich-vector #())))
 
-(chained-define (@fill n elem)
+(define (@fill n elem . args)
   (unless (integer? n)
     (type-error "n must be integer" n))
   (when (< n 0)
     (value-error "n must be non-negative" n))
-  (rich-vector (make-vector n elem)))
+  (chain-apply args
+    (rich-vector (make-vector n elem))))
 
 (define (%collect) data)
 
@@ -1164,13 +1166,14 @@
       (option (vector-ref data (- len 1)))
       (none))))
 
-(chained-define (%slice from until)
-  (let* ((len (vector-length data))
-         (start (max 0 from))
-         (end (min len until)))
-    (if (< start end)
-        (rich-vector (vector-copy data start end))
-        (rich-vector :empty))))
+(define (%slice from until . args)
+  (chain-apply args
+    (let* ((len (vector-length data))
+           (start (max 0 from))
+           (end (min len until)))
+      (if (< start end)
+          (rich-vector (vector-copy data start end))
+          (rich-vector :empty)))))
 
 (define (%empty?)
   (= (length data) 0))
@@ -1188,28 +1191,32 @@
 (define (%contains elem)
   (%exists (lambda (x) (equal? x elem))))
 
-(chained-define (%map x)
-  (rich-vector (vector-map x data)))
+(define (%map x . args)
+  (chain-apply args
+    (rich-vector (vector-map x data))))
 
-(chained-define (%flat-map f)
-  (rich-vector ((%this) :map f :reduce vector-append)))
+(define (%flat-map f . args)
+  (chain-apply args
+    (rich-vector (%map f :reduce vector-append))))
 
-(chained-define (%filter x)
-  (rich-vector (vector-filter x data)))
+(define (%filter x . args)
+  (chain-apply args
+    (rich-vector (vector-filter x data))))
 
 (define (%for-each x)
   (vector-for-each x data))
 
-(chained-define (%reverse)
-  (rich-vector (reverse data)))
+(define (%reverse . args)
+  (chain-apply args
+    (rich-vector (reverse data))))
 
 (define (%count . xs)
   (cond ((null? xs) (vector-length data))
         ((length=? 1 xs) (vector-count (car xs) data))
         (else (error 'wrong-number-of-args "rich-vector%count" xs))))
 
-(chained-define (%take n)
-  (typed-define (scala-take (data vector?) (n integer?))
+(define (%take n . args)
+  (define (scala-take data n)
     (cond
       ((< n 0) (vector))
       ((>= n (vector-length data)) data)
@@ -1219,10 +1226,11 @@
               ((>= i n) new-vec)
             (vector-set! new-vec i (vector-ref data i)))))))
   
-  (rich-vector (scala-take data n)))
+  (chain-apply args
+    (rich-vector (scala-take data n))))
 
-(chained-define (%take-right n)
-  (typed-define (scala-take-right (data vector?) (n integer?))
+(define (%take-right n . args)
+  (define (scala-take-right data n)
     (let ((len (vector-length data)))
       (cond
         ((< n 0) (vector))
@@ -1234,51 +1242,56 @@
                 ((>= j n) new-vec)
               (vector-set! new-vec j (vector-ref data i))))))))
 
-  (rich-vector (scala-take-right data n)))
+  (chain-apply args
+    (rich-vector (scala-take-right data n))))
 
-(chained-define (%drop n)
-  (typed-define (scala-drop (data vector?) (n integer?))
+(define (%drop n . args)
+  (define (scala-drop data n)
     (cond
       ((< n 0) data)
       ((>= n (vector-length data)) (vector))
       (else (vector-copy data n))))
-  
-  (rich-vector (scala-drop data n)))
+  (chain-apply args
+    (rich-vector (scala-drop data n))))
 
-(chained-define (%drop-right n)
-  (typed-define (scala-drop-right (data vector?) (n integer?))
+(define (%drop-right n . args)
+  (define (scala-drop-right data n)
     (cond
       ((< n 0) data)
       ((>= n (vector-length data)) (vector))
       (else (vector-copy data 0 (- (vector-length data) n)))))
   
-  (rich-vector (scala-drop-right data n)))
+  (chain-apply args
+    (rich-vector (scala-drop-right data n))))
 
-(chained-define (%drop-while pred)
-  (let1 len (vector-length data)
-    (let loop ((i 0))
-      (cond
-        ((>= i len) (rich-vector :empty))  ; 所有元素都被丢弃
-        ((pred (vector-ref data i)) (loop (+ i 1)))  ; 继续丢弃
-        (else (rich-vector (vector-copy data i)))))))  ; 返回剩余部分
+(define (%drop-while pred . args)
+  (chain-apply args
+    (let ((len (vector-length data)))
+      (let loop ((i 0))
+        (cond
+          ((>= i len) (rich-vector :empty))  ; 所有元素都被丢弃
+          ((pred (vector-ref data i)) (loop (+ i 1)))  ; 继续丢弃
+          (else (rich-vector (vector-copy data i)))))))) ; 返回剩余部分
 
-  (define (%fold initial f)
-    (vector-fold f initial data))
+(define (%fold initial f)
+  (vector-fold f initial data))
 
-  (define (%fold-right initial f)
-    (vector-fold-right f initial data))
+(define (%fold-right initial f)
+  (vector-fold-right f initial data))
 
-  (define (%count . xs)
-    (cond ((null? xs) (vector-length data))
-          ((length=? 1 xs) (count (car xs) (vector->list data)))
-          (else (error 'wrong-number-of-args "rich-vector%count" xs))))
+(define (%count . xs)
+  (cond ((null? xs) (vector-length data))
+        ((length=? 1 xs) (count (car xs) (vector->list data)))
+        (else (error 'wrong-number-of-args "rich-vector%count" xs))))
 
-(chained-define (%sort-with less-p)
-  (rich-vector (vector-stable-sort less-p data)))
+(define (%sort-with less-p . args)
+  (chain-apply args
+    (rich-vector (vector-stable-sort less-p data))))
 
-(chained-define (%sort-by f)
-  (let ((sorted-data (vector-stable-sort (lambda (x y) (< (f x) (f y))) data)))
-    (rich-vector sorted-data)))
+(define (%sort-by f . args)
+  (chain-apply args
+    (let ((sorted-data (vector-stable-sort (lambda (x y) (< (f x) (f y))) data)))
+      (rich-vector sorted-data))))
 
 (define (%group-by func)
   (let ((group (make-hash-table)))
@@ -1330,32 +1343,34 @@
                           (current-window (vector-copy data current-idx window-end)))
                      (collect-windows (+ current-idx step) (cons current-window result-windows)))))))))))
 
-(chained-define (%zip-with-index)
-  (let* ((n (vector-length data))
-         (result (make-vector n)))
-    (let loop ((idx 0))
-      (if (>= idx n)
-          (rich-vector result)
-          (begin
-            (vector-set! 
-                result 
-                idx 
-                (cons idx (vector-ref data idx)))
-            (loop (+ idx 1)))))))
+(define (%zip-with-index . args)
+  (chain-apply args
+    (let* ((n (vector-length data))
+           (result (make-vector n)))
+      (let loop ((idx 0))
+        (if (>= idx n)
+            (rich-vector result)
+            (begin
+              (vector-set! 
+                  result 
+                  idx 
+                  (cons idx (vector-ref data idx)))
+              (loop (+ idx 1))))))))
 
-(chained-define (%distinct)
-  (let ((ht (make-hash-table))
-        (length (vector-length data)))
-    (let loop ((result '())
-              (index 0))
-      (if (>= index length)
-          (rich-vector (list->vector (reverse result)))
-          (let ((elem (vector-ref data index)))
-            (if (eq? (hash-table-ref ht elem) #f)
-                (begin
-                  (hash-table-set! ht elem #t)
-                  (loop (cons elem result) (+ index 1)))
-                (loop result (+ index 1))))))))
+(define (%distinct . args)
+  (chain-apply args
+    (let ((ht (make-hash-table))
+          (length (vector-length data)))
+      (let loop ((result '())
+                (index 0))
+        (if (>= index length)
+            (rich-vector (list->vector (reverse result)))
+            (let ((elem (vector-ref data index)))
+              (if (eq? (hash-table-ref ht elem) #f)
+                  (begin
+                    (hash-table-set! ht elem #t)
+                    (loop (cons elem result) (+ index 1)))
+                   (loop result (+ index 1)))))))))
 
 (define (%reduce f)
   (let ((len (vector-length data)))
@@ -1375,13 +1390,17 @@
   (or (vector-index-right pred data)
       -1))
 
-(chained-define (%take-while pred)
-  (let* ((vec data)
-         (len (vector-length vec))
-         (idx (vector-index (lambda (x) (not (pred x))) vec)))
-    (rich-vector (vector-copy vec 0 (or idx len)))))
+(define (%take-while pred . args)
+  (chain-apply args
+    (let* ((vec data)
+           (len (vector-length vec))
+           (idx (vector-index (lambda (x) (not (pred x))) vec)))
+      (rich-vector (vector-copy vec 0 (or idx len))))))
 
-(typed-define (%max-by (f procedure?))        
+(define (%max-by f)
+  (when (not (procedure? f))
+    (type-error "rich-vector%max-by: f must be a procedure"))
+  
   (let ((vec data)
         (len (length data)))
     (if (zero? len)
@@ -1399,7 +1418,10 @@
                     (loop (+ i 1) max-elem max-val)
                     (loop (+ i 1) current-elem current-val))))))))
 
-(typed-define (%min-by (f procedure?))        
+(define (%min-by f)
+  (when (not (procedure? f))
+    (type-error "rich-vector%min-by: f must be a procedure"))
+
   (let ((vec data)
         (len (length data)))
     (if (zero? len)
@@ -1417,12 +1439,18 @@
                     (loop (+ i 1) min-elem min-val)
                     (loop (+ i 1) current-elem current-val))))))))
 
-(typed-define (%max-by-option (f procedure?))
+(define (%max-by-option f)
+  (when (not (procedure? f))
+    (type-error "rich-vector%max-by-option: f must be a procedure"))
+
   (if (zero? (vector-length data))
       (none)
       (option (%max-by f))))
 
-(typed-define (%min-by-option (f procedure?))
+(define (%min-by-option f)
+  (when (not (procedure? f))
+    (type-error "rich-vector%min-by-option: f must be a procedure"))
+
   (if (zero? (vector-length data))
       (none)
       (option (%min-by f))))
