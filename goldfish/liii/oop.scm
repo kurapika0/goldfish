@@ -293,9 +293,9 @@
 (if (null? args)
     (,f-make-case-class)
     (let ((msg (car args)))
-      (cond ((in? msg (list ,@static-messages :is-type-of))
+      (cond ((member msg (list ,@static-messages :is-type-of))
              (apply static-dispatcher args))
-            ((and (zero? ,field-count) (in? :apply (list ,@static-messages)))
+            ((and (zero? ,field-count) (member :apply (list ,@static-messages)))
              (apply static-dispatcher (cons :apply args)))
             (else
              (apply ,f-make-case-class args)))))
