@@ -2710,7 +2710,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class rich-char ((data any?))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+    \ \ 
 
     (define code-point
 
@@ -3138,15 +3138,17 @@
   目前只支持将英文字母的a-z转换为A-Z，其它字符保持不变。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%to-upper)
+    (define (%to-upper . args)
 
-    \ \ (rich-char
+    \ \ (chain-apply args
 
-    \ \ \ \ (if (and (\<gtr\>= code-point #x61) (\<less\>= code-point #x7A))
+    \ \ \ \ (rich-char
 
-    \ \ \ \ \ \ \ \ (bitwise-and code-point #b11011111)
+    \ \ \ \ \ \ (if (and (\<gtr\>= code-point #x61) (\<less\>= code-point #x7A))
 
-    \ \ \ \ \ \ \ \ code-point)))
+    \ \ \ \ \ \ \ \ \ \ (bitwise-and code-point #b11011111)
+
+    \ \ \ \ \ \ \ \ \ \ code-point))))
 
     \;
   </goldfish-chunk>
@@ -3172,15 +3174,17 @@
   <paragraph|rich-char%to-lower>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%to-lower)
+    (define (%to-lower . args)
 
-    \ \ (rich-char
+    \ \ (chain-apply args
 
-    \ \ \ \ (if (and (\<gtr\>= code-point #x41) (\<less\>= code-point #x5A))
+    \ \ \ \ (rich-char
 
-    \ \ \ \ \ \ \ \ (bitwise-ior code-point #b00100000)
+    \ \ \ \ \ \ (if (and (\<gtr\>= code-point #x41) (\<less\>= code-point #x5A))
 
-    \ \ \ \ \ \ \ \ code-point)))
+    \ \ \ \ \ \ \ \ \ \ (bitwise-ior code-point #b00100000)
+
+    \ \ \ \ \ \ \ \ \ \ code-point))))
 
     \;
   </goldfish-chunk>
@@ -3508,9 +3512,11 @@
   <paragraph|rich-char@from-integer>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (@from-integer x)
+    (define (@from-integer x . args)
 
-    \ \ (rich-char x))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-char x)))
 
     \;
   </goldfish-chunk>

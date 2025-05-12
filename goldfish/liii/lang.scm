@@ -114,7 +114,7 @@
 )
 
 (define-case-class rich-char ((data any?))
-                   
+  
 (define code-point
   (cond ((char? data)
          (char->integer data))
@@ -163,17 +163,19 @@
    (and (>= code-point #x17E0) (<= code-point #x17E9))
    (and (>= code-point #x1810) (<= code-point #x1819))))
   
-(chained-define (%to-upper)
-  (rich-char
-    (if (and (>= code-point #x61) (<= code-point #x7A))
-        (bitwise-and code-point #b11011111)
-        code-point)))
+(define (%to-upper . args)
+  (chain-apply args
+    (rich-char
+      (if (and (>= code-point #x61) (<= code-point #x7A))
+          (bitwise-and code-point #b11011111)
+          code-point))))
 
-(chained-define (%to-lower)
-  (rich-char
-    (if (and (>= code-point #x41) (<= code-point #x5A))
-        (bitwise-ior code-point #b00100000)
-        code-point)))
+(define (%to-lower . args)
+  (chain-apply args
+    (rich-char
+      (if (and (>= code-point #x41) (<= code-point #x5A))
+          (bitwise-ior code-point #b00100000)
+          code-point))))
 
 (define (%to-bytevector)
   (cond
@@ -251,8 +253,9 @@
 (define (%make-string)
   (utf8->string (%to-bytevector)))
 
-(chained-define (@from-integer x)
-  (rich-char x))
+(define (@from-integer x . args)
+  (chain-apply args
+    (rich-char x)))
 
 (define (%to-integer)
   code-point)
