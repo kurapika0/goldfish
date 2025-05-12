@@ -548,6 +548,11 @@
           => ($ "你" 0))
   (check-true ((s :find (@ _ :equals ($ "师" 0))) :empty?)))
 
+(let1 s ($ "你好世界HelloWord")
+  (check ((s :find-last (@ _ :equals ($ "你" 0))) :get) 
+          => ($ "你" 0))
+  (check-true ((s :find-last (@ _ :equals ($ "师" 0))) :empty?)))
+
 (check ($ "你好" :head) => ($ "你" 0))
 (check-catch 'index-error (rich-string :empty :head))
 (check ($ "hello" :head-option) => (option #\h))
@@ -1002,6 +1007,13 @@
   (check ((lst :find even?) :get) => 2)
   (check ((lst :find (lambda (x) (< x 0))) :empty?) => #t))
 
+(let1 lst (rich-list '(1 2 3 4 5))
+  (check ((lst :find-last even?) :get) => 4)  ; 最后一个偶数是4
+  (check ((lst :find-last (@ > _ 3)) :get) => 5)  ; 最后一个大于3的元素是5
+  (check ((lst :find-last (@ > _ 5)) :empty?) => #t)  ; 没有大于5的元素
+  (check ((lst :find-last zero?) :empty?) => #t)  ; 没有0
+  (check ((rich-list '()) :find-last even?) => (none)))  ; 空列表返回none
+
 (check ($ (list 1 2 3) :head) => 1)
 (check-catch 'out-of-range (rich-list :empty :head))
 (check ($ (list 1 2 3) :head-option) => (option 1))
@@ -1331,6 +1343,13 @@
   (check ((vec :find (lambda (x) (> x 10))) :empty?) => #t)
   (check ((vec :find even?) :get) => 2)
   (check ((vec :find (lambda (x) (< x 0))) :empty?) => #t))
+
+(let ((vec (array #(1 2 3 4 5))))
+  (check ((vec :find-last even?) :get) => 4)  ; 最后一个偶数是4
+  (check ((vec :find-last (@ > _ 3)) :get) => 5)  ; 最后一个大于3的元素是5
+  (check ((vec :find-last (@ > _ 5)) :empty?) => #t)  ; 没有大于5的元素
+  (check ((vec :find-last zero?) :empty?) => #t)  ; 没有0
+  (check ((array :empty) :find-last even?) => (none)))  ; 空向量返回none
 
 (check ($ (vector 1 2 3) :head) => 1)
 (check-catch 'out-of-range (array :empty :head))

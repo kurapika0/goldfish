@@ -3739,6 +3739,26 @@
     \;
   </scm-chunk>
 
+  <paragraph|rich-string%find-last>
+
+  <\scm-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%find-last pred) ((%to-rich-vector) :find-last pred))
+
+    \;
+  </scm-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let1 s ($ "你好世界HelloWord")
+
+    \ \ (check ((s :find-last (@ _ :equals ($ "你" 0))) :get)\ 
+
+    \ \ \ \ \ \ \ \ \ \ =\<gtr\> ($ "你" 0))
+
+    \ \ (check-true ((s :find-last (@ _ :equals ($ "师" 0))) :empty?)))
+
+    \;
+  </scm-chunk>
+
   <paragraph|rich-string%head><index|rich-string%head>
 
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
@@ -6079,6 +6099,42 @@
     \;
   </goldfish-chunk>
 
+  <paragraph|rich-list%find-last><typehint|((pred procedure?)) =\<gtr\> option?>
+
+  <\scm-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%find-last pred)
+
+    \ \ (let1 reversed-list (reverse data) \ ; 先反转列表
+
+    \ \ \ \ (let loop ((lst reversed-list))
+
+    \ \ \ \ \ \ (cond
+
+    \ \ \ \ \ \ \ \ ((null? lst) (none)) \ ; 遍历完未找到
+
+    \ \ \ \ \ \ \ \ ((pred (car lst)) (option (car lst))) \ ; 找到第一个匹配项（即原列表最后一个）
+
+    \ \ \ \ \ \ \ \ (else (loop (cdr lst))))))) \ ; 继续查找
+
+    \;
+  </scm-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let1 lst (rich-list '(1 2 3 4 5))
+
+    \ \ (check ((lst :find-last even?) :get) =\<gtr\> 4) \ ; 最后一个偶数是4
+
+    \ \ (check ((lst :find-last (@ \<gtr\> _ 3)) :get) =\<gtr\> 5) \ ; 最后一个大于3的元素是5
+
+    \ \ (check ((lst :find-last (@ \<gtr\> _ 5)) :empty?) =\<gtr\> #t) \ ; 没有大于5的元素
+
+    \ \ (check ((lst :find-last zero?) :empty?) =\<gtr\> #t) \ ; 没有0
+
+    \ \ (check ((rich-list '()) :find-last even?) =\<gtr\> (none))) \ ; 空列表返回none
+
+    \;
+  </goldfish-chunk>
+
   <paragraph|rich-list%head>
 
   <\scm-chunk|goldfish/liii/lang.scm|true|true>
@@ -7791,6 +7847,40 @@
     \ \ (check ((vec :find even?) :get) =\<gtr\> 2)
 
     \ \ (check ((vec :find (lambda (x) (\<less\> x 0))) :empty?) =\<gtr\> #t))
+
+    \;
+  </scm-chunk>
+
+  <paragraph|rich-vector%find-last>
+
+  <\scm-chunk|goldfish/liii/lang.scm|true|true>
+    (define (%find-last pred)
+
+    \ \ (let loop ((i (- (vector-length data) 1)))
+
+    \ \ \ \ (cond
+
+    \ \ \ \ \ \ ((\<less\> i 0) (none)) \ ; 遍历完所有元素未找到
+
+    \ \ \ \ \ \ ((pred (vector-ref data i)) (option (vector-ref data i))) \ ; 找到符合条件的元素
+
+    \ \ \ \ \ \ (else (loop (- i 1)))))) \ ; 继续向前查找
+
+    \;
+  </scm-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (let ((vec (array #(1 2 3 4 5))))
+
+    \ \ (check ((vec :find-last even?) :get) =\<gtr\> 4) \ ; 最后一个偶数是4
+
+    \ \ (check ((vec :find-last (@ \<gtr\> _ 3)) :get) =\<gtr\> 5) \ ; 最后一个大于3的元素是5
+
+    \ \ (check ((vec :find-last (@ \<gtr\> _ 5)) :empty?) =\<gtr\> #t) \ ; 没有大于5的元素
+
+    \ \ (check ((vec :find-last zero?) :empty?) =\<gtr\> #t) \ ; 没有0
+
+    \ \ (check ((array :empty) :find-last even?) =\<gtr\> (none))) \ ; 空向量返回none
 
     \;
   </scm-chunk>

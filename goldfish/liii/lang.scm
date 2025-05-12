@@ -292,6 +292,8 @@
 
 (define (%find pred) ((%to-rich-vector) :find pred))
 
+(define (%find-last pred) ((%to-rich-vector) :find-last pred))
+
 (define (%head)
   (if (string-null? data)
       (index-error "rich-string%head: string is empty")
@@ -738,6 +740,14 @@
       ((pred (car lst)) (option (car lst)))
       (else (loop (cdr lst))))))
 
+(define (%find-last pred)
+  (let1 reversed-list (reverse data)  ; 先反转列表
+    (let loop ((lst reversed-list))
+      (cond
+        ((null? lst) (none))  ; 遍历完未找到
+        ((pred (car lst)) (option (car lst)))  ; 找到第一个匹配项（即原列表最后一个）
+        (else (loop (cdr lst)))))))  ; 继续查找
+
 (define (%head)
   (if (null? data)
       (error 'out-of-range "rich-list%head: list is empty")
@@ -1087,6 +1097,13 @@
      ((>= i (vector-length data)) (none))
      ((p (vector-ref data i)) (option (vector-ref data i)))
      (else (loop (+ i 1))))))
+
+(define (%find-last pred)
+  (let loop ((i (- (vector-length data) 1)))
+    (cond
+      ((< i 0) (none))  ; 遍历完所有元素未找到
+      ((pred (vector-ref data i)) (option (vector-ref data i)))  ; 找到符合条件的元素
+      (else (loop (- i 1))))))  ; 继续向前查找
 
 (define (%head)
   (if (> (vector-length data) 0)
