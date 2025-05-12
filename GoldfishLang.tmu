@@ -128,7 +128,7 @@
 
     \;
 
-    (check-set-mode! 'report-failed)
+    ;(check-set-mode! 'report-failed)
 
     \;
   </scm-chunk>
@@ -1471,9 +1471,7 @@
 
   <scm|chained-define> 是一个用于在 Goldfish Scheme 中定义支持链式调用的函数的宏。它简化了在样本类（case class）中定义方法的语法，使得方法可以返回当前对象（<scm|%this>），从而支持链式调用。
 
-  \;
-
-  <strong|函数签名>
+  <subparagraph|函数签名>
 
   <\scm>
     (chained-define (method-name param1 param2 ...) body ...)
@@ -1949,7 +1947,7 @@
 
   \;
 
-  <strong|实现函数>
+  <subparagraph|实现函数>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define ($ x . xs)
@@ -1959,7 +1957,7 @@
     \;
   </goldfish-chunk>
 
-  <strong|测试用例>
+  <subparagraph|测试用例>
 
   <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ 1 :to 3) =\<gtr\> '(1 2 3))
@@ -3562,9 +3560,9 @@
   <paragraph|rich-string@empty>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (@empty)
+    (define (@empty . args)
 
-    \ \ (rich-string ""))
+    \ \ (chain-zero args (rich-string "")))
 
     \;
   </goldfish-chunk>
@@ -3590,21 +3588,23 @@
   <paragraph|rich-string@value-of>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (@value-of v)\ 
+    (define (@value-of v . args)
 
-    \ \ (cond ((char? v) (rich-string (string v)))
+    \ \ (chain-one v args
 
-    \ \ \ \ \ \ \ \ ((number? v) (rich-string (number-\<gtr\>string v)))
+    \ \ \ \ (cond ((char? v) (rich-string (string v)))
 
-    \ \ \ \ \ \ \ \ ((symbol? v) (rich-string (symbol-\<gtr\>string v)))
+    \ \ \ \ \ \ \ \ \ \ ((number? v) (rich-string (number-\<gtr\>string v)))
 
-    \ \ \ \ \ \ \ \ ((string? v) (rich-string v))
+    \ \ \ \ \ \ \ \ \ \ ((symbol? v) (rich-string (symbol-\<gtr\>string v)))
 
-    \ \ \ \ \ \ \ \ ((rich-char :is-type-of v)
+    \ \ \ \ \ \ \ \ \ \ ((string? v) (rich-string v))
 
-    \ \ \ \ \ \ \ \ \ (rich-string (v :make-string)))
+    \ \ \ \ \ \ \ \ \ \ ((rich-char :is-type-of v)
 
-    \ \ \ \ \ \ \ \ (else (type-error "Expected types are char, rich-char, number, symbol or string"))))
+    \ \ \ \ \ \ \ \ \ \ \ (rich-string (v :make-string)))
+
+    \ \ \ \ \ \ \ \ \ \ (else (type-error "Expected types are char, rich-char, number, symbol or string")))))
 
     \;
   </goldfish-chunk>
@@ -3670,6 +3670,12 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%char-at index)
 
+    \ \ (when (not (integer? index))
+
+    \ \ \ \ (type-error "rich-string%char-at: index must be integer" index))
+
+    \;
+
     \ \ (let* ((start index)
 
     \ \ \ \ \ \ \ \ \ (end (+ index 1))
@@ -3702,7 +3708,7 @@
   <paragraph|rich-string%apply>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (typed-define (%apply (i integer?))
+    (define (%apply i)
 
     \ \ (%char-at i))
 
@@ -3846,23 +3852,25 @@
   <paragraph|rich-string%slice>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%slice from until)
+    (define (%slice from until . args)
 
-    \ \ (let* ((start (max 0 from))
+    \ \ (chain-two from until args
 
-    \ \ \ \ \ \ \ \ \ (end (min N until)))
+    \ \ \ \ (let* ((start (max 0 from))
 
-    \ \ \ \ (cond ((and (zero? start) (= end N))
+    \ \ \ \ \ \ \ \ \ \ \ (end (min N until)))
 
-    \ \ \ \ \ \ \ \ \ \ \ (%this))
+    \ \ \ \ \ \ (cond ((and (zero? start) (= end N))
 
-    \ \ \ \ \ \ \ \ \ \ ((\<gtr\>= start end)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (%this))
 
-    \ \ \ \ \ \ \ \ \ \ \ (rich-string :empty))
+    \ \ \ \ \ \ \ \ \ \ \ \ ((\<gtr\>= start end)
 
-    \ \ \ \ \ \ \ \ \ \ (else
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (rich-string :empty))
 
-    \ \ \ \ \ \ \ \ \ \ \ (rich-string (u8-substring data start end))))))
+    \ \ \ \ \ \ \ \ \ \ \ \ (else
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (rich-string (u8-substring data start end)))))))
 
     \;
   </goldfish-chunk>
@@ -3892,9 +3900,11 @@
   <paragraph|rich-string%take>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%take n)
+    (define (%take n . args)
 
-    \ \ (%slice 0 n))
+    \ \ (chain-one n args
+
+    \ \ \ \ (%slice 0 n)))
 
     \;
   </goldfish-chunk>
@@ -3918,9 +3928,11 @@
   <paragraph|rich-string%take-right>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%take-right n)
+    (define (%take-right n . args)
 
-    \ \ (%slice (- N n) N))
+    \ \ (chain-one n args
+
+    \ \ \ \ (%slice (- N n) N)))
 
     \;
   </goldfish-chunk>
@@ -3944,9 +3956,11 @@
   <paragraph|rich-string%drop>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%drop n)
+    (define (%drop n . args)
 
-    \ \ (%slice n N))
+    \ \ (chain-one n args
+
+    \ \ \ \ (%slice n N)))
 
     \;
   </goldfish-chunk>
@@ -3978,9 +3992,11 @@
   <paragraph|rich-string%drop-right>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%drop-right n)
+    (define (%drop-right n . args)
 
-    \ \ (%slice 0 (- N n)))
+    \ \ (chain-one n args
+
+    \ \ \ \ (%slice 0 (- N n))))
 
     \;
   </goldfish-chunk>
@@ -4236,7 +4252,7 @@
 
     \ \ 
 
-    \ \ (let1 positive-start-index (max 0 start-index)
+    \ \ (let ((positive-start-index (max 0 start-index)))
 
     \ \ \ \ (cond ((string? str/char)
 
@@ -4324,15 +4340,17 @@
   <paragraph|rich-string%map><typehint|((p procedure?)) =\<gtr\> rich-string?>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%map f)
+    (define (%map f . args)
 
-    \ \ (rich-string ((%to-rich-vector)
+    \ \ (chain-one f args
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map f
+    \ \ \ \ (rich-string ((%to-rich-vector)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (@ _ :make-string)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map f
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :make-string)))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (@ _ :make-string)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :make-string))))
 
     \;
   </goldfish-chunk>
@@ -4354,15 +4372,17 @@
   <paragraph|rich-string%filter>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%filter pred)
+    (define (%filter pred . args)
 
-    \ \ (rich-string ((%to-rich-vector)
+    \ \ (chain-one pred args
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :filter pred
+    \ \ \ \ (rich-string ((%to-rich-vector)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (@ _ :make-string)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :filter pred
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :make-string)))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (@ _ :make-string)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :make-string))))
 
     \;
   </goldfish-chunk>
@@ -4382,15 +4402,17 @@
   <paragraph|rich-string%reverse>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%reverse)
+    (define (%reverse . args)
 
-    \ \ (rich-string ((%to-rich-vector)
+    \ \ (chain-zero args
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :reverse
+    \ \ \ \ (rich-string ((%to-rich-vector)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (@ _ :make-string)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :reverse
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :make-string)))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (@ _ :make-string)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :make-string))))
 
     \;
   </goldfish-chunk>
@@ -4492,15 +4514,17 @@
   返回从开头开始连续满足 pred 条件的子字符串
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%take-while pred)
+    (define (%take-while pred . args)
 
-    \ \ (let ((stop-index (%index-where (lambda (c) (not (pred c))))))
+    \ \ (chain-one pred args
 
-    \ \ \ \ (if (= stop-index -1)
+    \ \ \ \ (let ((stop-index (%index-where (lambda (c) (not (pred c))))))
 
-    \ \ \ \ \ \ \ \ (%this)
+    \ \ \ \ \ \ (if (= stop-index -1)
 
-    \ \ \ \ \ \ \ \ (%slice 0 stop-index))))
+    \ \ \ \ \ \ \ \ \ \ (%this)
+
+    \ \ \ \ \ \ \ \ \ \ (%slice 0 stop-index)))))
 
     \;
   </goldfish-chunk>
@@ -4530,15 +4554,17 @@
   <paragraph|rich-string%drop-while>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%drop-while pred)
+    (define (%drop-while pred . args)
 
-    \ \ (let1 index (%index-where (lambda (c) (not (pred c))))
+    \ \ (chain-one pred args
 
-    \ \ \ \ (if (= index -1)
+    \ \ \ \ (let ((index (%index-where (lambda (c) (not (pred c))))))
 
-    \ \ \ \ \ \ \ \ (rich-string "")
+    \ \ \ \ \ \ (if (= index -1)
 
-    \ \ \ \ \ \ \ \ (%slice index N))))
+    \ \ \ \ \ \ \ \ \ \ (rich-string "")
+
+    \ \ \ \ \ \ \ \ \ \ (%slice index N)))))
 
     \;
   </goldfish-chunk>
@@ -4670,25 +4696,27 @@
   后者更加简洁，能够更好地处理字符串和数字拼接。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%+ s)
+    (define (%+ s . args)
 
-    \ \ (cond
+    \ \ (chain-one s args
 
-    \ \ \ \ ((string? s)
+    \ \ \ \ (cond
 
-    \ \ \ \ \ (rich-string (string-append data s)))
+    \ \ \ \ \ \ ((string? s)
 
-    \ \ \ \ ((rich-string :is-type-of s)
+    \ \ \ \ \ \ \ (rich-string (string-append data s)))
 
-    \ \ \ \ \ (rich-string (string-append data (s :get))))
+    \ \ \ \ \ \ ((rich-string :is-type-of s)
 
-    \ \ \ \ ((number? s)
+    \ \ \ \ \ \ \ (rich-string (string-append data (s :get))))
 
-    \ \ \ \ \ (rich-string (string-append data (number-\<gtr\>string s))))
+    \ \ \ \ \ \ ((number? s)
 
-    \ \ \ \ (else
+    \ \ \ \ \ \ \ (rich-string (string-append data (number-\<gtr\>string s))))
 
-    \ \ \ \ \ \ (type-error (string-append (object-\<gtr\>string s) "is not string or rich-string or number")))))
+    \ \ \ \ \ \ (else
+
+    \ \ \ \ \ \ \ \ (type-error (string-append (object-\<gtr\>string s) "is not string or rich-string or number"))))))
 
     \;
   </goldfish-chunk>
@@ -4708,9 +4736,11 @@
   <paragraph|rich-string%strip-left>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%strip-left)
+    (define (%strip-left . args)
 
-    \ \ (rich-string (string-trim data)))
+    \ \ (chain-zero args
+
+    \ \ \ \ (rich-string (string-trim data))))
 
     \;
   </goldfish-chunk>
@@ -4734,9 +4764,11 @@
   <paragraph|rich-string%strip-right>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%strip-right)
+    (define (%strip-right . args)
 
-    \ \ (rich-string (string-trim-right data)))
+    \ \ (chain-zero args
+
+    \ \ \ \ (rich-string (string-trim-right data))))
 
     \;
   </goldfish-chunk>
@@ -4760,9 +4792,11 @@
   <paragraph|rich-string%strip-both>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%strip-both)
+    (define (%strip-both . args)
 
-    \ \ (rich-string (string-trim-both data)))
+    \ \ (chain-zero args
+
+    \ \ \ \ (rich-string (string-trim-both data))))
 
     \;
   </goldfish-chunk>
@@ -4788,9 +4822,11 @@
   如果前缀不匹配，则返回原富字符串；如果前缀匹配，则返回移除前缀之后的富字符串。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%strip-prefix prefix)
+    (define (%strip-prefix prefix . args)
 
-    \ \ (rich-string (string-remove-prefix data prefix)))
+    \ \ (chain-one prefix args
+
+    \ \ \ \ (rich-string (string-remove-prefix data prefix))))
 
     \;
   </goldfish-chunk>
@@ -4828,9 +4864,11 @@
   如果后缀不匹配，则返回原富字符串；如果后缀匹配，则返回移除后缀之后的富字符串。
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%strip-suffix suffix)
+    (define (%strip-suffix suffix . args)
 
-    \ \ (rich-string (string-remove-suffix data suffix)))
+    \ \ (chain-one suffix args
+
+    \ \ \ \ (rich-string (string-remove-suffix data suffix))))
 
     \;
   </goldfish-chunk>
@@ -4862,19 +4900,21 @@
   <paragraph|rich-string%replace-first>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%replace-first old new)
+    (define (%replace-first old new . args)
 
-    \ \ (let ((next-pos (%index-of old)))
+    \ \ (chain-two old new args
 
-    \ \ \ \ (if (= next-pos -1)
+    \ \ \ \ (let ((next-pos (%index-of old)))
 
-    \ \ \ \ \ \ \ \ (%this)
+    \ \ \ \ \ \ (if (= next-pos -1)
 
-    \ \ \ \ \ \ \ \ ((%slice 0 next-pos)
+    \ \ \ \ \ \ \ \ \ \ (%this)
 
-    \ \ \ \ \ \ \ \ \ :+ new
+    \ \ \ \ \ \ \ \ \ \ ((%slice 0 next-pos)
 
-    \ \ \ \ \ \ \ \ \ :+ (%drop (+ next-pos ($ old :length)))))))
+    \ \ \ \ \ \ \ \ \ \ \ :+ new
+
+    \ \ \ \ \ \ \ \ \ \ \ :+ (%drop (+ next-pos ($ old :length))))))))
 
     \;
   </goldfish-chunk>
@@ -4896,7 +4936,7 @@
   <paragraph|rich-string%replace>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%replace old new)
+    (define (%replace old new . args)
 
     \ \ (define (replace-helper str old new start)
 
@@ -4910,7 +4950,9 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ old new next-pos))))
 
-    \ \ (rich-string (replace-helper data old new 0)))
+    \ \ (chain-two old new args
+
+    \ \ \ \ (rich-string (replace-helper data old new 0))))
 
     \;
   </goldfish-chunk>

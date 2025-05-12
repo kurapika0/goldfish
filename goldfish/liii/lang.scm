@@ -264,17 +264,18 @@
   
 (define N (u8-string-length data))
 
-(chained-define (@empty)
-  (rich-string ""))
+(define (@empty . args)
+  (chain-zero args (rich-string "")))
 
-(chained-define (@value-of v) 
-  (cond ((char? v) (rich-string (string v)))
-        ((number? v) (rich-string (number->string v)))
-        ((symbol? v) (rich-string (symbol->string v)))
-        ((string? v) (rich-string v))
-        ((rich-char :is-type-of v)
-         (rich-string (v :make-string)))
-        (else (type-error "Expected types are char, rich-char, number, symbol or string"))))
+(define (@value-of v . args)
+  (chain-one v args
+    (cond ((char? v) (rich-string (string v)))
+          ((number? v) (rich-string (number->string v)))
+          ((symbol? v) (rich-string (symbol->string v)))
+          ((string? v) (rich-string v))
+          ((rich-char :is-type-of v)
+           (rich-string (v :make-string)))
+          (else (type-error "Expected types are char, rich-char, number, symbol or string")))))
 
 (define (%get) data)
 
@@ -282,12 +283,15 @@
   N)
 
 (define (%char-at index)
+  (when (not (integer? index))
+    (type-error "rich-string%char-at: index must be integer" index))
+
   (let* ((start index)
          (end (+ index 1))
          (byte-seq (string->utf8 data start end)))
     (rich-char :from-bytevector byte-seq)))
 
-(typed-define (%apply (i integer?))
+(define (%apply i)
   (%char-at i))
 
 (define (%find pred) ((%to-rich-vector) :find pred))
@@ -314,27 +318,32 @@
       (none)
       (option ($ data (- N 1)))))
 
-(chained-define (%slice from until)
-  (let* ((start (max 0 from))
-         (end (min N until)))
-    (cond ((and (zero? start) (= end N))
-           (%this))
-          ((>= start end)
-           (rich-string :empty))
-          (else
-           (rich-string (u8-substring data start end))))))
+(define (%slice from until . args)
+  (chain-two from until args
+    (let* ((start (max 0 from))
+           (end (min N until)))
+      (cond ((and (zero? start) (= end N))
+             (%this))
+            ((>= start end)
+             (rich-string :empty))
+            (else
+             (rich-string (u8-substring data start end)))))))
 
-(chained-define (%take n)
-  (%slice 0 n))
+(define (%take n . args)
+  (chain-one n args
+    (%slice 0 n)))
 
-(chained-define (%take-right n)
-  (%slice (- N n) N))
+(define (%take-right n . args)
+  (chain-one n args
+    (%slice (- N n) N)))
 
-(chained-define (%drop n)
-  (%slice n N))
+(define (%drop n . args)
+  (chain-one n args
+    (%slice n N)))
 
-(chained-define (%drop-right n)
-  (%slice 0 (- N n)))
+(define (%drop-right n . args)
+  (chain-one n args
+    (%slice 0 (- N n))))
 
 (define (%empty?)
   (string-null? data))
@@ -405,7 +414,7 @@
   (unless (integer? start-index)
     (type-error "rich-string%index-of: the second parameter must be integer"))
   
-  (let1 positive-start-index (max 0 start-index)
+  (let ((positive-start-index (max 0 start-index)))
     (cond ((string? str/char)
            (inner-index-of str/char positive-start-index))
           ((rich-string :is-type-of str/char)
@@ -416,23 +425,26 @@
            (inner-index-of (str/char :make-string) positive-start-index))
           (else (type-error "rich-string%index-of: first parameter must be string/rich-string/char/rich-char")))))
 
-(chained-define (%map f)
-  (rich-string ((%to-rich-vector)
-                :map f
-                :map (@ _ :make-string)
-                :make-string)))
+(define (%map f . args)
+  (chain-one f args
+    (rich-string ((%to-rich-vector)
+                  :map f
+                  :map (@ _ :make-string)
+                  :make-string))))
 
-(chained-define (%filter pred)
-  (rich-string ((%to-rich-vector)
-                :filter pred
-                :map (@ _ :make-string)
-                :make-string)))
+(define (%filter pred . args)
+  (chain-one pred args
+    (rich-string ((%to-rich-vector)
+                  :filter pred
+                  :map (@ _ :make-string)
+                  :make-string))))
 
-(chained-define (%reverse)
-  (rich-string ((%to-rich-vector)
-                :reverse
-                :map (@ _ :make-string)
-                :make-string)))
+(define (%reverse . args)
+  (chain-zero args
+    (rich-string ((%to-rich-vector)
+                  :reverse
+                  :map (@ _ :make-string)
+                  :make-string))))
 
 (define (%for-each f)
   ((%to-rich-vector) :for-each f))
@@ -454,17 +466,19 @@
                char-index
                (loop next-pos (+ char-index 1)))))))))
 
-(chained-define (%take-while pred)
-  (let ((stop-index (%index-where (lambda (c) (not (pred c))))))
-    (if (= stop-index -1)
-        (%this)
-        (%slice 0 stop-index))))
+(define (%take-while pred . args)
+  (chain-one pred args
+    (let ((stop-index (%index-where (lambda (c) (not (pred c))))))
+      (if (= stop-index -1)
+          (%this)
+          (%slice 0 stop-index)))))
 
-(chained-define (%drop-while pred)
-  (let1 index (%index-where (lambda (c) (not (pred c))))
-    (if (= index -1)
-        (rich-string "")
-        (%slice index N))))
+(define (%drop-while pred . args)
+  (chain-one pred args
+    (let ((index (%index-where (lambda (c) (not (pred c))))))
+      (if (= index -1)
+          (rich-string "")
+          (%slice index N)))))
 
 (define (%to-string)
   data)
@@ -486,48 +500,56 @@
 (define (%to-rich-vector)
   (rich-vector (%to-vector)))
 
-(chained-define (%+ s)
-  (cond
-    ((string? s)
-     (rich-string (string-append data s)))
-    ((rich-string :is-type-of s)
-     (rich-string (string-append data (s :get))))
-    ((number? s)
-     (rich-string (string-append data (number->string s))))
-    (else
-      (type-error (string-append (object->string s) "is not string or rich-string or number")))))
+(define (%+ s . args)
+  (chain-one s args
+    (cond
+      ((string? s)
+       (rich-string (string-append data s)))
+      ((rich-string :is-type-of s)
+       (rich-string (string-append data (s :get))))
+      ((number? s)
+       (rich-string (string-append data (number->string s))))
+      (else
+        (type-error (string-append (object->string s) "is not string or rich-string or number"))))))
 
-(chained-define (%strip-left)
-  (rich-string (string-trim data)))
+(define (%strip-left . args)
+  (chain-zero args
+    (rich-string (string-trim data))))
 
-(chained-define (%strip-right)
-  (rich-string (string-trim-right data)))
+(define (%strip-right . args)
+  (chain-zero args
+    (rich-string (string-trim-right data))))
 
-(chained-define (%strip-both)
-  (rich-string (string-trim-both data)))
+(define (%strip-both . args)
+  (chain-zero args
+    (rich-string (string-trim-both data))))
 
-(chained-define (%strip-prefix prefix)
-  (rich-string (string-remove-prefix data prefix)))
+(define (%strip-prefix prefix . args)
+  (chain-one prefix args
+    (rich-string (string-remove-prefix data prefix))))
 
-(chained-define (%strip-suffix suffix)
-  (rich-string (string-remove-suffix data suffix)))
+(define (%strip-suffix suffix . args)
+  (chain-one suffix args
+    (rich-string (string-remove-suffix data suffix))))
 
-(chained-define (%replace-first old new)
-  (let ((next-pos (%index-of old)))
-    (if (= next-pos -1)
-        (%this)
-        ((%slice 0 next-pos)
-         :+ new
-         :+ (%drop (+ next-pos ($ old :length)))))))
+(define (%replace-first old new . args)
+  (chain-two old new args
+    (let ((next-pos (%index-of old)))
+      (if (= next-pos -1)
+          (%this)
+          ((%slice 0 next-pos)
+           :+ new
+           :+ (%drop (+ next-pos ($ old :length))))))))
 
-(chained-define (%replace old new)
+(define (%replace old new . args)
   (define (replace-helper str old new start)
     (let ((next-pos ((rich-string str) :index-of old start)))
       (if (= next-pos -1)
           str
           (replace-helper ((rich-string str) :replace-first old new :get)
                           old new next-pos))))
-  (rich-string (replace-helper data old new 0)))
+  (chain-two old new args
+    (rich-string (replace-helper data old new 0))))
 
 (define* (%pad-left len (char #\space) . args)
   (let ((result (rich-string (string-pad data len char))))
