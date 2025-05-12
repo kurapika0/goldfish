@@ -5996,9 +5996,11 @@
   <paragraph|rich-list@empty>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (@empty)
+    (define (@empty . args)
 
-    \ \ (rich-list (list )))
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-list (list ))))
 
     \;
   </goldfish-chunk>

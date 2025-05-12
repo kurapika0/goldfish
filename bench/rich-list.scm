@@ -28,33 +28,5 @@
         (proc)
         (repeat (- n 1) proc)))
 
-(define l100 ((rich-list :range 1 10000 1) :collect))
-
-(define (list-sum l)
-  (fold + 0 l))
-
-(define (rich-list-sum l)
-  ($ l :fold 0 +))
-
-(define (rlist x)
-  (lambda (msg . args)
-    (let ((env (funclet rlist)))
-      (varlet env 'data x)
-      (let1 r (case msg
-                ((:fold)
-                 (apply (env '%fold) args)))
-        (cutlet env 'data)
-        r))))
-
-(with-let (funclet rlist)
-  (define (%fold initial f)
-    (fold f initial data))
-
-  (varlet (funclet rlist) '%fold %fold))
-
-(define (rlist-sum l)
-  ((rlist l) :fold 0 +))
-
-(timing "list%sum:\t" (lambda () (repeat 1000 (lambda () (list-sum l100)))))
-(timing "rlist%sum:\t" (lambda () (repeat 1000 (lambda () (rlist-sum l100)))))
-(timing "rich-list%sum:\t" (lambda () (repeat 1000 (lambda () (rich-list-sum l100)))))
+(timing "rich-list%empty%length:\t"
+  (lambda () (repeat 10000 (lambda () (rich-list :empty :length)))))

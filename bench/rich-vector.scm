@@ -28,6 +28,6 @@
         (proc)
         (repeat (- n 1) proc)))
 
-(timing "rich-string%empty%length:\t"
+(timing "rich-vector%empty%length:\t"
   (lambda () (repeat 10000 (lambda () (rich-vector :empty :length)))))
 

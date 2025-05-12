@@ -740,8 +740,9 @@
        (let1 cnt (ceiling (/ (- end start) step-size))
          (rich-list (iota cnt start step-size)))))))
 
-(chained-define (@empty)
-  (rich-list (list )))
+(define (@empty . args)
+  (chain-apply args
+    (rich-list (list ))))
 
 (chained-define (@concat lst1 lst2)
   (rich-list (append (lst1 :collect) (lst2 :collect))))
