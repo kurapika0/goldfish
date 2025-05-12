@@ -5276,9 +5276,9 @@
   <paragraph|option%or-else>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (typed-define (%or-else (default case-class?))
+    (define (%or-else default)
 
-    \ \ (when (not (default :is-instance-of 'option))
+    \ \ (when (not (option :is-type-of default))
 
     \ \ \ \ (type-error "The first parameter of option%or-else must be a option case class"))
 
@@ -5438,13 +5438,19 @@
   <paragraph|option%map>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%map f)
+    (define (%map f . args)
 
-    \ \ (if (null? value)
+    \ \ (let1 r (if (null? value)
 
-    \ \ \ \ \ \ (option '())
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (option '())
 
-    \ \ \ \ \ \ (option (f value))))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (option (f value)))
+
+    \ \ \ \ (if (null? args)
+
+    \ \ \ \ \ \ \ \ r
+
+    \ \ \ \ \ \ \ \ (apply r args))))
 
     \;
   </goldfish-chunk>

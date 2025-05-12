@@ -570,8 +570,8 @@
          (default))
         (else default)))
 
-(typed-define (%or-else (default case-class?))
-  (when (not (default :is-instance-of 'option))
+(define (%or-else default)
+  (when (not (option :is-type-of default))
     (type-error "The first parameter of option%or-else must be a option case class"))
 
   (if (null? value)
@@ -604,10 +604,13 @@
   (when (not (null? value))
         (f value)))
 
-(chained-define (%map f)
-  (if (null? value)
-      (option '())
-      (option (f value))))
+(define (%map f . args)
+  (let1 r (if (null? value)
+              (option '())
+              (option (f value)))
+    (if (null? args)
+        r
+        (apply r args))))
 
 (chained-define (%flat-map f)
   (if (null? value)
