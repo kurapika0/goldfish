@@ -79,6 +79,8 @@
 (display* "\n\nBench of SQRT:\n")
 (timing "prim%sqrt:\t\t\t" (lambda () (repeat 10000 (lambda () (prim-sqrt 65536)))))
 (timing "rint%sqrt:\t\t\t" (lambda () (repeat 10000 (lambda () ((rint 65536) :sqrt)))))
+
+(display "\nBench of integer\n")
 (timing "rich-integer%sqrt:\t\t" (lambda () (repeat 10000 (lambda () ((rich-integer 65536) :sqrt)))))
 
 (display* ((rint 65535) :sqrt))

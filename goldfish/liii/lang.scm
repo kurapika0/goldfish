@@ -45,15 +45,23 @@
 
 (define (%get) data)
 
-(typed-define (%to (n integer?))
-  (if (< n data)
-      (rich-list (list))
-      (rich-list (iota (+ (- n data) 1) data))))
+(define (%to n) 
+  (unless (integer? n) 
+    (type-error 
+      (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+              %to '(n) 'n "integer" (object->string n))))
+  (if (< n data) 
+    (rich-list (list)) 
+    (rich-list (iota (+ (- n data) 1) data))))
 
-(typed-define (%until (n integer?))
-  (if (<= n data)
-      (rich-list (list))
-      (rich-list (iota (+ (- n data)) data))))
+(define (%until n) 
+  (unless (integer? n) 
+    (type-error 
+      (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+              %until '(n) 'n "integer" (object->string n))))
+  (if (<= n data) 
+    (rich-list (list)) 
+    (rich-list (iota (+ (- n data)) data))))
 
 (define (%to-rich-char)
   (rich-char data))
