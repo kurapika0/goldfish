@@ -1459,6 +1459,20 @@
 (define (%get k)
   (option (hash-table-ref/default data k '())))
 
+(define (%remove k)
+  (rich-hash-table
+   (let ((new (make-hash-table)))
+     (hash-table-for-each
+      (lambda (key val)
+       (unless (equal? key k)
+        (hash-table-set! new key val)))
+       data)
+      new)))
+
+(chained-define (%remove! k)
+  (hash-table-delete! data k)
+  %this)
+
 (define (%contains k)
   (hash-table-contains? data k))
 

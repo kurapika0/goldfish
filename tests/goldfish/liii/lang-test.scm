@@ -1665,6 +1665,17 @@
   (check ((ht :get 'a) :get) => 1)
   (check ((ht :get 'd) :empty?) => #t))
 
+(let1 ht1 ($ (hash-table 'a 1 'b 2 'c 3))
+  (let1 ht2 (ht1 :remove 'b)
+    (check-true  (ht1 :contains 'b))
+    (check-false (ht2 :contains 'b))
+    (check ((ht2 :get 'c) :get) => 3)))
+
+(let1 ht3 ($ (hash-table 'x 9 'y 8))
+  (ht3 :remove! 'x)
+  (check-false (ht3 :contains 'x))
+  (check ((ht3 :get 'y) :get) => 8))
+
 (let1 ht ($ (hash-table 'a 1 'b 2 'c 3))
   (check-true (ht :contains 'a))
   (check-false (ht :contains 'd)))
