@@ -183,6 +183,18 @@
           (else 
            (string-append "." (rich-splits :last))))))  ; 返回最后一部分
 
+(define (%equals that)
+  (cond ((string? that)
+         (string=? (%to-string) that))
+        
+        ((rich-string :is-type-of that)
+         (string=? (%to-string) (that :get)))
+        
+        ((path :is-type-of that)
+         (equal? (%to-string) (that :to-string)))
+        
+        (else #f)))
+
 (define (%file?)
   (path-file? (%to-string)))
 

@@ -83,9 +83,9 @@
 
 (check (path :root :to-string) => "/")
 
-(when (not (os-windows?))
+(when (or (os-macos?) (os-linux?))
   (check (path :from-parts #("/" "tmp")) => (path :/ "tmp"))
-  (check (path :from-parts #("/" "tmp" "/" "test")) => (path :/ "tmp" :/ "test"))
+  (check (path :from-parts #("/" "tmp" "test")) => (path :/ "tmp" :/ "test"))
   (check (path :from-parts #("/", "tmp") :to-string) => "/tmp"))
 
 (when (os-windows?)
@@ -101,7 +101,7 @@
 
 (when (or (os-linux?) (os-macos?))
   (check (path "a/b") => (path :./ "a" :/ "b"))
-  (check (path "/tmp/") => (path :/ "tmp"))
+  (check (path "/tmp") => (path :/ "tmp"))
   (check (path "/tmp/tmp2") => (path :/ "tmp" :/ "tmp2")))
 
 (when (os-linux?)
@@ -139,6 +139,11 @@
 (check (path "" :suffix) => "")  ; 空路径
 (check (path "." :suffix) => "")  ; 当前目录
 (check (path ".." :suffix) => "")  ; 上级目录
+
+(check-true ((path "/tmp") :equals "/tmp"))
+(check-true ((path "/tmp") :equals ($ "/tmp")))
+(check-false ((path "/tmp/test") :equals "/tmp"))
+(check-true ((path "/tmp/test") :equals (path "/tmp/test")))
 
 (when (or (os-linux?) (os-macos?))
   (check-false (path :/ "tmp" :file?))

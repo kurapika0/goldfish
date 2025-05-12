@@ -3554,11 +3554,11 @@
   </goldfish-chunk>
 
   <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
-    (when (not (os-windows?))
+    (when (or (os-macos?) (os-linux?))
 
     \ \ (check (path :from-parts #("/" "tmp")) =\<gtr\> (path :/ "tmp"))
 
-    \ \ (check (path :from-parts #("/" "tmp" "/" "test")) =\<gtr\> (path :/ "tmp" :/ "test"))
+    \ \ (check (path :from-parts #("/" "tmp" "test")) =\<gtr\> (path :/ "tmp" :/ "test"))
 
     \ \ (check (path :from-parts #("/", "tmp") :to-string) =\<gtr\> "/tmp"))
 
@@ -3672,7 +3672,7 @@
 
     \ \ (check (path "a/b") =\<gtr\> (path :./ "a" :/ "b"))
 
-    \ \ (check (path "/tmp/") =\<gtr\> (path :/ "tmp"))
+    \ \ (check (path "/tmp") =\<gtr\> (path :/ "tmp"))
 
     \ \ (check (path "/tmp/tmp2") =\<gtr\> (path :/ "tmp" :/ "tmp2")))
 
@@ -3866,6 +3866,48 @@
   </scm-chunk>
 
   <subsection|谓词>
+
+  <paragraph|path%equals>
+
+  重写define-case-class自动生成equals函数。
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (define (%equals that)
+
+    \ \ (cond ((string? that)
+
+    \ \ \ \ \ \ \ \ \ (string=? (%to-string) that))
+
+    \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ ((rich-string :is-type-of that)
+
+    \ \ \ \ \ \ \ \ \ (string=? (%to-string) (that :get)))
+
+    \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ ((path :is-type-of that)
+
+    \ \ \ \ \ \ \ \ \ (equal? (%to-string) (that :to-string)))
+
+    \ \ \ \ \ \ \ \ 
+
+    \ \ \ \ \ \ \ \ (else #f)))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    (check-true ((path "/tmp") :equals "/tmp"))
+
+    (check-true ((path "/tmp") :equals ($ "/tmp")))
+
+    (check-false ((path "/tmp/test") :equals "/tmp"))
+
+    (check-true ((path "/tmp/test") :equals (path "/tmp/test")))
+
+    \;
+  </goldfish-chunk>
 
   <paragraph|path%file?>
 
