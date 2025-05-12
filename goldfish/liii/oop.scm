@@ -187,7 +187,38 @@
             static-method-symbols static-messages)
      (else (value-error "No such static method " msg))))
 
-(typed-define (,f-make-case-class ,@fields)
+(define* (,f-make-case-class 
+  ,@(map  
+    (lambda (param)
+      (let  ((param-name (car param))
+            (type-pred (cadr param))
+            (default-value (cddr param)))
+            (if (null? default-value)
+                param-name
+                `(,param-name ,(car default-value)))))
+    fields))
+  ,@(map (lambda (param)
+        (let* ((param-name (car param))
+              (type-pred (cadr param))
+              ;;remove the '?' in 'type?'
+              (type-name-str 
+                  (let ((s (symbol->string type-pred)))
+                    (if (and (positive? (string-length s))
+                            (char=? (string-ref s (- (string-length s) 1)) #\?))
+                        (substring s 0 (- (string-length s) 1))
+                        s))))
+
+          `(unless 
+              (,type-pred ,param-name)
+              (type-error 
+                  (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**"
+                        ,f-make-case-class
+                        ',field-names
+                        ',param-name
+                        ,type-name-str
+                        (object->string ,param-name))))))
+      fields)
+
   (define ,this-symbol #f)
   (define (%this . xs)
     (if (null? xs)
@@ -197,7 +228,11 @@
   (define (%is-instance-of x)
     (eq? x ',class-name))
          
-  (typed-define (%equals (that case-class?))
+  (define (%equals that)
+    (unless (case-class? that) 
+      (type-error 
+        (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+                    %equals '(that) 'that "case-class" (object->string that))))
     (and (that :is-instance-of ',class-name)
          ,@(map (lambda (field) `(equal? ,(car field) (that ',(car field))))
                 fields)))
