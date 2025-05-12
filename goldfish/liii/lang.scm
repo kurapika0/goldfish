@@ -432,21 +432,21 @@
   (chain-apply args
     (rich-string ((%to-rich-vector)
                   :map f
-                  :map (@ _ :make-string)
+                  :map (lambda (x) (x :make-string))
                   :make-string))))
 
 (define (%filter pred . args)
   (chain-apply args
     (rich-string ((%to-rich-vector)
                   :filter pred
-                  :map (@ _ :make-string)
+                  :map (lambda (x) (x :make-string))
                   :make-string))))
 
 (define (%reverse . args)
   (chain-apply args
     (rich-string ((%to-rich-vector)
                   :reverse
-                  :map (@ _ :make-string)
+                  :map (lambda (x) (x :make-string))
                   :make-string))))
 
 (define (%for-each f)
@@ -740,7 +740,7 @@
       ((zero? step-size)
        (value-error "Step size cannot be zero"))
       (else
-       (let1 cnt (ceiling (/ (- end start) step-size))
+       (let ((cnt (ceiling (/ (- end start) step-size))))
          (rich-list (iota cnt start step-size)))))))
 
 (define (@empty . args)
@@ -948,7 +948,9 @@
                      (collect-windows next-list-segment
                                       (cons current-window result-windows)))))))))))
 
-(chained-define (%zip l) (box (apply map cons (list data l))))
+(define (%zip l . args)
+  (chain-apply args
+    (rich-list (apply map cons (list data l)))))
 
 (chained-define (%zip-with-index)
   (let loop ((lst data) (idx 0) (result '()))
@@ -1127,11 +1129,11 @@
   (vector-ref data i))
 
 (define (%index-of x)
-  (or (vector-index (@ == x _) data)
+  (or (vector-index (lambda (y) (== x y)) data)
       -1))
 
 (define (%last-index-of x)
-  (or (vector-index-right (@ == x _) data)
+  (or (vector-index-right (lambda (y) (== x y)) data)
       -1))
 
 (define (%find p)
@@ -1550,7 +1552,7 @@
     (let loop ((kvs all-kv))  
       (if (null? kvs)
           #t  
-          (let1 kv (car kvs)
+          (let ((kv (car kvs)))
             (if (pred? (car kv) (cdr kv))
                 (loop (cdr kvs))  
                 #f))))))  
@@ -1563,14 +1565,15 @@
         ((and (pair? kv) (pred? (car kv) (cdr kv))) #t)
         (else (loop (iter))))))
 
-(chained-define (%map f)
-  (let1 r (make-hash-table)
-    (hash-table-for-each
-       (lambda (k v)
-         (receive (k1 v1) (f k v)
-           (hash-table-set! r k1 v1)))
-       data)
-    (rich-hash-table r)))
+(define (%map f . args)
+  (chain-apply args
+    (let ((r (make-hash-table)))
+      (hash-table-for-each
+         (lambda (k v)
+           (receive (k1 v1) (f k v)
+             (hash-table-set! r k1 v1)))
+         data)
+      (rich-hash-table r))))
 
 (define (%count pred)
   (hash-table-count pred data))
@@ -1578,13 +1581,14 @@
 (define (%for-each proc)
   (hash-table-for-each proc data))
 
-(chained-define (%filter f)
-  (let1 r (make-hash-table)
-    (hash-table-for-each
-       (lambda (k v)
-         (when (f k v) (hash-table-set! r k v)))
-       data)
-    (rich-hash-table r)))
+(define (%filter f . args)
+  (chain-apply args
+    (let ((r (make-hash-table)))
+      (hash-table-for-each
+         (lambda (k v)
+           (when (f k v) (hash-table-set! r k v)))
+         data)
+      (rich-hash-table r))))
 
 )
 

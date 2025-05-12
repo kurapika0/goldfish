@@ -4354,7 +4354,7 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map f
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (@ _ :make-string)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (lambda (x) (x :make-string))
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :make-string))))
 
@@ -4386,7 +4386,7 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :filter pred
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (@ _ :make-string)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (lambda (x) (x :make-string))
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :make-string))))
 
@@ -4416,7 +4416,7 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :reverse
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (@ _ :make-string)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :map (lambda (x) (x :make-string))
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :make-string))))
 
@@ -5972,7 +5972,7 @@
 
     \ \ \ \ \ \ (else
 
-    \ \ \ \ \ \ \ (let1 cnt (ceiling (/ (- end start) step-size))
+    \ \ \ \ \ \ \ (let ((cnt (ceiling (/ (- end start) step-size))))
 
     \ \ \ \ \ \ \ \ \ (rich-list (iota cnt start step-size)))))))
 
@@ -7100,7 +7100,11 @@
   <paragraph|rich-list%zip>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%zip l) (box (apply map cons (list data l))))
+    (define (%zip l . args)
+
+    \ \ (chain-apply args
+
+    \ \ \ \ (rich-list (apply map cons (list data l)))))
 
     \;
   </goldfish-chunk>
@@ -7880,7 +7884,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%index-of x)
 
-    \ \ (or (vector-index (@ == x _) data)
+    \ \ (or (vector-index (lambda (y) (== x y)) data)
 
     \ \ \ \ \ \ -1))
 
@@ -7904,7 +7908,7 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%last-index-of x)
 
-    \ \ (or (vector-index-right (@ == x _) data)
+    \ \ (or (vector-index-right (lambda (y) (== x y)) data)
 
     \ \ \ \ \ \ -1))
 
@@ -9800,7 +9804,7 @@
 
     \ \ \ \ \ \ \ \ \ \ #t \ 
 
-    \ \ \ \ \ \ \ \ \ \ (let1 kv (car kvs)
+    \ \ \ \ \ \ \ \ \ \ (let ((kv (car kvs)))
 
     \ \ \ \ \ \ \ \ \ \ \ \ (if (pred? (car kv) (cdr kv))
 
@@ -9942,21 +9946,23 @@
   <paragraph|rich-hash-table%map>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%map f)
+    (define (%map f . args)
 
-    \ \ (let1 r (make-hash-table)
+    \ \ (chain-apply args
 
-    \ \ \ \ (hash-table-for-each
+    \ \ \ \ (let ((r (make-hash-table)))
 
-    \ \ \ \ \ \ \ (lambda (k v)
+    \ \ \ \ \ \ (hash-table-for-each
 
-    \ \ \ \ \ \ \ \ \ (receive (k1 v1) (f k v)
+    \ \ \ \ \ \ \ \ \ (lambda (k v)
 
-    \ \ \ \ \ \ \ \ \ \ \ (hash-table-set! r k1 v1)))
+    \ \ \ \ \ \ \ \ \ \ \ (receive (k1 v1) (f k v)
 
-    \ \ \ \ \ \ \ data)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (hash-table-set! r k1 v1)))
 
-    \ \ \ \ (rich-hash-table r)))
+    \ \ \ \ \ \ \ \ \ data)
+
+    \ \ \ \ \ \ (rich-hash-table r))))
 
     \;
   </goldfish-chunk>
@@ -10088,19 +10094,21 @@
   <paragraph|rich-hash-table%filter>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%filter f)
+    (define (%filter f . args)
 
-    \ \ (let1 r (make-hash-table)
+    \ \ (chain-apply args
 
-    \ \ \ \ (hash-table-for-each
+    \ \ \ \ (let ((r (make-hash-table)))
 
-    \ \ \ \ \ \ \ (lambda (k v)
+    \ \ \ \ \ \ (hash-table-for-each
 
-    \ \ \ \ \ \ \ \ \ (when (f k v) (hash-table-set! r k v)))
+    \ \ \ \ \ \ \ \ \ (lambda (k v)
 
-    \ \ \ \ \ \ \ data)
+    \ \ \ \ \ \ \ \ \ \ \ (when (f k v) (hash-table-set! r k v)))
 
-    \ \ \ \ (rich-hash-table r)))
+    \ \ \ \ \ \ \ \ \ data)
+
+    \ \ \ \ \ \ (rich-hash-table r))))
 
     \;
   </goldfish-chunk>
