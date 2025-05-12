@@ -5276,19 +5276,21 @@
   <paragraph|option%or-else>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define (%or-else default)
+    (define (%or-else default . args)
 
     \ \ (when (not (option :is-type-of default))
 
     \ \ \ \ (type-error "The first parameter of option%or-else must be a option case class"))
 
-    \;
+    \ \ 
 
-    \ \ (if (null? value)
+    \ \ (chain-one default args
 
-    \ \ \ \ \ \ default
+    \ \ \ \ (if (null? value)
 
-    \ \ \ \ \ \ (option value)))
+    \ \ \ \ \ \ \ \ default
+
+    \ \ \ \ \ \ \ \ (option value))))
 
     \;
   </goldfish-chunk>
@@ -5299,6 +5301,8 @@
     \ \ (check (opt1 :or-else (option 0)) =\<gtr\> (option 42))
 
     \ \ (check (opt2 :or-else (option 0)) =\<gtr\> (option 0))
+
+    \ \ (check (opt2 :or-else (option 0) :or-else (option 1)) =\<gtr\> (option 0))
 
     \ \ (check-catch 'type-error (opt1 :or-else 0))
 
@@ -5336,7 +5340,9 @@
   <paragraph|option%empty?>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (define (%empty?) (null? value))
+    (define (%empty?)
+
+    \ \ (null? value))
 
     \;
   </goldfish-chunk>
@@ -5440,17 +5446,13 @@
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%map f . args)
 
-    \ \ (let1 r (if (null? value)
+    \ \ (chain-one f args
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (option '())
+    \ \ \ \ (if (null? value)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (option (f value)))
+    \ \ \ \ \ \ \ \ (option '())
 
-    \ \ \ \ (if (null? args)
-
-    \ \ \ \ \ \ \ \ r
-
-    \ \ \ \ \ \ \ \ (apply r args))))
+    \ \ \ \ \ \ \ \ (option (f value)))))
 
     \;
   </goldfish-chunk>
@@ -5458,13 +5460,15 @@
   <paragraph|option%flatmap>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%flat-map f)
+    (define (%flat-map f . args)
 
-    \ \ (if (null? value)
+    \ \ (chain-one f args
 
-    \ \ \ \ \ \ (option '())
+    \ \ \ \ (if (null? value)
 
-    \ \ \ \ \ \ (f value)))
+    \ \ \ \ \ \ \ \ (option '())
+
+    \ \ \ \ \ \ \ \ (f value))))
 
     \;
   </goldfish-chunk>
@@ -5472,13 +5476,15 @@
   <paragraph|option%filter>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
-    (chained-define (%filter pred)
+    (define (%filter pred . args)
 
-    \ \ (if (or (null? value) (not (pred value)))
+    \ \ (chain-one pred args
 
-    \ \ \ \ \ \ (option '())
+    \ \ \ \ (if (or (null? value) (not (pred value)))
 
-    \ \ \ \ \ \ (option value)))
+    \ \ \ \ \ \ \ \ (option '())
+
+    \ \ \ \ \ \ \ \ (option value))))
 
     \;
   </goldfish-chunk>

@@ -881,6 +881,7 @@
 (let ((opt1 (option 42)) (opt2 (option '())))
   (check (opt1 :or-else (option 0)) => (option 42))
   (check (opt2 :or-else (option 0)) => (option 0))
+  (check (opt2 :or-else (option 0) :or-else (option 1)) => (option 0))
   (check-catch 'type-error (opt1 :or-else 0))
 )
 

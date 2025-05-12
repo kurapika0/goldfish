@@ -570,20 +570,22 @@
          (default))
         (else default)))
 
-(define (%or-else default)
+(define (%or-else default . args)
   (when (not (option :is-type-of default))
     (type-error "The first parameter of option%or-else must be a option case class"))
-
-  (if (null? value)
-      default
-      (option value)))
+  
+  (chain-one default args
+    (if (null? value)
+        default
+        (option value))))
 
 (define (%equals that)
   (== value (that 'value)))
 
 (define (%defined?) (not (null? value)))
   
-(define (%empty?) (null? value))
+(define (%empty?)
+  (null? value))
 
 (define (%forall f)
   (if (null? value)
@@ -605,22 +607,22 @@
         (f value)))
 
 (define (%map f . args)
-  (let1 r (if (null? value)
-              (option '())
-              (option (f value)))
-    (if (null? args)
-        r
-        (apply r args))))
+  (chain-one f args
+    (if (null? value)
+        (option '())
+        (option (f value)))))
 
-(chained-define (%flat-map f)
-  (if (null? value)
-      (option '())
-      (f value)))
+(define (%flat-map f . args)
+  (chain-one f args
+    (if (null? value)
+        (option '())
+        (f value))))
 
-(chained-define (%filter pred)
-  (if (or (null? value) (not (pred value)))
-      (option '())
-      (option value)))
+(define (%filter pred . args)
+  (chain-one pred args
+    (if (or (null? value) (not (pred value)))
+        (option '())
+        (option value))))
 
 )
 

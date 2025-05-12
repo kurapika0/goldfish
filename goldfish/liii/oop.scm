@@ -19,6 +19,7 @@
 (export
   @ typed-define define-case-class define-object define-class
   case-class? == != chained-define display* object->string
+  chain-one
 )
 (begin
 
@@ -384,6 +385,11 @@
          (if (null? ,xs)
            ,result
            (apply ,result ,xs))))))
+
+(define (chain-one x xs r)
+  (if (null? xs)
+      r
+      (apply r xs)))
 
 (define (display* . params)
   (define (%display x)
