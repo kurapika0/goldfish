@@ -393,7 +393,7 @@
 
   本节函数和相关功能如下表所示：
 
-  <\big-table|<tabular|<tformat|<cwith|1|1|1|-1|cell-tborder|0ln>|<cwith|1|1|1|-1|cell-bborder|1ln>|<cwith|2|2|1|-1|cell-tborder|1ln>|<cwith|1|1|1|1|cell-lborder|0ln>|<cwith|1|1|2|2|cell-rborder|0ln>|<cwith|1|1|1|-1|cell-background|>|<table|<row|<cell|函数名>|<cell|功能>>|<row|<cell|<scm|define-case-class>>|<cell|用于定义数据+行为的不可变样本类（支持类型化字段和方法）>>|<row|<cell|<scm|define-object>>|<cell|用于定义纯行为的不可变对象（仅包含方法）>>|<row|<cell|<scm|define-class>>|<cell|>>|<row|<cell|<scm|case-class?>>|<cell|用于判断某个对象是否为样本类>>|<row|<cell|<scm|==> 和 <scm|!=>>|<cell|样本类的相等性判断函数>>|<row|<cell|<scm|chained-define>>|<cell|简化了在样本类中定义方法的语法，使方法可以链式调用>>|<row|<cell|<scm|display*>>|<cell|正确处理样本类对象>>|<row|<cell|<scm|object-<textgreater|>string>>|<cell|样本类的字符串表示函数>>|<row|<cell|<verbatim|box>>|<cell|将基础类型的值装箱为样本类的函数>>|<row|<cell|<scm|$>>|<cell|用于简化样本类的创建和操作>>>>>>
+  <\big-table|<tabular|<tformat|<cwith|1|1|1|-1|cell-tborder|0ln>|<cwith|1|1|1|-1|cell-bborder|1ln>|<cwith|2|2|1|-1|cell-tborder|1ln>|<cwith|1|1|1|1|cell-lborder|0ln>|<cwith|1|1|2|2|cell-rborder|0ln>|<cwith|1|1|1|-1|cell-background|>|<table|<row|<cell|函数名>|<cell|功能>>|<row|<cell|<scm|define-case-class>>|<cell|用于定义数据+行为的不可变样本类（支持类型化字段和方法）>>|<row|<cell|<scm|define-object>>|<cell|用于定义纯行为的不可变对象（仅包含方法）>>|<row|<cell|<scm|define-class>>|<cell|用于定义可变成员变量类的宏>>|<row|<cell|<scm|case-class?>>|<cell|用于判断某个对象是否为样本类>>|<row|<cell|<scm|==> 和 <scm|!=>>|<cell|样本类的相等性判断函数>>|<row|<cell|<scm|chained-define>>|<cell|简化了在样本类中定义方法的语法，使方法可以链式调用>>|<row|<cell|<scm|display*>>|<cell|正确处理样本类对象>>|<row|<cell|<scm|object-<textgreater|>string>>|<cell|样本类的字符串表示函数>>|<row|<cell|<verbatim|box>>|<cell|将基础类型的值装箱为样本类的函数>>|<row|<cell|<scm|$>>|<cell|用于简化样本类的创建和操作>>>>>>
     样本类相关函数和功能
   </big-table>
 
@@ -938,13 +938,13 @@
 
     <item*|方法分类>通过前缀区分方法类型：
 
-    <\itemize>
+    <\itemize-minus>
       <item><scm|@> 前缀：静态方法（类名直接调用）
 
       <item><scm|%> 前缀：实例方法（对象实例调用）
 
       <item>无前缀：私有方法（内部使用）
-    </itemize>
+    </itemize-minus>
 
     <item*|自动继承>包含 <scm|define-case-class> 的所有基础方法：
 
@@ -1031,30 +1031,110 @@
 
   <paragraph|define-class>
 
-  \ \ <scm|><scm|define-class> 是一个成员变量可变的类，所有成员变量均为私有成员（即在<scm|define-case-class>的内部通过<scm|define>来定义），通过 <scm|get-name>, <scm|set-name!> 来给变量赋值和获取变量。
+  \ \ <scm|><scm|define-class> 是一个成员变量可变的类，所有成员变量均为<strong|私有>成员（即在<scm|define-case-class>的内部通过<scm|define>来定义），通过 <strong|<scm|get-name>>, <strong|<scm|set-name!>> 来给变量赋值和获取变量。
 
-  例如：
+  \;
 
-  <\scm-code>
+  <subparagraph|功能>
+
+  <\description>
+    <item*|可变状态管理 >
+
+    <\itemize-minus>
+      <item>成员变量（如 <scm|name>、<scm|age>、<scm|scores>）默认私有，必须通过 <scm|set-name!> 等方法修改。
+
+      <item>支持初始化默认值（如 <scm|age> 默认为 <scm|18>）。
+    </itemize-minus>
+
+    <item*|类型安全 >自动生成带类型检查的 setter（如 <scm|(typed-define (%set-age! (x integer?))>）。
+
+    <item*|自定义方法 >可定义类方法（如 <scm|%add-score!>、<scm|%average>），封装业务逻辑。
+
+    <item*|语法简化 >相比手动用 <scm|define-case-class> 实现，大幅减少样板代码。
+  </description>
+
+  \;
+
+  <subparagraph|设计意义>
+
+  <\description>
+    <item*|轻量级对象方案 >
+
+    <\itemize-minus>
+      <item>专注<with|font-series|bold|行为抽象>（如游戏角色、UI 组件等需要频繁状态变更的场景）。
+
+      <item>与 <scm|define-case-class> 形成互补：
+
+      <\itemize-minus>
+        <item><strong|define-case-class<scm|>>：<with|font-series|bold|不可变数据> + 行为（函数式风格）。
+
+        <item><strong|define-class<scm|>>：<with|font-series|bold|可变状态> + 行为（面向对象风格）。
+      </itemize-minus>
+    </itemize-minus>
+
+    <item*|代码可读性 >
+
+    <\itemize-minus>
+      <item>强制命名规范（<scm|%> 前缀表示私有，<scm|get->/<scm|set-> 区分访问器）。
+
+      <item>避免直接操作成员变量，降低耦合。
+    </itemize-minus>
+
+    <item*|类型安全 >通过 <scm|typed-define> 在运行时检查参数类型，防止非法赋值。
+  </description>
+
+  \;
+
+  <subparagraph|实现细节>
+
+  <\description>
+    <item*|宏展开示例 >
+
+    <\scm>
+      (define-class Student ((name string? ""))
+    </scm>
+
+    展开为：
+
+    <\scm>
+      (define-case-class Student ()
+
+      \ \ (define name "")
+
+      \ \ (define (%get-name) name)
+
+      \ \ (typed-define (%set-name! (x string?)) (set! name x))
+    </scm>
+
+    <item*|可变性控制 >所有状态变更通过 <scm|set!> 在方法内完成，避免外部直接修改。
+
+    <item*|错误处理 >无效类型赋值会触发 <scm|type-error>（如 <scm|(s :set-age! "abc")> 会报错）。
+  </description>
+
+  \;
+
+  <subparagraph|使用示例>
+
+  <\scm>
     (define-class Student
 
-    \ \ ((name string? "未命名") \ ; 字段名、类型断言、默认值
+    \ \ ((name string? "") \ \ \ \ \ ; 姓名，默认为空字符串
 
-    \ \ \ (age integer? 18) \ \ \ \ \ \ ; 字段名、类型断言、默认值
+    \ \ \ (age integer? 18) \ \ \ \ \ ; 年龄，默认为18
 
-    \ \ \ (scores list? '())) \ \ \ \ ; 字段名、类型断言、默认值
+    \ \ \ (scores list? '())) \ \ \ ; 分数列表，默认为空
 
     \;
 
-    \ \ ; 自定义方法
+    \ \ ;; 添加分数方法
 
     \ \ (define (%add-score! score)
 
     \ \ \ \ (set! scores (cons score scores))
 
-    \ \ \ \ scores)
+    \;
 
-    \ \ 
+    \ \ ;; 计算平均分方法
 
     \ \ (define (%average)
 
@@ -1062,10 +1142,24 @@
 
     \ \ \ \ \ \ \ \ 0
 
-    \ \ \ \ \ \ \ \ (/ (apply + scores) (length scores))))
+    \ \ \ \ \ \ \ \ (/ (apply + scores) (length scores)))
 
     )
-  </scm-code>
+
+    \ \ ;;使用方法
+
+    (define s (Student)) \ ; 创建实例
+
+    (s :set-name! "张三") \ \ \ \ \ ; 修改名字
+
+    (s :add-score! 85) \ \ \ \ \ \ ; 添加分数85
+
+    (s :add-score! 90) \ \ \ \ \ \ ; 添加分数90
+
+    (s :average) \ \ \ \ \ \ \ \ \ \ \ \ ; 计算平均分 =\<gtr\> 87.5
+  </scm>
+
+  \;
 
   等价于：
 
@@ -1122,6 +1216,20 @@
 
     )
   </scm-code>
+
+  \;
+
+  <subparagraph|适用场景>
+
+  <\description>
+    <item*|>游戏开发（角色属性变更）。
+
+    <item*|>GUI 编程（组件状态管理）。
+
+    <item*|>需要封装可变状态的业务逻辑。
+  </description>
+
+  \;
 
   <subparagraph|测试用例>
 
@@ -1195,77 +1303,71 @@
 
   <scm|case-class?> 是一个用于判断某个对象是否为 <with|font-series|bold|样本类（Case Class）> 的谓词函数。样本类是 Goldfish Scheme 中一种特殊的数据结构，类似于 Scala 中的 Case Class，主要用于表示不可变的数据对象。样本类对象通常由 <scm|define-case-class> 宏定义生成。
 
-  <\strong>
-    函数签名
-  </strong>
+  <subparagraph|函数签名>
 
   <\scm>
     (case-class? x) =\<gtr\> boolean?
   </scm>
 
-  <\itemize-minus>
-    <item><with|font-series|bold|参数>:
+  <\description>
+    <item*|参数 ><scm|x> : 任意类型的对象。
 
-    <\itemize-minus>
-      <item><scm|x> : 任意类型的对象。
-    </itemize-minus>
-
-    <item><with|font-series|bold|返回值>:
+    <item*|返回值 >
 
     <\itemize-minus>
       <item>如果 <scm|x> 是一个样本类对象，返回 <scm|#t>。
 
       <item>否则，返回 <scm|#f>。
     </itemize-minus>
-  </itemize-minus>
+  </description>
 
   \;
 
-  <strong|功能>
+  <subparagraph|功能>
 
   <scm|case-class?> 通过检查对象的内部结构来判断其是否为样本类。样本类对象的前两个方法必须是 <scm|:is-instance-of> 和 <scm|:equals>，这是样本类的标志性特征。
 
   \;
 
-  <strong|实现机制>
+  <subparagraph|实现机制>
 
   <scm|case-class?> 的实现基于以下逻辑：\ 
 
-  <\enumerate>
-    <item>检查对象是否为过程（<scm|procedure?>）。\ 
+  <\description>
+    <item*|>检查对象是否为过程（<scm|procedure?>）。
 
-    <item>获取过程的源代码（<scm|procedure-source>）。\ 
+    <item*|>获取过程的源代码（<scm|procedure-source>）。
 
-    <item>检查源代码的前两个条件分支是否为 <scm|:is-instance-of> 和 <scm|:equals>。\ 
+    <item*|>检查源代码的前两个条件分支是否为 <scm|:is-instance-of> 和 <scm|:equals>。\ 
 
-    <item>如果满足上述条件，则判定为样本类。
-  </enumerate>
-
-  \;
-
-  <strong|注意事项>
-
-  <\itemize-minus>
-    <item><scm|case-class?> 仅适用于由 <scm|define-case-class> 宏生成的样本类对象。
-
-    <item>对于匿名函数、内置函数或普通自定义函数，<scm|case-class?> 会返回 <scm|#f>。
-  </itemize-minus>
+    <item*|>如果满足上述条件，则判定为样本类。
+  </description>
 
   \;
 
-  <strong|设计意义>
+  <subparagraph|注意事项>
 
-  <\itemize-minus>
-    <item><with|font-series|bold|类型安全>: 提供了一种类型检查机制，确保对象符合样本类的规范。
+  <\description>
+    <item*|><scm|case-class?> 仅适用于由 <scm|define-case-class> 宏生成的样本类对象。
 
-    <item><with|font-series|bold|模式匹配支持>: 样本类通常用于模式匹配，<scm|case-class?> 可以帮助识别这些对象。
-
-    <item><with|font-series|bold|代码可读性>: 通过明确的谓词函数，增强代码的可读性和可维护性。
-  </itemize-minus>
+    <item*|>对于匿名函数、内置函数或普通自定义函数，<scm|case-class?> 会返回 <scm|#f>。
+  </description>
 
   \;
 
-  <strong|测试用例>
+  <subparagraph|设计意义>
+
+  <\description>
+    <item*|类型安全 >提供了一种类型检查机制，确保对象符合样本类的规范。
+
+    <item*|模式匹配支持 >样本类通常用于模式匹配，<scm|case-class?> 可以帮助识别这些对象。
+
+    <item*|代码可读性 >通过明确的谓词函数，增强代码的可读性和可维护性。
+  </description>
+
+  \;
+
+  <subparagraph|测试用例>
 
   测试：匿名函数、内置函数或普通自定义函数会返回 <scm|#f>。
 
@@ -1297,22 +1399,18 @@
 
   <paragraph|==><index|==>
 
-  \;
-
-  <strong|概述>
-
   <scm|==> 是一个用于判断两个对象是否相等的函数。它支持对 <with|font-series|bold|样本类（Case Class）>对象的特殊处理，同时也支持对普通对象的比较。如果两个对象都是样本类，则调用样本类的 <scm|:equals> 方法进行比较；如果其中一个对象是样本类，另一个不是，则会将非样本类对象装箱后再进行比较；如果两个对象都不是样本类，则使用 <scm|equal?> 进行比较。
 
   \;
 
-  <strong|函数签名>
+  <subparagraph|函数签名>
 
   <\scm>
     (== left right) =\<gtr\> boolean?
   </scm>
 
-  <\itemize-minus>
-    <item><with|font-series|bold|参数>:
+  <\description>
+    <item*|参数 >
 
     <\itemize-minus>
       <item><scm|left>: 任意类型的对象。
@@ -1320,56 +1418,58 @@
       <item><scm|right>: 任意类型的对象。
     </itemize-minus>
 
-    <item><with|font-series|bold|返回值>:
+    <item*|返回值 >
 
-    <\itemize>
+    <\itemize-minus>
       <item>如果 <scm|left> 和 <scm|right> 相等，返回 <scm|#t>。
 
       <item>否则，返回 <scm|#f>。
-    </itemize>
-  </itemize-minus>
+    </itemize-minus>
+  </description>
 
   \;
 
-  <strong|功能>
+  <subparagraph|功能>
 
   <scm|==> 函数的比较逻辑如下：\ 
 
-  <\itemize>
-    <item>如果 <scm|left> 和 <scm|right> 都是样本类，则调用 <scm|left> 的 <scm|:equals> 方法进行比较。
+  <\description>
+    <item*|>如果 <scm|left> 和 <scm|right> 都是样本类，则调用 <scm|left> 的 <scm|:equals> 方法进行比较。
 
-    <item>如果 <scm|left> 是样本类而 <scm|right> 不是，则将 <scm|right> 用 <scm|box> 函数装箱后调用 <scm|left> 的 <scm|:equals> 方法。
+    <item*|>如果 <scm|left> 是样本类而 <scm|right> 不是，则将 <scm|right> 用 <scm|box> 函数装箱后调用 <scm|left> 的 <scm|:equals> 方法。
 
-    <item>如果 <scm|right> 是样本类而 <scm|left> 不是，则将 <scm|left> 用 <scm|box> 函数装箱后调用 <scm|right> 的 <scm|:equals> 方法。
+    <item*|>如果 <scm|right> 是样本类而 <scm|left> 不是，则将 <scm|left> 用 <scm|box> 函数装箱后调用 <scm|right> 的 <scm|:equals> 方法。
 
-    <item>如果两个对象都不是样本类，则使用 <scm|equal?> 进行比较。
-  </itemize>
-
-  <strong|注意事项>
-
-  <\itemize-minus>
-    <item><scm|==> 函数对样本类对象的比较是基于 <scm|:equals> 方法的实现，因此样本类的相等性判断可以自定义。
-
-    <item>对于非样本类对象，<scm|==> 的行为与 <scm|equal?> 一致。
-
-    <item>装箱操作通过 <scm|box> 函数实现，将普通对象转换为样本类对象。
-  </itemize-minus>
+    <item*|>如果两个对象都不是样本类，则使用 <scm|equal?> 进行比较。
+  </description>
 
   \;
 
-  <strong|设计意义>
+  <subparagraph|注意事项>
 
-  <\itemize-minus>
-    <item><with|font-series|bold|统一比较接口>: 提供了一种统一的比较方式，无论是样本类还是普通对象，都可以使用 <scm|==> 进行比较。
+  <\description>
+    <item*|><scm|==> 函数对样本类对象的比较是基于 <scm|:equals> 方法的实现，因此样本类的相等性判断可以自定义。
 
-    <item><with|font-series|bold|扩展性>: 样本类可以通过实现自定义的 <scm|:equals> 方法来定义自己的相等性逻辑。
+    <item*|>对于非样本类对象，<scm|==> 的行为与 <scm|equal?> 一致。
 
-    <item><with|font-series|bold|兼容性>: 支持对普通对象的比较，确保与现有代码的兼容性。
-  </itemize-minus>
+    <item*|>装箱操作通过 <scm|box> 函数实现，将普通对象转换为样本类对象。
+  </description>
 
   \;
 
-  <strong|测试用例>
+  <subparagraph|设计意义>
+
+  <\description>
+    <item*|统一比较接口 >提供了一种统一的比较方式，无论是样本类还是普通对象，都可以使用 <scm|==> 进行比较。
+
+    <item*|拓展性 >样本类可以通过实现自定义的 <scm|:equals> 方法来定义自己的相等性逻辑。
+
+    <item*|兼容性 >支持对普通对象的比较，确保与现有代码的兼容性。
+  </description>
+
+  \;
+
+  <subparagraph|测试用例>
 
   <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check (== (list 1 2) (list 1 2)) =\<gtr\> #t)
@@ -1395,14 +1495,14 @@
 
   \;
 
-  <strong|函数签名>
+  <subparagraph|函数签名>
 
   <\scm>
     (!= left right) =\<gtr\> boolean?
   </scm>
 
-  <\itemize-minus>
-    <item><with|font-series|bold|参数>:
+  <\description>
+    <item*|参数 >
 
     <\itemize-minus>
       <item><scm|left>: 任意类型的对象。
@@ -1410,52 +1510,58 @@
       <item><scm|right>: 任意类型的对象。
     </itemize-minus>
 
-    <item><with|font-series|bold|返回值>:
+    <item*|返回值 >
 
     <\itemize-minus>
       <item>如果 <scm|left> 和 <scm|right> 不相等，返回 <scm|#t>。
 
       <item>否则，返回 <scm|#f>。
     </itemize-minus>
-  </itemize-minus>
+  </description>
 
   \;
 
-  <strong|功能>
+  <subparagraph|功能>
 
   <scm|!=> 函数的比较逻辑与 <scm|==> 完全相反：\ 
 
-  <\enumerate-numeric>
-    <item>如果 <scm|left> 和 <scm|right> 都是样本类，则调用 <scm|left> 的 <scm|:equals> 方法进行比较,并取反结果。
+  <\description>
+    <item*|>如果 <scm|left> 和 <scm|right> 都是样本类，则调用 <scm|left> 的 <scm|:equals> 方法进行比较,并取反结果。
 
-    <item>如果 <scm|left> 是样本类而 <scm|right> 不是，则将 <scm|right> 用 <scm|box> 函数装箱后调用 <scm|left> 的 <scm|:equals> 方法,并取反结果。
+    <item*|>如果 <scm|left> 是样本类而 <scm|right> 不是，则将 <scm|right> 用 <scm|box> 函数装箱后调用 <scm|left> 的 <scm|:equals> 方法,并取反结果。
 
-    <item>如果 <scm|right> 是样本类而 <scm|left> 不是，则将 <scm|left> 用 <scm|box> 函数装箱后调用 <scm|right> 的 <scm|:equals> 方法,并取反结果。
+    <item*|>如果 <scm|right> 是样本类而 <scm|left> 不是，则将 <scm|left> 用 <scm|box> 函数装箱后调用 <scm|right> 的 <scm|:equals> 方法,并取反结果。
 
-    <item>如果两个对象都不是样本类，则使用 <scm|equal?> 进行比较，并取反结果。
-  </enumerate-numeric>
+    <item*|>如果两个对象都不是样本类，则使用 <scm|equal?> 进行比较，并取反结果。
+  </description>
 
-  <strong|注意事项>
+  \;
 
-  <\itemize-minus>
-    <item><scm|!=> 是 <scm|==> 的逻辑取反，因此其行为完全依赖于 <scm|==> 的实现。
+  <subparagraph|注意事项>
 
-    <item>对于样本类对象，<scm|!=> 的行为取决于样本类的 <scm|:equals> 方法的实现。
+  <\description>
+    <item*|><scm|!=> 是 <scm|==> 的逻辑取反，因此其行为完全依赖于 <scm|==> 的实现。
 
-    <item>对于非样本类对象，<scm|!=> 的行为与 <scm|equal?> 的取反结果一致。
-  </itemize-minus>
+    <item*|>对于样本类对象，<scm|!=> 的行为取决于样本类的 <scm|:equals> 方法的实现。
 
-  <strong|设计意义>
+    <item*|>对于非样本类对象，<scm|!=> 的行为与 <scm|equal?> 的取反结果一致。
+  </description>
 
-  <\itemize-minus>
-    <item><with|font-series|bold|逻辑完整性>: 提供了与 <scm|==> 对称的不等性判断函数，完善了比较操作的逻辑。
+  \;
 
-    <item><with|font-series|bold|代码简洁性>: 通过 <scm|!=> 可以更直观地表达不等性判断，避免使用 <scm|(not (== x y))> 的冗余写法。
+  <subparagraph|设计意义>
 
-    <item><with|font-series|bold|一致性>: 与 <scm|==> 共享相同的比较逻辑，确保行为的一致性。
-  </itemize-minus>
+  <\description>
+    <item*|逻辑完整性 >提供了与 <scm|==> 对称的不等性判断函数，完善了比较操作的逻辑。
 
-  <strong|测试用例>
+    <item*|代码简洁性 >通过 <scm|!=> 可以更直观地表达不等性判断，避免使用 <scm|(not (== x y))> 的冗余写法。
+
+    <item*|一致性 >与 <scm|==> 共享相同的比较逻辑，确保行为的一致性。
+  </description>
+
+  \;
+
+  <subparagraph|测试用例>
 
   <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check (== (list 1 2) (list 1 2)) =\<gtr\> #t)
