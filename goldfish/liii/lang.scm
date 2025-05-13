@@ -771,8 +771,9 @@
   (chain-apply args
     (rich-list (list ))))
 
-(chained-define (@concat lst1 lst2)
-  (rich-list (append (lst1 :collect) (lst2 :collect))))
+(define (@concat lst1 lst2 . args)
+  (chain-apply args
+    (rich-list (append (lst1 :collect) (lst2 :collect)))))
 
 (define (@fill n elem)
   (cond
@@ -796,7 +797,7 @@
       (else (loop (cdr lst))))))
 
 (define (%find-last pred)
-  (let1 reversed-list (reverse data)  ; 先反转列表
+  (let ((reversed-list (reverse data)))  ; 先反转列表
     (let loop ((lst reversed-list))
       (cond
         ((null? lst) (none))  ; 遍历完未找到
@@ -807,7 +808,6 @@
   (if (null? data)
       (error 'out-of-range "rich-list%head: list is empty")
       (car data)))
-
 
 (define (%head-option)
   (if (null? data)
@@ -825,13 +825,14 @@
       (none)
       (option (car (reverse data)))))
 
-(chained-define (%slice from until)
-  (let* ((len (length data))
-         (start (max 0 (min from len)))
-         (end (max 0 (min until len))))
-    (if (< start end)
-        (rich-list (take (drop data start) (- end start)))
-        (rich-list '()))))
+(define (%slice from until . args)
+  (chain-apply args
+    (let* ((len (length data))
+          (start (max 0 (min from len)))
+          (end (max 0 (min until len))))
+      (if (< start end)
+          (rich-list (take (drop data start) (- end start)))
+          (rich-list '())))))
 
 (define (%empty?)
   (null? data))
@@ -857,70 +858,124 @@
 (define (%contains elem)
   (%exists (lambda (x) (equal? x elem))))
 
-(chained-define (%map x)
-  (rich-list (map x data)))
+(define (%map x . args)
+  (chain-apply args
+    (rich-list (map x data))))
 
-(chained-define (%flat-map x)
-  (rich-list (flat-map x data)))
+(define (%flat-map x . args)
+  (chain-apply args
+    (rich-list (flat-map x data))))
 
-(chained-define (%filter x)
-  (rich-list (filter x data)))
+(define (%filter x . args)
+  (chain-apply args
+    (rich-list (filter x data))))
 
 (define (%for-each x)
   (for-each x data))
 
-(chained-define (%reverse)
-  (rich-list (reverse data)))
+(define (%reverse . args)
+  (chain-apply args
+    (rich-list (reverse data))))
     
-(chained-define (%take x)
-  (typed-define (scala-take (data list?) (n integer?))
-    (cond ((< n 0) '())
-          ((>= n (length data)) data)
-          (else (take data n))))
-  (rich-list (scala-take data x)))
+(define (%take x . args)
+  (chain-apply args
+    (begin 
+      (define (scala-take data n)
+        (unless (list? data) 
+            (type-error 
+               (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+                              scala-take '(data n) 'data "list" (object->string data))))
+        (unless (integer? n) 
+            (type-error 
+               (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+                              scala-take '(data n) 'n "integer" (object->string n))))
+      
+        (cond ((< n 0) '())
+              ((>= n (length data)) data)
+              (else (take data n))))
+    
+      (rich-list (scala-take data x)))))
 
-(chained-define (%drop x)
-  (typed-define (scala-drop (data list?) (n integer?))
-    (cond ((< n 0) data)
-          ((>= n (length data)) '())
-          (else (drop data n))))
-  (rich-list (scala-drop data x)))
+(define (%drop x . args)
+  (chain-apply args
+    (begin 
+      (define (scala-drop data n)
+        (unless (list? data) 
+            (type-error 
+               (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+                              scala-drop '(data n) 'data "list" (object->string data))))
+        (unless (integer? n) 
+            (type-error 
+               (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+                              scala-drop '(data n) 'n "integer" (object->string n))))
+      
+        (cond ((< n 0) data)
+              ((>= n (length data)) '())
+              (else (drop data n))))
+    
+      (rich-list (scala-drop data x)))))
 
-(chained-define (%take-right x)
-  (typed-define (scala-take-right (data list?) (n integer?))
-    (cond ((< n 0) '())
-          ((>= n (length data)) data)
-          (else (take-right data n))))
-  (rich-list (scala-take-right data x)))
+(define (%take-right x . args)
+  (chain-apply args
+    (begin 
+      (define (scala-take-right data n)
+        (unless (list? data) 
+            (type-error 
+               (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+                              scala-take-right '(data n) 'data "list" (object->string data))))
+        (unless (integer? n) 
+            (type-error 
+               (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+                              scala-take-right '(data n) 'n "integer" (object->string n))))
+      
+        (cond ((< n 0) '())
+              ((>= n (length data)) data)
+              (else (take-right data n))))
+    
+      (rich-list (scala-take-right data x)))))
 
-(chained-define (%drop-right x)
-  (typed-define (scala-drop-right (data list?) (n integer?))
-    (cond ((< n 0) data)
-          ((>= n (length data)) '())
-          (else (drop-right data n))))
-  (rich-list (scala-drop-right data x)))
+(define (%drop-right x . args)
+  (chain-apply args
+    (begin 
+      (define (scala-drop-right data n)
+        (unless (list? data) 
+            (type-error 
+               (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+                              scala-drop-right '(data n) 'data "list" (object->string data))))
+        (unless (integer? n) 
+            (type-error 
+               (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+                              scala-drop-right '(data n) 'n "integer" (object->string n))))
+      
+        (cond ((< n 0) data)
+              ((>= n (length data)) '())
+              (else (drop-right data n))))
+    
+      (rich-list (scala-drop-right data x)))))
 
-  (define (%count . xs)
-    (cond ((null? xs) (length data))
-          ((length=? 1 xs) (count (car xs) data))
-          (else (error 'wrong-number-of-args "rich-list%count" xs))))
+(define (%count . xs)
+  (cond ((null? xs) (length data))
+        ((length=? 1 xs) (count (car xs) data))
+        (else (error 'wrong-number-of-args "rich-list%count" xs))))
 
 (define (%length)
   (length data))
 
-  (define (%fold initial f)
-    (fold f initial data))
+(define (%fold initial f)
+  (fold f initial data))
 
-  (define (%fold-right initial f)
-    (fold-right f initial data))
+(define (%fold-right initial f)
+  (fold-right f initial data))
 
-(chained-define (%sort-with less-p)
-  (let ((sorted-data (list-stable-sort less-p data)))
-        (rich-list sorted-data)))
+(define (%sort-with less-p . args)
+  (chain-apply args
+    (let ((sorted-data (list-stable-sort less-p data)))
+        (rich-list sorted-data))))
 
-(chained-define (%sort-by f)
-  (let ((sorted-data (list-stable-sort (lambda (x y) (< (f x) (f y))) data)))
-    (rich-list sorted-data)))
+(define (%sort-by f . args)
+  (chain-apply args
+    (let ((sorted-data (list-stable-sort (lambda (x y) (< (f x) (f y))) data)))
+    (rich-list sorted-data))))
 
 (define (%group-by func)
   (let ((group (make-hash-table)))
@@ -976,28 +1031,30 @@
   (chain-apply args
     (rich-list (apply map cons (list data l)))))
 
-(chained-define (%zip-with-index)
-  (let loop ((lst data) (idx 0) (result '()))
-    (if (null? lst)
-        (rich-list (reverse result))  
-        (loop (cdr lst) 
-              (+ idx 1) 
-              (cons (cons idx (car lst)) result)))))
+(define (%zip-with-index . args)
+  (chain-apply args
+    (let loop ((lst data) (idx 0) (result '()))
+      (if (null? lst)
+          (rich-list (reverse result))  
+          (loop (cdr lst) 
+                (+ idx 1) 
+                (cons (cons idx (car lst)) result))))))
 
-(chained-define (%distinct)
-  (let loop
+(define (%distinct . args)
+  (chain-apply args
+    (let loop
       ((result '()) 
       (data data) 
       (ht (make-hash-table)))
-    (cond
-      ((null? data) (rich-list (reverse result)))  
-      (else
-       (let ((elem (car data)))
-         (if (eq? (hash-table-ref ht elem) #f) 
-             (begin
-               (hash-table-set! ht elem #t)  
-               (loop (cons elem result) (cdr data) ht))
-             (loop result (cdr data) ht)))))))
+      (cond
+        ((null? data) (rich-list (reverse result)))  
+        (else
+         (let ((elem (car data)))
+           (if (eq? (hash-table-ref ht elem) #f) 
+               (begin
+                 (hash-table-set! ht elem #t)  
+                 (loop (cons elem result) (cdr data) ht))
+               (loop result (cdr data) ht))))))))
 
 (define (%reduce f)
   (if (null? data)
@@ -1009,18 +1066,24 @@
       (none)
       (option (reduce f '() data))))
 
-(chained-define (%take-while pred)
-  (let ((result (take-while pred data)))
-    (rich-list result)))
+(define (%take-while pred . args)
+  (chain-apply args
+    (let ((result (take-while pred data)))
+      (rich-list result))))
 
-(chained-define (%drop-while pred)
-  (let ((result (drop-while pred data)))
-    (rich-list result)))
+(define (%drop-while pred . args)
+  (chain-apply args
+    (let ((result (drop-while pred data)))
+      (rich-list result))))
 
 (define (%index-where pred)
   (list-index pred data))
 
-(typed-define (%max-by (f procedure?))
+(define (%max-by f)
+  (unless (procedure? f) 
+      (type-error 
+        (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+                    %max-by '(f) 'f "procedure" (object->string f))))              
   (if (null? data)
       (value-error "rich-list%max-by: empty list is not allowed")
       (let loop ((rest (cdr data))
@@ -1042,7 +1105,11 @@
                   (loop (cdr rest) current current-val)
                   (loop (cdr rest) max-elem max-val)))))))
 
-(typed-define (%min-by (f procedure?))
+(define (%min-by f)
+  (unless (procedure? f) 
+      (type-error 
+        (format #f "In funtion #<~a ~a>: argument *~a* must be *~a*!    **Got ~a**" 
+                    %min-by '(f) 'f "procedure" (object->string f))))              
   (if (null? data)
       (value-error "rich-list%min-by: empty list is not allowed")
       (let loop ((rest (cdr data))
