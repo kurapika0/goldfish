@@ -3981,6 +3981,14 @@
     \;
   </scm-chunk>
 
+  <\scm-chunk|tests/goldfish/liii/base-test.scm|true|true>
+    (check (bytevector-length (bytevector 10 20 30 40)) =\<gtr\> 4)
+
+    (check (bytevector-length (make-bytevector 7 1)) =\<gtr\> 7)
+
+    \;
+  </scm-chunk>
+
   <value|r7rs><paragraph|bytevector-u8-ref><index|bytevector-u8-ref>
 
   <\scm-chunk|goldfish/scheme/base.scm|true|true>

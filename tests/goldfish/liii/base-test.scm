@@ -1046,6 +1046,9 @@
 (check (make-bytevector 3 0) => #u8(0 0 0))
 (check (make-bytevector 3 3) => #u8(3 3 3))
 
+(check (bytevector-length (bytevector 10 20 30 40)) => 4)
+(check (bytevector-length (make-bytevector 7 1)) => 7)
+
 (let1 bv (bytevector 1 2 3 4 5)
   (check (bytevector-copy bv 1 4) => #u8(2 3 4)))
 
