@@ -223,6 +223,19 @@
 
 (check (string-utils :concat "a" "b") => "ab")
 
+(define-object object1
+  (define x 0)
+  (define (@concat x y) 
+    (string-append x y))
+)
+
+(define-object object2
+  (define y 0)
+  (define (@return-object1) object1)
+)
+
+(check ((object2 :return-object1) :concat "a" "b") => "ab")
+
 ;; Test define-class (可变类)
 (let ()
   (define-class person
