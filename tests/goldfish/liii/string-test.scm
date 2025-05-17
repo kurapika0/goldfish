@@ -15,7 +15,8 @@
 ;
 
 (import (liii check)
-        (liii string))
+        (liii string)
+        (srfi srfi-13))
 
 (check-set-mode! 'report-failed)
 
@@ -213,6 +214,13 @@
 (check (string-trim-both "---hello---" #\- 3 8) => "hello")
 (check (string-trim-both "123hello123" char-numeric? 3 8) => "hello")
 (check (string-trim-both "123hello123" char-numeric? 3) => "hello")
+
+(check (string-prefix? "he" "hello") => #t)
+(check (string-prefix? "hello" "hello") => #t)
+(check (string-prefix? "" "hello") => #t)
+(check (string-prefix? "" "") => #t)
+(check (string-prefix? "helloo" "hello") => #f)
+(check (string-prefix? "ello" "hello") => #f)
 
 (check (string-index "0123456789" #\2) => 2)
 (check (string-index "0123456789" #\2 2) => 2)

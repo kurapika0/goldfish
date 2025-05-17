@@ -12085,6 +12085,24 @@
     \;
   </scm-chunk>
 
+  <\scm-chunk|tests/goldfish/liii/string-test.scm|true|true>
+    (check (string-prefix? "he" "hello") =\<gtr\> #t)
+
+    (check (string-prefix? "hello" "hello") =\<gtr\> #t)
+
+    (check (string-prefix? "" "hello") =\<gtr\> #t)
+
+    (check (string-prefix? "" "") =\<gtr\> #t)
+
+    (check (string-prefix? "helloo" "hello") =\<gtr\> #f)
+
+    (check (string-prefix? "ello" "hello") =\<gtr\> #f)
+
+    \;
+  </scm-chunk>
+
+  \;
+
   <paragraph|string-suffix?><index|string-suffix?>
 
   <scm|string-suffix?>是一个谓词函数，用于检查一个字符串是否是另一个字符串的后缀。若第一个字符串是第二个字符串的后缀，则函数返回<scm|#t>；否则返回<scm|#f>。特别地，空字符串是任意字符串的后缀；两个内容相同的字符串互为后缀。
