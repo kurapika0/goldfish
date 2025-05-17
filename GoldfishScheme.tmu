@@ -3997,6 +3997,16 @@
     \;
   </scm-chunk>
 
+  <\scm-chunk|tests/goldfish/liii/base-test.scm|true|true>
+    (check (bytevector-u8-ref #u8(5 15 25) 2) =\<gtr\> 25)
+
+    (check (bytevector-u8-ref (make-bytevector 3 99) 1) =\<gtr\> 99)
+
+    (check (bytevector-u8-ref (string-\<gtr\>utf8 "XYZ") 0) =\<gtr\> 88) ;; ASCII 'X'
+
+    \;
+  </scm-chunk>
+
   \;
 
   <value|r7rs><paragraph|bytevector-u8-set!><index|bytevector-u8-set!>

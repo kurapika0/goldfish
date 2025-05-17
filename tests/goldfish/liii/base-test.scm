@@ -1049,6 +1049,10 @@
 (check (bytevector-length (bytevector 10 20 30 40)) => 4)
 (check (bytevector-length (make-bytevector 7 1)) => 7)
 
+(check (bytevector-u8-ref #u8(5 15 25) 2) => 25)
+(check (bytevector-u8-ref (make-bytevector 3 99) 1) => 99)
+(check (bytevector-u8-ref (string->utf8 "XYZ") 0) => 88) ;; ASCII 'X'
+
 (let1 bv (bytevector 1 2 3 4 5)
   (check (bytevector-copy bv 1 4) => #u8(2 3 4)))
 
