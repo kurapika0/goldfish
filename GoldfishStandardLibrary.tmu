@@ -2910,7 +2910,7 @@
 
     \ \ path-dir? path-file? path-exists?
 
-    \ \ path-getsize path-read-text path-read-bytes path-write-text
+    \ \ path-getsize path-read-text path-read-bytes path-write-text path-append-text
 
     \ \ path
 
@@ -3577,6 +3577,196 @@
     \;
   </cpp-chunk>
 
+  <paragraph|path-append-text>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (define path-append-text
+
+    \ \ (typed-lambda ((path string?) (content string?))
+
+    \ \ \ \ (g_path-append-text path content)))
+
+    \;
+  </goldfish-chunk>
+
+  <\cpp-chunk|src/goldfish.hpp|true|true>
+    static s7_pointer
+
+    f_path_append_text (s7_scheme* sc, s7_pointer args) {
+
+    \ \ const char* path = s7_string (s7_car (args));
+
+    \ \ if (!path) {
+
+    \ \ \ \ return s7_make_integer(sc, -1);
+
+    \ \ }
+
+    \;
+
+    \ \ const char* content = s7_string (s7_cadr (args));
+
+    \ \ if (!content) {
+
+    \ \ \ \ return s7_make_integer(sc, -1);
+
+    \ \ }
+
+    \;
+
+    \ \ // 以追加模式打开文件
+
+    \ \ tb_file_ref_t file = tb_file_init(path, TB_FILE_MODE_WO \| TB_FILE_MODE_CREAT \| TB_FILE_MODE_APPEND);
+
+    \ \ if (file == tb_null) {
+
+    \ \ \ \ return s7_make_integer(sc, -1);
+
+    \ \ }
+
+    \;
+
+    \ \ tb_filelock_ref_t lock = tb_filelock_init(file);
+
+    \ \ if (tb_filelock_enter(lock, TB_FILE_MODE_WO) == tb_false) {
+
+    \ \ \ \ tb_filelock_exit(lock);
+
+    \ \ \ \ tb_file_exit(file);
+
+    \ \ \ \ return s7_make_integer(sc, -1);
+
+    \ \ }
+
+    \;
+
+    \ \ tb_size_t content_size = strlen(content);
+
+    \ \ tb_size_t written_size = tb_file_writ(file, reinterpret_cast\<less\>const tb_byte_t*\<gtr\>(content), content_size);
+
+    \;
+
+    \ \ bool release_success = tb_filelock_leave(lock);
+
+    \ \ tb_filelock_exit(lock);
+
+    \ \ bool exit_success = tb_file_exit(file);
+
+    \;
+
+    \ \ if (written_size == content_size && release_success && exit_success) {
+
+    \ \ \ \ return s7_make_integer(sc, written_size);
+
+    \ \ } else {
+
+    \ \ \ \ return s7_make_integer(sc, -1);
+
+    \ \ }
+
+    }
+
+    \;
+  </cpp-chunk>
+
+  <\cpp-chunk|src/goldfish.hpp|true|true>
+    inline void glue_path_append_text(s7_scheme* sc) {
+
+    \ \ const char* name = "g_path-append-text";
+
+    \ \ const char* desc = "(g_path-append-text path content) =\<gtr\> integer,\\
+
+    append content to the file at the given path and return the number of bytes written, or -1 on failure";
+
+    \ \ s7_define_function(sc, name, f_path_append_text, 2, 0, false, desc);
+
+    }
+
+    \;
+  </cpp-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    ;; 测试 path-append-text
+
+    (let ((file-name "append-test.txt")
+
+    \ \ \ \ \ \ (initial-content "Initial content\\n")
+
+    \ \ \ \ \ \ (append-content "Appended content\\n"))
+
+    \ \ (define temp-dir (os-temp-dir))
+
+    \ \ (define file-path (string-append temp-dir (string (os-sep)) file-name))
+
+    \ \ 
+
+    \ \ ;; 先写入初始内容
+
+    \ \ (path-write-text file-path initial-content)
+
+    \ \ 
+
+    \ \ ;; 验证初始内容
+
+    \ \ (check (path-read-text file-path) =\<gtr\> initial-content)
+
+    \ \ 
+
+    \ \ ;; 追加内容
+
+    \ \ (check-true (\<gtr\> (path-append-text file-path append-content) 0))
+
+    \ \ 
+
+    \ \ ;; 验证追加后的内容
+
+    \ \ (check (path-read-text file-path) =\<gtr\> (string-append initial-content append-content))
+
+    \ \ 
+
+    \ \ ;; 清理
+
+    \ \ (delete-file file-path))
+
+    \;
+
+    ;; 测试追加到不存在的文件
+
+    (let ((file-name "append-new-file.txt")
+
+    \ \ \ \ \ \ (content "Content for new file\\n"))
+
+    \ \ (define temp-dir (os-temp-dir))
+
+    \ \ (define file-path (string-append temp-dir (string (os-sep)) file-name))
+
+    \ \ 
+
+    \ \ ;; 确保文件不存在
+
+    \ \ (when (file-exists? file-path)
+
+    \ \ \ \ (delete-file file-path))
+
+    \ \ 
+
+    \ \ ;; 追加到不存在的文件
+
+    \ \ (check-true (\<gtr\> (path-append-text file-path content) 0))
+
+    \ \ 
+
+    \ \ ;; 验证内容
+
+    \ \ (check (path-read-text file-path) =\<gtr\> content)
+
+    \ \ 
+
+    \ \ ;; 清理
+
+    \ \ (delete-file file-path))
+  </scm-chunk>
+
   <paragraph|glue_path>
 
   <\cpp-chunk|src/goldfish.hpp|true|true>
@@ -3595,6 +3785,8 @@
     \ \ glue_path_read_bytes (sc);
 
     \ \ glue_path_write_text (sc);
+
+    \ \ glue_path_append_text (sc);
 
     }
 
@@ -4332,6 +4524,56 @@
 
     \;
   </goldfish-chunk>
+
+  <paragraph|path%append-text>
+
+  <\goldfish-chunk|goldfish/liii/path.scm|true|true>
+    (typed-define (%append-text (content string?))
+
+    \ \ (path-append-text (%to-string) content))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/path-test.scm|true|true>
+    ;; 测试 path%append-text 方法
+
+    (let1 test-file (string-append (os-temp-dir) "/append_test.txt")
+
+    \ \ ;; 确保文件不存在
+
+    \ \ (when (file-exists? test-file)
+
+    \ \ \ \ (delete-file test-file))
+
+    \ \ 
+
+    \ \ ;; 创建 path 对象
+
+    \ \ (define p (path test-file))
+
+    \ \ 
+
+    \ \ ;; 测试追加到新文件
+
+    \ \ (check-true (\<gtr\> (p :append-text "First line\\n") 0))
+
+    \ \ (check (p :read-text) =\<gtr\> "First line\\n")
+
+    \ \ 
+
+    \ \ ;; 测试追加到已有文件
+
+    \ \ (check-true (\<gtr\> (p :append-text "Second line\\n") 0))
+
+    \ \ (check (p :read-text) =\<gtr\> "First line\\nSecond line\\n")
+
+    \ \ 
+
+    \ \ ;; 清理
+
+    \ \ (delete-file test-file))
+  </scm-chunk>
 
   <paragraph|path%list>
 

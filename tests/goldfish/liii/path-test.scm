@@ -75,6 +75,46 @@
   
   (delete-file file-path))
 
+;; 测试 path-append-text
+(let ((file-name "append-test.txt")
+      (initial-content "Initial content\n")
+      (append-content "Appended content\n"))
+  (define temp-dir (os-temp-dir))
+  (define file-path (string-append temp-dir (string (os-sep)) file-name))
+  
+  ;; 先写入初始内容
+  (path-write-text file-path initial-content)
+  
+  ;; 验证初始内容
+  (check (path-read-text file-path) => initial-content)
+  
+  ;; 追加内容
+  (check-true (> (path-append-text file-path append-content) 0))
+  
+  ;; 验证追加后的内容
+  (check (path-read-text file-path) => (string-append initial-content append-content))
+  
+  ;; 清理
+  (delete-file file-path))
+
+;; 测试追加到不存在的文件
+(let ((file-name "append-new-file.txt")
+      (content "Content for new file\n"))
+  (define temp-dir (os-temp-dir))
+  (define file-path (string-append temp-dir (string (os-sep)) file-name))
+  
+  ;; 确保文件不存在
+  (when (file-exists? file-path)
+    (delete-file file-path))
+  
+  ;; 追加到不存在的文件
+  (check-true (> (path-append-text file-path content) 0))
+  
+  ;; 验证内容
+  (check (path-read-text file-path) => content)
+  
+  ;; 清理
+  (delete-file file-path))
 (check ((path) :get-type) => 'posix)
 (check ((path) :get-parts) => #("."))
 
@@ -176,6 +216,25 @@
 (when (os-windows?)
   (check (path :of-drive #\C :to-string) => "C:\\"))
 
+;; 测试 path%append-text 方法
+(let1 test-file (string-append (os-temp-dir) "/append_test.txt")
+  ;; 确保文件不存在
+  (when (file-exists? test-file)
+    (delete-file test-file))
+  
+  ;; 创建 path 对象
+  (define p (path test-file))
+  
+  ;; 测试追加到新文件
+  (check-true (> (p :append-text "First line\n") 0))
+  (check (p :read-text) => "First line\n")
+  
+  ;; 测试追加到已有文件
+  (check-true (> (p :append-text "Second line\n") 0))
+  (check (p :read-text) => "First line\nSecond line\n")
+  
+  ;; 清理
+  (delete-file test-file))
 (when (not (os-windows?))
   (check (path :/ "etc" :/ "host" :to-string) => "/etc/host")
   (check (path :/ (path "a/b")) => (path "/a/b")))

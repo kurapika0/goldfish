@@ -17,7 +17,7 @@
 (define-library (liii path)
 (export
   path-dir? path-file? path-exists?
-  path-getsize path-read-text path-read-bytes path-write-text
+  path-getsize path-read-text path-read-bytes path-write-text path-append-text
   path
 )
 (import (liii base) (liii error) (liii vector) (liii string) (liii list)
@@ -57,6 +57,10 @@
 (define path-write-text
   (typed-lambda ((path string?) (content string?))
     (g_path-write-text path content)))
+
+(define path-append-text
+  (typed-lambda ((path string?) (content string?))
+    (g_path-append-text path content)))
 
 (define-case-class path ()
   (define parts #("."))
@@ -229,6 +233,9 @@
 
 (typed-define (%write-text (content string?))
   (path-write-text (%to-string) content))
+
+(typed-define (%append-text (content string?))
+  (path-append-text (%to-string) content))
 
 (define (%list)
   (box (listdir (%to-string))))
