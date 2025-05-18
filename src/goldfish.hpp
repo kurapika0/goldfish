@@ -776,6 +776,28 @@ append content to the file at the given path and return the number of bytes writ
   s7_define_function(sc, name, f_path_append_text, 2, 0, false, desc);
 }
 
+static s7_pointer f_path_touch(s7_scheme* sc, s7_pointer args) {
+  const char* path = s7_string(s7_car(args));
+  if (!path) {
+    return s7_make_boolean(sc, false);
+  }
+    
+  tb_bool_t success = tb_file_touch(path, 0, 0);
+
+  if (success == tb_true) {
+    return s7_make_boolean(sc, true);
+  } else {
+    return s7_make_boolean(sc, false);
+  }
+}
+
+inline void
+glue_path_touch(s7_scheme* sc) {
+  const char* name = "g_path-touch";
+  const char* desc = "(g_path-touch path) => boolean, create empty file or update modification time";
+  s7_define_function(sc, name, f_path_touch, 1, 0, false, desc);
+}
+
 inline void
 glue_liii_path (s7_scheme* sc) {
   glue_isfile (sc);
@@ -785,6 +807,7 @@ glue_liii_path (s7_scheme* sc) {
   glue_path_read_bytes (sc);
   glue_path_write_text (sc);
   glue_path_append_text (sc);
+  glue_path_touch (sc);
 }
 
 void

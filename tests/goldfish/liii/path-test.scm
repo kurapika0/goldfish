@@ -117,6 +117,24 @@
   
   ;; 清理
   (delete-file file-path))
+
+(let ((test-file (string-append (os-temp-dir) "/test_touch.txt")))
+  ;; Ensure file doesn't exist initially
+  (when (file-exists? test-file)
+    (delete-file test-file))
+  
+  ;; Test creating new file
+  (check-true (path-touch test-file))
+  (check-true (file-exists? test-file))
+  
+  ;; Test updating existing file
+  (let ((old-size (path-getsize test-file)))
+    (check-true (path-touch test-file))
+    (check (= (path-getsize test-file) old-size) => #t))
+  
+  ;; Clean up
+  (delete-file test-file))
+
 (check ((path) :get-type) => 'posix)
 (check ((path) :get-parts) => #("."))
 
@@ -252,6 +270,28 @@
   ;; 清理
   (p :unlink)
   (p-windows :unlink))
+(let1 test-file (string-append (os-temp-dir) (string (os-sep)) "test_touch.txt")
+  ;; Ensure file doesn't exist initially
+  (when (file-exists? test-file)
+    (delete-file test-file))
+  
+  ;; Test creating new file with path object
+  (let1 p (path test-file)
+    (check-false (p :exists?))
+    (check-true (p :touch))
+    (check-true (p :exists?)))
+  
+  ;; Clean up
+  (delete-file test-file))
+
+;; Test with very long path
+(let ((long-name (make-string 200 #\x))
+      (temp-dir (os-temp-dir)))
+  (let ((p (path temp-dir :/ long-name)))
+    (check-true (p :touch))
+    (check-true (p :exists?))
+    (p :unlink)))
+
 (when (not (os-windows?))
   (check (path :/ "etc" :/ "host" :to-string) => "/etc/host")
   (check (path :/ (path "a/b")) => (path "/a/b")))
