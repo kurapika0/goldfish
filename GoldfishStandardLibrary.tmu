@@ -5303,6 +5303,168 @@
     \;
   </goldfish-chunk>
 
+  <chapter|(liii datetime)>
+
+  <section|许可证>
+
+  <\goldfish-chunk|goldfish/liii/datetime.scm|false|true>
+    ;
+
+    ; Copyright (C) 2024 The Goldfish Scheme Authors
+
+    ;
+
+    ; Licensed under the Apache License, Version 2.0 (the "License");
+
+    ; you may not use this file except in compliance with the License.
+
+    ; You may obtain a copy of the License at
+
+    ;
+
+    ; http://www.apache.org/licenses/LICENSE-2.0
+
+    ;
+
+    ; Unless required by applicable law or agreed to in writing, software
+
+    ; distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+
+    ; WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+
+    ; License for the specific language governing permissions and limitations
+
+    ; under the License.
+
+    ;
+
+    \;
+  </goldfish-chunk>
+
+  <section|接口>
+
+  <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
+    (define-library (liii datetime)
+
+    (export datetime)
+
+    (begin
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/datetime-test.scm|false|true>
+    (import (liii check)
+
+    \ \ \ \ \ \ \ \ (liii datetime))
+
+    \;
+  </goldfish-chunk>
+
+  <section|datetime>
+
+  <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
+    (define-case-class datetime
+
+    \ \ ((year integer?)
+
+    \ \ \ (month integer?)
+
+    \ \ \ (day integer?)
+
+    \ \ \ (hour integer? 0)
+
+    \ \ \ (minute integer? 0)
+
+    \ \ \ (second integer? 0)
+
+    \ \ \ (micro-second integer? 0))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|datetime@now>
+
+  <todo|基于tbox来实现>
+
+  see <slink|https://gitee.com/tboox/tbox/blob/master/src/demo/libc/time.c>
+
+  <paragraph|datetime%to-string>
+
+  <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
+    (define (%to-string)
+
+    \ \ (define (pad2 n) \ ; 补零到 2 位
+
+    \ \ \ \ (if (\<less\> n 10)
+
+    \ \ \ \ \ \ \ \ (string-append "0" (number-\<gtr\>string n))
+
+    \ \ \ \ \ \ \ \ (number-\<gtr\>string n)))
+
+    \ \ (define (pad6 n) \ ; 补零到 6 位（微秒）
+
+    \ \ \ \ (let ((s (number-\<gtr\>string n)))
+
+    \ \ \ \ \ \ (string-append (make-string (- 6 (string-length s)) #\\0) s)))
+
+    \ \ 
+
+    \ \ (let ((date-part (string-append (number-\<gtr\>string year) "-"
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (pad2 month) "-"
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (pad2 day)))
+
+    \ \ \ \ \ \ \ \ (time-part (string-append (pad2 hour) ":"
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (pad2 minute) ":"
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (pad2 second))))
+
+    \ \ \ \ (if (zero? micro-second)
+
+    \ \ \ \ \ \ \ \ (string-append date-part " " time-part)
+
+    \ \ \ \ \ \ \ \ (string-append date-part " " time-part "." (pad6 micro-second)))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/datetime-test.scm|true|false>
+    (check ((datetime :year 2025 :month 1 :day 1) :to-string)
+
+    \ \ =\<gtr\> "2025-01-01 00:00:00")
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/datetime-test.scm|true|false>
+    (check ((datetime :year 2025 :month 1 :day 1 :micro-second 111111) :to-string)
+
+    \ \ =\<gtr\> "2025-01-01 00:00:00.111111")
+
+    \;
+  </goldfish-chunk>
+
+  <subparagraph|结尾>
+
+  <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
+    )
+
+    \;
+  </goldfish-chunk>
+
+  <section|结尾>
+
+  <\goldfish-chunk|goldfish/liii/datetime.scm|true|false>
+    ) ; end of begin
+
+    ) ; end of define-library
+
+    \;
+  </goldfish-chunk>
+
   <chapter|(liii argparse)>
 
   <section|协议>
