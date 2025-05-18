@@ -3630,7 +3630,7 @@
 
     \ \ tb_filelock_ref_t lock = tb_filelock_init(file);
 
-    \ \ if (tb_filelock_enter(lock, TB_FILE_MODE_WO) == tb_false) {
+    \ \ if (tb_filelock_enter(lock, TB_FILELOCK_MODE_EX) == tb_false) {
 
     \ \ \ \ tb_filelock_exit(lock);
 
@@ -4742,9 +4742,9 @@
 
     \ \ \ \ (check (p :read-text) =\<gtr\> "Line 1\\n"))
 
-    ; \ (when (os-windows?)
+    \ \ (when (os-windows?)
 
-    ; \ \ \ (check (p-windows :read-text) =\<gtr\> "Line 1\\r\\n"))
+    \ \ \ \ (check (p-windows :read-text) =\<gtr\> "Line 1\\r\\n"))
 
     \ \ 
 
