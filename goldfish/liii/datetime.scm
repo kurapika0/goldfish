@@ -27,21 +27,35 @@
    (second integer? 0)
    (micro-second integer? 0))
 
+(chained-define (@now)
+  (let ((time-vec (g_datetime-now)))
+    (datetime 
+      :year (vector-ref time-vec 0)
+      :month (vector-ref time-vec 1)
+      :day (vector-ref time-vec 2)
+      :hour (vector-ref time-vec 3)
+      :minute (vector-ref time-vec 4)
+      :second (vector-ref time-vec 5)
+      :micro-second (vector-ref time-vec 6))))
+
 (define (%to-string)
   (define (pad2 n)  ; 补零到 2 位
     (if (< n 10)
         (string-append "0" (number->string n))
         (number->string n)))
+  
   (define (pad6 n)  ; 补零到 6 位（微秒）
-    (let ((s (number->string n)))
-      (string-append (make-string (- 6 (string-length s)) #\0) s)))
+    (let* ((s (number->string n))
+           (len (string-length s))
+           (padding (make-string (- 6 len) #\0)))
+      (string-append padding s)))
   
   (let ((date-part (string-append (number->string year) "-"
-                                 (pad2 month) "-"
-                                 (pad2 day)))
+                               (pad2 month) "-"
+                               (pad2 day)))
         (time-part (string-append (pad2 hour) ":"
-                                 (pad2 minute) ":"
-                                 (pad2 second))))
+                               (pad2 minute) ":"
+                               (pad2 second))))
     (if (zero? micro-second)
         (string-append date-part " " time-part)
         (string-append date-part " " time-part "." (pad6 micro-second)))))
