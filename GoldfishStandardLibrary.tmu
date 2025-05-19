@@ -6163,7 +6163,7 @@
     \;
   </goldfish-chunk>
 
-  <\scm-chunk|tests/goldfish/liii/logging-test.scm|true|false>
+  <\scm-chunk|tests/goldfish/liii/logging-test.scm|true|true>
     (check-false ((logging "app") :debug?))
 
     \;
@@ -6179,11 +6179,59 @@
     \;
   </goldfish-chunk>
 
+  <\scm-chunk|tests/goldfish/liii/logging-test.scm|true|true>
+    (check-false ((logging "app") :info?))
+
+    \;
+  </scm-chunk>
+
   <paragraph|logging%warning?>
+
+  <\goldfish-chunk|goldfish/liii/logging.scm|true|true>
+    (define (%warning?)
+
+    \ \ (\<less\>= level WARNING))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/logging-test.scm|true|true>
+    (check-true ((logging "app") :warning?))
+
+    \;
+  </scm-chunk>
 
   <paragraph|logging%error?>
 
+  <\goldfish-chunk|goldfish/liii/logging.scm|true|true>
+    (define (%error?)
+
+    \ \ (\<less\>= level ERROR))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/logging-test.scm|true|true>
+    (check-true ((logging "app") :error?))
+
+    \;
+  </scm-chunk>
+
   <paragraph|logging%critical?>
+
+  <\goldfish-chunk|goldfish/liii/logging.scm|true|true>
+    (define (%critical?)
+
+    \ \ (\<less\>= level CRITICAL))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/logging-test.scm|true|false>
+    (check-true ((logging "app") :critical?))
+
+    \;
+  </scm-chunk>
 
   <paragraph|logging%debug>
 
