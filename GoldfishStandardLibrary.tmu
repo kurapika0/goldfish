@@ -5559,6 +5559,32 @@
     \;
   </goldfish-chunk>
 
+  <subsection|谓词>
+
+  <paragraph|datetime%leap-year?>
+
+  <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
+    (define (%leap-year?)
+
+    \ \ (or (and (zero? (modulo year 4))\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (not (zero? (modulo year 100))))
+
+    \ \ \ \ \ \ \ \ (zero? (modulo year 400))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/datetime-test.scm|true|true>
+    (check-true ((datetime 2024 3 4) :leap-year?))
+
+    (check-false ((datetime 1900 3 4) :leap-year?))
+
+    (check-false ((datetime 2023 3 4) :leap-year?))
+
+    \;
+  </goldfish-chunk>
+
   <subsection|转换器>
 
   <paragraph|datetime%to-string>
@@ -6141,6 +6167,144 @@
     \ \ (check (dt :plus-months 1)\ 
 
     \ \ \ \ =\<gtr\> (datetime :year 2024 :month 2 :day 15\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :hour 12 :minute 30 :second 45 :micro-second 123456)))
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|datetime%plus-years>
+
+  闰年处理逻辑与<verbatim|python>一致
+
+  <\code>
+    (check ((datetime :year 2024 :month 2 :day 29) :plus-years 1)\ 
+
+    \ \ =\<gtr\> (datetime :year 2025 :month 2 :day 28))
+  </code>
+
+  <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
+    (define (%plus-years years-to-add)
+
+    \ \ (define (leap-year? y)
+
+    \ \ \ \ (or (and (zero? (modulo y 4))\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (not (zero? (modulo y 100))))
+
+    \ \ \ \ \ \ \ \ (zero? (modulo y 400))))
+
+    \ \ 
+
+    \ \ (define (days-in-month m y)
+
+    \ \ \ \ (cond ((member m '(4 6 9 11)) 30)
+
+    \ \ \ \ \ \ \ \ \ \ ((= m 2) (if (leap-year? y) 29 28))
+
+    \ \ \ \ \ \ \ \ \ \ (else 31)))
+
+    \ \ 
+
+    \ \ ;; Calculate new year
+
+    \ \ (let* ((new-year (+ year years-to-add))
+
+    \ \ \ \ \ \ \ \ \ ;; Adjust day if necessary (for Feb 29 in leap years)
+
+    \ \ \ \ \ \ \ \ \ (days-in-new-month (days-in-month month new-year))
+
+    \ \ \ \ \ \ \ \ \ (new-day (min day days-in-new-month)))
+
+    \ \ \ \ 
+
+    \ \ \ \ (datetime :year new-year
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ :month month
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ :day new-day
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ :hour hour
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ :minute minute
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ :second second
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ :micro-second micro-second)))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/datetime-test.scm|true|true>
+    ;; Test plus-years with positive years
+
+    (check ((datetime :year 2024 :month 1 :day 15) :plus-years 1)\ 
+
+    \ \ =\<gtr\> (datetime :year 2025 :month 1 :day 15))
+
+    \;
+
+    (check ((datetime :year 2024 :month 2 :day 29) :plus-years 1)\ 
+
+    \ \ =\<gtr\> (datetime :year 2025 :month 2 :day 28))
+
+    \;
+
+    (check ((datetime :year 2024 :month 2 :day 29) :plus-years 1)\ 
+
+    \ \ =\<gtr\> (datetime :year 2025 :month 2 :day 28)) ; Feb 29 -\<gtr\> Feb 28 (non-leap year)
+
+    \;
+
+    (check ((datetime :year 2024 :month 2 :day 29) :plus-years 4)\ 
+
+    \ \ =\<gtr\> (datetime :year 2028 :month 2 :day 29)) ; Feb 29 -\<gtr\> Feb 29 (leap year)
+
+    \;
+
+    (check ((datetime :year 2024 :month 2 :day 29) :plus-years 100)\ 
+
+    \ \ =\<gtr\> (datetime :year 2124 :month 2 :day 29)) ; 2124 is also a leap year
+
+    \;
+
+    ;; Test plus-years with negative years
+
+    (check ((datetime :year 2025 :month 1 :day 15) :plus-years -1)\ 
+
+    \ \ =\<gtr\> (datetime :year 2024 :month 1 :day 15))
+
+    \;
+
+    (check ((datetime :year 2025 :month 2 :day 28) :plus-years -1)\ 
+
+    \ \ =\<gtr\> (datetime :year 2024 :month 2 :day 28))
+
+    \;
+
+    (check ((datetime :year 2025 :month 2 :day 28) :plus-years -5)\ 
+
+    \ \ =\<gtr\> (datetime :year 2020 :month 2 :day 28)) ; 2020 is a leap year
+
+    \;
+
+    ;; Test plus-years with zero
+
+    (check ((datetime :year 2024 :month 1 :day 15) :plus-years 0)\ 
+
+    \ \ =\<gtr\> (datetime :year 2024 :month 1 :day 15))
+
+    \;
+
+    ;; Test preserving time components
+
+    (let ((dt (datetime :year 2024 :month 1 :day 15\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :hour 12 :minute 30 :second 45 :micro-second 123456)))
+
+    \ \ (check (dt :plus-years 1)\ 
+
+    \ \ \ \ =\<gtr\> (datetime :year 2025 :month 1 :day 15\ 
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :hour 12 :minute 30 :second 45 :micro-second 123456)))
 

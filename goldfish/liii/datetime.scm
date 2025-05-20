@@ -38,6 +38,11 @@
       :second (vector-ref time-vec 5)
       :micro-second (vector-ref time-vec 6))))
 
+(define (%leap-year?)
+  (or (and (zero? (modulo year 4)) 
+             (not (zero? (modulo year 100))))
+        (zero? (modulo year 400))))
+
 (define (%to-string)
   (define (pad2 n)  ; 补零到 2 位
     (if (< n 10)
@@ -132,6 +137,31 @@
     
     (datetime :year new-year
               :month new-month
+              :day new-day
+              :hour hour
+              :minute minute
+              :second second
+              :micro-second micro-second)))
+
+(define (%plus-years years-to-add)
+  (define (leap-year? y)
+    (or (and (zero? (modulo y 4)) 
+             (not (zero? (modulo y 100))))
+        (zero? (modulo y 400))))
+  
+  (define (days-in-month m y)
+    (cond ((member m '(4 6 9 11)) 30)
+          ((= m 2) (if (leap-year? y) 29 28))
+          (else 31)))
+  
+  ;; Calculate new year
+  (let* ((new-year (+ year years-to-add))
+         ;; Adjust day if necessary (for Feb 29 in leap years)
+         (days-in-new-month (days-in-month month new-year))
+         (new-day (min day days-in-new-month)))
+    
+    (datetime :year new-year
+              :month month
               :day new-day
               :hour hour
               :minute minute
