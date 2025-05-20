@@ -15,8 +15,19 @@
 ;
 
 (define-library (liii datetime)
-(export datetime)
+(export datetime years)
 (begin
+
+(define-object years
+
+(define (@leap? year)
+  (when (not (integer? year))
+    (type-error "years@leap? must accept integer"))
+  (or (and (zero? (modulo year 4)) 
+           (not (zero? (modulo year 100))))
+      (zero? (modulo year 400))))
+
+)
 
 (define-case-class datetime
   ((year integer?)
@@ -38,11 +49,6 @@
       :second (vector-ref time-vec 5)
       :micro-second (vector-ref time-vec 6))))
 
-(define (%leap-year?)
-  (or (and (zero? (modulo year 4)) 
-             (not (zero? (modulo year 100))))
-        (zero? (modulo year 400))))
-
 (define (%to-string)
   (define (pad2 n)  ; 补零到 2 位
     (if (< n 10)
@@ -63,14 +69,10 @@
         (string-append date-part " " time-part "." (pad6 micro-second)))))
 
 (define (%plus-days days-to-add)
-  (define (leap-year? y)
-    (or (and (zero? (modulo y 4)) 
-             (not (zero? (modulo y 100))))
-        (zero? (modulo y 400))))
   
   (define (days-in-month m y)
     (cond ((member m '(4 6 9 11)) 30)
-          ((= m 2) (if (leap-year? y) 29 28))
+          ((= m 2) (if (years :leap? y) 29 28))
           (else 31)))
   
   (let loop ((y year)
@@ -117,14 +119,9 @@
                    (+ remaining-days d))))))))
 
 (define (%plus-months months-to-add)
-  (define (leap-year? y)
-    (or (and (zero? (modulo y 4)) 
-             (not (zero? (modulo y 100))))
-        (zero? (modulo y 400))))
-  
   (define (days-in-month m y)
     (cond ((member m '(4 6 9 11)) 30)
-          ((= m 2) (if (leap-year? y) 29 28))
+          ((= m 2) (if (years :leap? y) 29 28))
           (else 31)))
   
   ;; Calculate new year and month
@@ -144,14 +141,9 @@
               :micro-second micro-second)))
 
 (define (%plus-years years-to-add)
-  (define (leap-year? y)
-    (or (and (zero? (modulo y 4)) 
-             (not (zero? (modulo y 100))))
-        (zero? (modulo y 400))))
-  
   (define (days-in-month m y)
     (cond ((member m '(4 6 9 11)) 30)
-          ((= m 2) (if (leap-year? y) 29 28))
+          ((= m 2) (if (years :leap? y) 29 28))
           (else 31)))
   
   ;; Calculate new year

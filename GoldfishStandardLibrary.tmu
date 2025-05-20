@@ -5350,7 +5350,7 @@
   <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
     (define-library (liii datetime)
 
-    (export datetime)
+    (export datetime years)
 
     (begin
 
@@ -5365,7 +5365,55 @@
     \;
   </goldfish-chunk>
 
-  <section|实现>
+  \;
+
+  <section|years>
+
+  <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
+    (define-object years
+
+    \;
+  </goldfish-chunk>
+
+  <paragraph|years@leap?>
+
+  判断某一年是否是闰年。
+
+  <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
+    (define (@leap? year)
+
+    \ \ (when (not (integer? year))
+
+    \ \ \ \ (type-error "years@leap? must accept integer"))
+
+    \ \ (or (and (zero? (modulo year 4))\ 
+
+    \ \ \ \ \ \ \ \ \ \ \ (not (zero? (modulo year 100))))
+
+    \ \ \ \ \ \ (zero? (modulo year 400))))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/datetime-test.scm|true|true>
+    (check-true (years :leap? 2024))
+
+    (check-false (years :leap? 2025))
+
+    (check-true (years :leap? 2000))
+
+    (check-false (years :leap? 1000))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
+    )
+
+    \;
+  </goldfish-chunk>
+
+  <section|datetime>
 
   \;
 
@@ -5559,32 +5607,6 @@
     \;
   </goldfish-chunk>
 
-  <subsection|谓词>
-
-  <paragraph|datetime%leap-year?>
-
-  <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
-    (define (%leap-year?)
-
-    \ \ (or (and (zero? (modulo year 4))\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (not (zero? (modulo year 100))))
-
-    \ \ \ \ \ \ \ \ (zero? (modulo year 400))))
-
-    \;
-  </goldfish-chunk>
-
-  <\goldfish-chunk|tests/goldfish/liii/datetime-test.scm|true|true>
-    (check-true ((datetime 2024 3 4) :leap-year?))
-
-    (check-false ((datetime 1900 3 4) :leap-year?))
-
-    (check-false ((datetime 2023 3 4) :leap-year?))
-
-    \;
-  </goldfish-chunk>
-
   <subsection|转换器>
 
   <paragraph|datetime%to-string>
@@ -5748,21 +5770,13 @@
   <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
     (define (%plus-days days-to-add)
 
-    \ \ (define (leap-year? y)
-
-    \ \ \ \ (or (and (zero? (modulo y 4))\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (not (zero? (modulo y 100))))
-
-    \ \ \ \ \ \ \ \ (zero? (modulo y 400))))
-
     \ \ 
 
     \ \ (define (days-in-month m y)
 
     \ \ \ \ (cond ((member m '(4 6 9 11)) 30)
 
-    \ \ \ \ \ \ \ \ \ \ ((= m 2) (if (leap-year? y) 29 28))
+    \ \ \ \ \ \ \ \ \ \ ((= m 2) (if (years :leap? y) 29 28))
 
     \ \ \ \ \ \ \ \ \ \ (else 31)))
 
@@ -5967,7 +5981,7 @@
     \;
   </goldfish-chunk>
 
-  <paragraph|datetime%plus-monthes>
+  <paragraph|datetime%plus-months>
 
   <code*|%plus-months><nbsp>是<nbsp><code*|datetime><nbsp>类的方法，用于在现有日期时间基础上<nbsp><strong|加减指定月数>，返回调整后的新<nbsp><code*|datetime><nbsp>对象。特性：
 
@@ -6010,21 +6024,11 @@
   <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
     (define (%plus-months months-to-add)
 
-    \ \ (define (leap-year? y)
-
-    \ \ \ \ (or (and (zero? (modulo y 4))\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (not (zero? (modulo y 100))))
-
-    \ \ \ \ \ \ \ \ (zero? (modulo y 400))))
-
-    \ \ 
-
     \ \ (define (days-in-month m y)
 
     \ \ \ \ (cond ((member m '(4 6 9 11)) 30)
 
-    \ \ \ \ \ \ \ \ \ \ ((= m 2) (if (leap-year? y) 29 28))
+    \ \ \ \ \ \ \ \ \ \ ((= m 2) (if (years :leap? y) 29 28))
 
     \ \ \ \ \ \ \ \ \ \ (else 31)))
 
@@ -6186,21 +6190,11 @@
   <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
     (define (%plus-years years-to-add)
 
-    \ \ (define (leap-year? y)
-
-    \ \ \ \ (or (and (zero? (modulo y 4))\ 
-
-    \ \ \ \ \ \ \ \ \ \ \ \ \ (not (zero? (modulo y 100))))
-
-    \ \ \ \ \ \ \ \ (zero? (modulo y 400))))
-
-    \ \ 
-
     \ \ (define (days-in-month m y)
 
     \ \ \ \ (cond ((member m '(4 6 9 11)) 30)
 
-    \ \ \ \ \ \ \ \ \ \ ((= m 2) (if (leap-year? y) 29 28))
+    \ \ \ \ \ \ \ \ \ \ ((= m 2) (if (years :leap? y) 29 28))
 
     \ \ \ \ \ \ \ \ \ \ (else 31)))
 

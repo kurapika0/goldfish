@@ -1,6 +1,11 @@
 (import (liii check)
         (liii datetime))
 
+(check-true (years :leap? 2024))
+(check-false (years :leap? 2025))
+(check-true (years :leap? 2000))
+(check-false (years :leap? 1000))
+
 (let ((now (datetime :now)))
   (check-true (datetime :is-type-of now))
   (check-true (>= (now 'year) 2023))  ; Assuming test is run in 2023 or later
@@ -19,10 +24,6 @@
   (check-true (integer? (dt2 'micro-second)))
   (check-true (<= 0 (dt1 'micro-second) 999999))
   (check-true (<= 0 (dt2 'micro-second) 999999)))
-
-(check-true ((datetime 2024 3 4) :leap-year?))
-(check-false ((datetime 1900 3 4) :leap-year?))
-(check-false ((datetime 2023 3 4) :leap-year?))
 
 (check ((datetime :year 2025 :month 1 :day 1) :to-string)
   => "2025-01-01 00:00:00")
