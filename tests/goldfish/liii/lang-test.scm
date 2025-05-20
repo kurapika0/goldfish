@@ -845,6 +845,48 @@
 (check (($ "127.0.0.1" :split ".") :count) => 4)
 (check-catch 'wrong-number-of-args ($ "127.0.0.1" :split "." :count))
 
+(let ((opt1 (option 42)) (opt2 (option '())))
+  (check (opt1 :get) => 42)
+  (check-catch 'value-error (opt2 :get)))
+
+(let ((opt1 (option 42)) (opt2 (option '())))
+  (check (opt1 :get-or-else 0) => 42)
+  (check (opt2 :get-or-else 0) => 0)
+
+  (check (opt1 :get-or-else (lambda () 0)) => 42)
+  (check (opt2 :get-or-else (lambda () 0)) => 0)
+)
+
+(check ((none) :get-or-else ($ 1)) => ($ 1))
+
+(let ((opt1 (option 42)) (opt2 (option '())))
+  (check (opt1 :or-else (option 0)) => (option 42))
+  (check (opt2 :or-else (option 0)) => (option 0))
+  (check (opt2 :or-else (option 0) :or-else (option 1)) => (option 0))
+  (check-catch 'type-error (opt1 :or-else 0))
+)
+
+(check-true ((option "str") :equals (option "str")))
+
+(let ((opt1 (option 42)) (opt2 (option '())))
+  (check-true (opt1 :defined?))
+  (check-false (opt2 :defined?)))
+
+(let ((opt1 (option 42)) (opt2 (option '())))
+  (check-true (opt1 :forall (lambda (x) (== x 42))))
+  (check-false (opt2 :forall (lambda (x) (== x 42)))))
+
+(let ((opt1 (option 42)) (opt2 (option '())))
+  (check-true (opt1 :exists (lambda (x) (== x 42))))
+  (check-false (opt2 :exists (lambda (x) (== x 42)))))
+
+(check ((option "hello") :contains string?) => #t)
+(check ((option 42) :contains integer?) => #t)
+(check ((option #t) :contains boolean?) => #t)
+(check ((option '()) :contains null?) => #f)
+(check ((none) :contains string?) => #f)
+(check ((option "hello") :contains number?) => #f)
+
 (let ((opt1 (option 42))
       (opt2 (option '())))
   (check (opt1 :map (lambda (x) (+ x 1))
@@ -874,49 +916,6 @@
   (check (opt2 :filter (lambda (x) (> x 40))
                :filter (lambda (x) (< x 50))
                :empty?) => #t))
-
-(let ((opt1 (option 42)) (opt2 (option '())))
-  (check (opt1 :get) => 42)
-  (check-catch 'value-error (opt2 :get)))
-
-(let ((opt1 (option 42)) (opt2 (option '())))
-  (check (opt1 :get-or-else 0) => 42)
-  (check (opt2 :get-or-else 0) => 0)
-
-  (check (opt1 :get-or-else (lambda () 0)) => 42)
-  (check (opt2 :get-or-else (lambda () 0)) => 0)
-)
-
-(check ((none) :get-or-else ($ 1)) => ($ 1))
-
-(let ((opt1 (option 42)) (opt2 (option '())))
-  (check (opt1 :or-else (option 0)) => (option 42))
-  (check (opt2 :or-else (option 0)) => (option 0))
-  (check (opt2 :or-else (option 0) :or-else (option 1)) => (option 0))
-  (check-catch 'type-error (opt1 :or-else 0))
-)
-
-(check-true ((option "str") :equals (option "str")))
-
-(let ((opt1 (option 42)) (opt2 (option '())))
-  (check-true (opt1 :defined?))
-  (check-false (opt2 :defined?))
-)
-
-(let ((opt1 (option 42)) (opt2 (option '())))
-  (check-true (opt1 :forall (lambda (x) (== x 42))))
-  (check-false (opt2 :forall (lambda (x) (== x 42)))))
-
-(let ((opt1 (option 42)) (opt2 (option '())))
-  (check-true (opt1 :exists (lambda (x) (== x 42))))
-  (check-false (opt2 :exists (lambda (x) (== x 42)))))
-
-(check ((option "hello") :contains string?) => #t)
-(check ((option 42) :contains integer?) => #t)
-(check ((option #t) :contains boolean?) => #t)
-(check ((option '()) :contains null?) => #f)
-(check ((none) :contains string?) => #f)
-(check ((option "hello") :contains number?) => #f)
 
 (check-true ((left "Value error") :left?))
 (check-false ((right 1) :left?))
