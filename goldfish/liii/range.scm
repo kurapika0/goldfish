@@ -30,6 +30,19 @@
       (and (< start end) (< step 0))
       (and (= start end) (not inclusive?))))
 
+(define (%map)
+  (define current start)
+  (let loop ((current start)) 
+       (cond 
+         ((%empty?) (display "empty range\n")) 
+         ((or (and (> step 0) (> current end)) 
+              (and (< step 0) (< current end))) 
+          (newline)) 
+         (else 
+           (display (map-func current)) 
+           (display " ") 
+           (loop (+ current step))))))
+
 ) ; define-case-class
 ) ; begin
 ) ; define-library
