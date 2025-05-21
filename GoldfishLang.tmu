@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.9>>
+<TMU|<tuple|1.0.5|1.2.9.7>>
 
 <style|<tuple|book|goldfish|literate|reduced-margins|python|padded-paragraphs|chinese>>
 
@@ -5450,7 +5450,6 @@
   </goldfish-chunk>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
-
     (let ((opt1 (option 42)) (opt2 (option '())))
 
     \ \ (check-true (opt1 :defined?))
@@ -5636,7 +5635,6 @@
     \;
   </goldfish-chunk>
 
-
   <paragraph|option%filter>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
@@ -5679,7 +5677,6 @@
     \;
   </goldfish-chunk>
 
-  
   <subsection|结尾>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>

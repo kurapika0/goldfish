@@ -20,15 +20,31 @@
 (begin
 
 (define-case-class range
-  ((start integer?) (end integer?) (step integer?) (inclusive? boolean?))
+  ((start integer?) (end integer?) (step integer?) (inclusive? boolean?) (map-func procedure?))
 
-(define* (@inclusive start end (step 1))
-  (range start end step #t))
+(define* (@inclusive start end (step 1) (map-func (lambda (x) (x))))
+  (range start end step #t map-func))
+
 
 (define (%empty?)
   (or (and (> start end) (> step 0))
       (and (< start end) (< step 0))
       (and (= start end) (not inclusive?))))
+
+; 添加打印range所有元素的功能 
+(define (%map)
+  (define current start)
+  (let loop ((current start)) 
+       (cond 
+         ((%empty?) (display "empty range\n")) 
+         ((or (and (> step 0) (> current end)) 
+              (and (< step 0) (< current end))) 
+          (newline)) 
+         (else 
+           (display (map-func current)) 
+           (display " ") 
+           (loop (+ current step)))))
+  )
 
 ) ; define-case-class
 ) ; begin
