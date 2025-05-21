@@ -15,8 +15,19 @@
 ;
 
 (define-library (liii datetime)
-(export datetime)
+(export datetime years)
 (begin
+
+(define-object years
+
+(define (@leap? year)
+  (when (not (integer? year))
+    (type-error "years@leap? must accept integer"))
+  (or (and (zero? (modulo year 4)) 
+           (not (zero? (modulo year 100))))
+      (zero? (modulo year 400))))
+
+)
 
 (define-case-class datetime
   ((year integer?)
@@ -56,6 +67,98 @@
     (if (zero? micro-second)
         (string-append date-part " " time-part)
         (string-append date-part " " time-part "." (pad6 micro-second)))))
+
+(define (%plus-days days-to-add)
+  
+  (define (days-in-month m y)
+    (cond ((member m '(4 6 9 11)) 30)
+          ((= m 2) (if (years :leap? y) 29 28))
+          (else 31)))
+  
+  (let loop ((y year)
+             (m month)
+             (d day)
+             (remaining-days days-to-add))
+    (cond
+      ;; No more days to add
+      ((zero? remaining-days)
+       (datetime :year y
+                 :month m
+                 :day d
+                 :hour hour
+                 :minute minute
+                 :second second
+                 :micro-second micro-second))
+      
+      ;; Adding days (positive)
+      ((> remaining-days 0)
+       (let ((days-in-current-month (days-in-month m y)))
+         (if (<= (+ d remaining-days) days-in-current-month)
+             ;; Simple case: result is within the same month
+             (loop y m (+ d remaining-days) 0)
+             ;; Complex case: need to move to next month
+             (let ((next-month (if (= m 12) 1 (+ m 1)))
+                   (next-year (if (= m 12) (+ y 1) y)))
+               (loop next-year 
+                     next-month 
+                     1 
+                     (- (+ remaining-days d) days-in-current-month 1))))))
+      
+      ;; Subtracting days (negative)
+      (else
+       (if (> d (abs remaining-days))
+           ;; Simple case: result is within the same month
+           (loop y m (+ d remaining-days) 0)
+           ;; Complex case: need to move to previous month
+           (let* ((prev-month (if (= m 1) 12 (- m 1)))
+                  (prev-year (if (= m 1) (- y 1) y))
+                  (days-in-prev-month (days-in-month prev-month prev-year)))
+             (loop prev-year 
+                   prev-month 
+                   days-in-prev-month 
+                   (+ remaining-days d))))))))
+
+(define (%plus-months months-to-add)
+  (define (days-in-month m y)
+    (cond ((member m '(4 6 9 11)) 30)
+          ((= m 2) (if (years :leap? y) 29 28))
+          (else 31)))
+  
+  ;; Calculate new year and month
+  (let* ((total-months (+ (+ (* year 12) month -1) months-to-add))
+         (new-year (quotient total-months 12))
+         (new-month (+ (remainder total-months 12) 1))
+         ;; Adjust day if necessary
+         (days-in-new-month (days-in-month new-month new-year))
+         (new-day (min day days-in-new-month)))
+    
+    (datetime :year new-year
+              :month new-month
+              :day new-day
+              :hour hour
+              :minute minute
+              :second second
+              :micro-second micro-second)))
+
+(define (%plus-years years-to-add)
+  (define (days-in-month m y)
+    (cond ((member m '(4 6 9 11)) 30)
+          ((= m 2) (if (years :leap? y) 29 28))
+          (else 31)))
+  
+  ;; Calculate new year
+  (let* ((new-year (+ year years-to-add))
+         ;; Adjust day if necessary (for Feb 29 in leap years)
+         (days-in-new-month (days-in-month month new-year))
+         (new-day (min day days-in-new-month)))
+    
+    (datetime :year new-year
+              :month month
+              :day new-day
+              :hour hour
+              :minute minute
+              :second second
+              :micro-second micro-second)))
 
 )
 

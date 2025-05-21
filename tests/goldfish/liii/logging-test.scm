@@ -31,13 +31,14 @@
   (define log-output (log :info ($ "User ID: " :+ 12345 :+ " logged in from " :+ "192.168.1.1")))
   (check-true (string-contains log-output "User ID: 12345 logged in from 192.168.1.1"))
   
+  ;; Test for multi-parameters
   (define log-output2 (log :info "User ID: " "12345" " logged in from " "192.168.1.1"))
   (check-true (string-contains log-output2 "User ID: 12345 logged in from 192.168.1.1"))
-
+  
   ;; Test with Unicode characters in rich-string
   (define unicode-msg ($ "用户: " :+ "admin" :+ " 登录成功 ✓"))
   (define log-output3 (log :error unicode-msg))
-  (check-true (string-contains log-output3 " 登录成功 ✓")))
+  (check-true (string-contains log-output3 " 登录成功 ✓"))) 
 
 ;; Test that debug logging doesn't happen when level is too high
 (let ((log (logging "high-level")))
@@ -46,7 +47,7 @@
   (check-false (log :info?))
   (check-true (log :warning?))
   (check-true (log :error?))
-  (check-true (log :critical?))
+  (check-true (log :critical?)) 
   
   ;; These shouldn't produce output
   (check (log :debug "This debug message shouldn't appear") => #<unspecified>)
