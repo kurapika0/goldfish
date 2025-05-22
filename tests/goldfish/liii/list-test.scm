@@ -21,6 +21,29 @@
 
 (check-set-mode! 'report-failed)
 
+(check (xcons 1 2) => '(2 . 1))
+(check (xcons 1 '(2 3)) => '((2 3) . 1))
+(check (xcons '(1 2) 3) => '(3 1 2))
+(check (xcons '(1 2) '(3 4)) => '((3 4) 1 2))
+(check (xcons 1 '()) => '(() . 1))
+(check (xcons '() 2) => '(2))
+(check (xcons (xcons 1 2) 3) => '(3 2 . 1))
+
+
+(check-catch 'wrong-number-of-args (xcons 1))
+(check-catch 'wrong-number-of-args (xcons 1 2 3))
+(check (cons* 1 2) => '(1 . 2))
+(check (cons* 1 2 3) => '(1 2 . 3))
+(check (cons* 'a 'b 'c 'd) => '(a b c . d))
+(check (cons* '(1 2 3)) => '(1 2 3))
+(check (cons* '(1 2) 3 4) => '((1 2) 3 . 4))
+(check (cons* 1 2 '(3 4)) => '(1 2 3 4))
+(check (cons* '(1) '(2) '(3)) => '((1) (2) . (3)))
+(check (cons* 1 '() 3) => '(1 () . 3))
+(check (cons* 1 (cons* 2 3)) => '(1 2 . 3))
+
+(check-catch 'wrong-number-of-args (cons*))
+
 (check (iota 3) => (list 0 1 2))
 (check (iota 3 7) => (list 7 8 9))
 (check (iota 2 7 2) => (list 7 9))

@@ -6892,7 +6892,7 @@
 
     \ \ ; SRFI 1: Constructors
 
-    \ \ circular-list iota list-copy
+    \ \ circular-list iota list-copy xcons cons*
 
     \ \ ; SRFI 1: Predicates
 
@@ -6964,7 +6964,7 @@
 
     \ \ ; SRFI 1: Constructors
 
-    \ \ circular-list iota list-copy\ 
+    \ \ circular-list iota list-copy xcons cons*
 
     \ \ ; SRFI 1: Predicates
 
@@ -7049,7 +7049,95 @@
     \;
   </scm-chunk>
 
-  <paragraph|iota><index|iota>
+  <paragraph|xcons><inactive|<compound|xcons|SRFI-1>>
+
+  <\scm-chunk|goldfish/srfi/srfi-1.scm|true|true>
+    (define (xcons a b)
+
+    \ \ \ \ \ \ \ \ \ (cons b a))
+
+    \;
+  </scm-chunk>
+
+  \;
+
+  测试用例
+
+  <\scm-chunk|tests/goldfish/liii/list-test.scm|true|true>
+    <\code>
+      (check (xcons 1 2) =\> '(2 . 1))
+
+      (check (xcons 1 '(2 3)) =\> '((2 3) . 1))
+
+      (check (xcons '(1 2) 3) =\> '(3 1 2))
+
+      (check (xcons '(1 2) '(3 4)) =\> '((3 4) 1 2))
+
+      (check (xcons 1 '()) =\> '(() . 1))
+
+      (check (xcons '() 2) =\> '(2))
+
+      (check (xcons (xcons 1 2) 3) =\> '(3 2 . 1))
+    </code>
+
+    <next-line>
+
+    \;
+
+    <code|(check-catch 'wrong-number-of-args (xcons 1))>
+
+    (check-catch 'wrong-number-of-args (xcons 1 2 3))
+  </scm-chunk>
+
+  \;
+
+  <paragraph|cons*><inactive|<compound|cons*|SRFI-1>>
+
+  <\scm-chunk|goldfish/srfi/srfi-1.scm|true|true>
+    (define (cons* a . b)
+
+    \ \ (if (null? b)
+
+    \ \ \ \ \ \ a
+
+    \ \ \ \ \ \ (cons a (apply cons* b))))
+
+    \;
+  </scm-chunk>
+
+  \;
+
+  测试用例
+
+  <\scm-chunk|tests/goldfish/liii/list-test.scm|true|true>
+    <\code>
+      (check (cons* 1 2) =\> '(1 . 2))
+
+      (check (cons* 1 2 3) =\> '(1 2 . 3))
+
+      (check (cons* 'a 'b 'c 'd) =\> '(a b c . d))
+
+      (check (cons* '(1 2 3)) =\> '(1 2 3))
+
+      (check (cons* '(1 2) 3 4) =\> '((1 2) 3 . 4))
+
+      (check (cons* 1 2 '(3 4)) =\> '(1 2 3 4))
+
+      (check (cons* '(1) '(2) '(3)) =\> '((1) (2) . (3)))
+
+      (check (cons* 1 '() 3) =\> '(1 () . 3))
+
+      (check (cons* 1 (cons* 2 3)) =\> '(1 2 . 3))
+
+      \;
+
+      <code|(check-catch 'wrong-number-of-args (cons*))>
+    </code>
+
+    <next-line>
+  </scm-chunk>
+
+  <paragraph|iota><inactive|<index|SRFI-1>>
 
   <\scm-chunk|goldfish/srfi/srfi-1.scm|true|true>
     ; 0 clause BSD, from S7 repo stuff.scm
