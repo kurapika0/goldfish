@@ -7131,6 +7131,56 @@
     \;
   </goldfish-chunk>
 
+  <\scm-chunk|goldfish/liii/logging.scm|true|true>
+    (define (%set-level! l)
+
+    \ \ (define (check-valid-level val)
+
+    \ \ \ \ (member val '(0 10 20 30 40 50)))
+
+    \ \ 
+
+    \ \ (cond ((integer? l)\ 
+
+    \ \ \ \ \ \ \ \ \ (if (check-valid-level l)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (set! level l)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (value-error "invalid level number" l)))
+
+    \;
+
+    \ \ \ \ \ \ \ \ ((rich-integer :is-type-of l)\ 
+
+    \ \ \ \ \ \ \ \ \ (if (check-valid-level (l :get))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (set! level (l :get))
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ (value-error "invalid level number" (l :get))))
+
+    \;
+
+    \ \ \ \ \ \ \ \ (else\ 
+
+    \ \ \ \ \ \ \ \ \ (type-error "level should be an integer"))))
+
+    \;
+  </scm-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/logging-test.scm|true|true>
+    (check-catch 'type-error ((logging "app") :set-level! "invalid level"))
+
+    (check-catch 'value-error ((logging "app") :set-level! 60))
+
+    (let* ((logging-get-rich-level (logging "get-rich-level")))
+
+    \ (logging-get-rich-level :set-level! ($ 50))
+
+    \ (check (logging-get-rich-level :get-level) =\<gtr\> "CRITICAL"))
+
+    \;
+  </scm-chunk>
+
   <subsection|构造器>
 
   <\scm-chunk|goldfish/liii/logging.scm|true|true>
@@ -7226,6 +7276,40 @@
 
     \;
   </goldfish-chunk>
+
+  <paragraph|logging%get-level>
+
+  <\goldfish-chunk|goldfish/liii/logging.scm|true|true>
+    (define (%get-level)
+
+    \ \ (cond
+
+    \ \ \ \ ((= level 0) "NOTSET")
+
+    \ \ \ \ ((= level 10) "DEBUG")
+
+    \ \ \ \ ((= level 20) "INFO")
+
+    \ \ \ \ ((= level 30) "WARNING")
+
+    \ \ \ \ ((= level 40) "ERROR")
+
+    \ \ \ \ ((= level 50) "CRITICAL")))
+
+    \;
+  </goldfish-chunk>
+
+  <\scm-chunk|tests/goldfish/liii/logging-test.scm|true|true>
+    (check ((logging "app") :get-level) =\<gtr\> "WARNING")
+
+    (let* ((logging-get-level (logging "app-get-level")))
+
+    \ \ (logging-get-level :set-level! 50)
+
+    \ \ (check (logging-get-level :get-level) =\<gtr\> "CRITICAL"))
+
+    \;
+  </scm-chunk>
 
   <paragraph|logging%debug?>
 

@@ -3,6 +3,12 @@
         (liii string)
         (liii lang))
 
+(check-catch 'type-error ((logging "app") :set-level! "invalid level"))
+(check-catch 'value-error ((logging "app") :set-level! 60))
+(let* ((logging-get-rich-level (logging "get-rich-level")))
+ (logging-get-rich-level :set-level! ($ 50))
+ (check (logging-get-rich-level :get-level) => "CRITICAL"))
+
 ;; Test @apply: Verify that the same logger instance is returned for the same name
 (let ((logger1 (logging "test-module"))
       (logger2 (logging "test-module")))
@@ -12,6 +18,11 @@
 (let ((logger1 (logging "module-a"))
       (logger2 (logging "module-b")))
   (check-false (eq? logger1 logger2)))
+
+(check ((logging "app") :get-level) => "WARNING")
+(let* ((logging-get-level (logging "app-get-level")))
+  (logging-get-level :set-level! 50)
+  (check (logging-get-level :get-level) => "CRITICAL"))
 
 (check-false ((logging "app") :debug?))
 
