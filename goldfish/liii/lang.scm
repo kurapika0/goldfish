@@ -761,18 +761,28 @@
 
 (define-case-class rich-list ((data list?))
 
-(define (@range start end . step)
-  (let ((step-size (if (null? step) 1 (car step))))
-    (cond
-      ((and (positive? step-size) (>= start end))
-       (rich-list '()))
-      ((and (negative? step-size) (<= start end))
-       (rich-list '()))
-      ((zero? step-size)
-       (value-error "Step size cannot be zero"))
-      (else
-       (let ((cnt (ceiling (/ (- end start) step-size))))
-         (rich-list (iota cnt start step-size)))))))
+(define (@range start end . step-and-args)
+  (chain-apply (if (null? step-and-args) 
+                   step-and-args 
+                   (if (number? (car step-and-args))
+                       (cdr step-and-args)
+                       step-and-args))
+    (let ((step-size 
+            (if (null? step-and-args) 
+                1
+                (if (number? (car step-and-args))
+                    (car step-and-args)
+                    1))))
+      (cond
+        ((and (positive? step-size) (>= start end))
+         (rich-list '()))
+        ((and (negative? step-size) (<= start end))
+         (rich-list '()))
+        ((zero? step-size)
+         (value-error "Step size cannot be zero"))
+        (else
+         (let ((cnt (ceiling (/ (- end start) step-size))))
+           (rich-list (iota cnt start step-size))))))))
 
 (define (@empty . args)
   (chain-apply args

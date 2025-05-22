@@ -983,7 +983,9 @@
 (check (rich-list :range 1 5 2) => ($ (list 1 3)))
 (check (rich-list :range 1 6 2) => ($ (list 1 3 5)))
 (check (rich-list :range 5 1 -1) => ($ (list 5 4 3 2)))
-
+(check (rich-list :range 1 5 2 :collect) => (list 1 3))
+(check (rich-list :range 1 5 :map (lambda (x) (* x 2))) => ($ (list 2 4 6 8)))
+(check (rich-list :range 1 10 1 :map (lambda (x) (+ x 1))) => ($ (list 2 3 4 5 6 7 8 9 10)))
 (check (rich-list :range 5 1 1) => ($ (list )))
 
 (check-catch 'value-error (rich-list :range 1 5 0))
