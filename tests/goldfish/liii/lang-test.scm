@@ -1421,6 +1421,14 @@
 (let1 vec (array #(1 2 3 4 5))
   (check (vec :map (lambda (x) (vector x x))) => #(#(1 1) #(2 2) #(3 3) #(4 4) #(5 5))))
 
+;; 测试符号
+(let1 vec (array #("a" ";" "." "?" "["))
+  (check (vec :map (lambda (x) (vector x x))) => #(#("a" "a") #(";" ";") #("." ".") #("?" "?") #("[" "["))))
+
+;; 混合测试
+(let1 vec (array #("a" ";" "?" "[" -1 5))
+  (check (vec :map (lambda (x) (vector x x))) => #(#("a" "a") #(";" ";") #("?" "?") #("[" "[") #(-1 -1) #(5 5))))
+
 (let1 vec (array #(1 2 3 4 5))
   (check (vec :flat-map (lambda (x) (vector x x))) => #(1 1 2 2 3 3 4 4 5 5)))
 

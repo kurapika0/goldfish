@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.9>>
+<TMU|<tuple|1.0.5|1.2.9.7>>
 
 <style|<tuple|book|goldfish|literate|reduced-margins|python|padded-paragraphs|chinese>>
 
@@ -8565,6 +8565,8 @@
 
   <paragraph|rich-vector%map>
 
+  对向量的每一个元素应用函数得到新的富向量
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%map x . args)
 
@@ -8591,6 +8593,22 @@
     (let1 vec (array #(1 2 3 4 5))
 
     \ \ (check (vec :map (lambda (x) (vector x x))) =\<gtr\> #(#(1 1) #(2 2) #(3 3) #(4 4) #(5 5))))
+
+    \;
+
+    ;; 测试符号
+
+    (let1 vec (array #("a" ";" "." "?" "["))
+
+    \ \ (check (vec :map (lambda (x) (vector x x))) =\> #(#("a" "a") #(";" ";") #("." ".") #("?" "?") #("[" "["))))
+
+    \;
+
+    ;; 混合测试
+
+    (let1 vec (array #("a" ";" "?" "[" -1 5))
+
+    \ \ (check (vec :map (lambda (x) (vector x x))) =\> #(#("a" "a") #(";" ";") #("?" "?") #("[" "[") #(-1 -1) #(5 5))))
 
     \;
 
