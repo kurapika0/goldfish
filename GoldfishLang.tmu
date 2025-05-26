@@ -1,4 +1,4 @@
-<TMU|<tuple|1.0.5|1.2.9.7>>
+<TMU|<tuple|1.1.0|2025.0.9>>
 
 <style|<tuple|book|goldfish|literate|reduced-margins|python|padded-paragraphs|chinese>>
 
@@ -92,7 +92,9 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
 
-    (import (only (liii oop) define-case-class display* == @ typed-define case-class? chained-define define-object define-class != chain-apply object-\<gtr\>string)
+    (import (only (scheme base) u8-string-length)
+
+    \ \ \ \ \ \ \ \ (only (liii oop) define-case-class display* == @ typed-define case-class? chained-define define-object define-class != chain-apply object-\<gtr\>string)
 
     \ \ \ \ \ \ \ \ (only (liii string) string-join string-null? string-starts? string-contains string-trim string-trim-right string-trim-both string-remove-prefix string-remove-suffix string-pad string-pad-right)
 
@@ -2515,6 +2517,80 @@
 
   <paragraph|rich-integer%to-rich-char>
 
+  \;
+
+  <scm|rich-integer%to-rich-char> 是富整数(<scm|rich-integer>)的实例方法，用于将当前整数值转换为富字符(<scm|rich-char>)对象。
+
+  \;
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|Unicode转换 >将当前整数值 <scm|code> 解释为Unicode码点
+
+    <item*|边界检查 >
+
+    <\itemize-minus>
+      <item>有效Unicode范围：<scm|0 \<less\>= data \<less\>= 0x10FFFF>
+
+      <item>若超出范围抛出 <scm|value-error> 异常
+    </itemize-minus>
+
+    <item*|返回值 >返回对应Unicode字符的<scm|rich-char>对象
+
+    <item*|不变性保证 >原<scm|rich-integer>值不会被修改
+  </description>
+
+  \;
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|字符生成 >根据Unicode码点创建特定字符
+
+    <item*|数据验证 >验证整数是否可作为有效Unicode码点
+
+    <item*|类型转换 >在需要字符类型时进行安全转换
+  </description>
+
+  \;
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|有效性检查 >
+
+    <\itemize-minus>
+      <item>不接受代理对范围内的码点( <scm|0xD800-0xDFFF> )
+
+      <item>最大支持 <scm|0x10FFFF> (Unicode 13.0标准)
+    </itemize-minus>
+
+    <item*|与基础类型区别 >
+
+    <\itemize-minus>
+      <item>相比Scheme的 <scm|integer-\<gtr\>char>，增加了范围验证
+
+      <item>返回的是富字符对象而非基础字符类型
+    </itemize-minus>
+
+    <item*|底层依赖 >通过调用 <scm|(rich-char data)> 构造函数实现，该构造器内置码点验证逻辑
+
+    <item*|性能特征 >
+
+    <\itemize-minus>
+      <item>时间复杂度：O(1)
+
+      <item>空间复杂度：O(1)
+
+      <item>无副作用
+    </itemize-minus>
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%to-rich-char)
 
@@ -2523,13 +2599,67 @@
     \;
   </goldfish-chunk>
 
+  <subparagraph|测试用例>
+
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    (check ($ 65 :to-rich-char) =\<gtr\> #\\A)
+
     (check-catch 'value-error ($ #x110000 :to-rich-char))
 
     \;
   </goldfish-chunk>
 
   <paragraph|rich-integer%to-string>
+
+  <scm|rich-integer%to-string> 是富整数(<scm|rich-integer>)的实例方法，用于将当前整数值转换为字符串。
+
+  \;
+
+  <subparagraph|功能>
+
+  将富整数对象转换为对应的字符串表示形式。
+
+  <\description>
+    <item*|>内部调用 <with|font-family|tt|number-<textgreater|>string> 完成整数到字符串的转换。
+
+    <item*|>是富整数对象的默认字符串化方法，用于调试、日志输出或字符串拼接等场景。
+  </description>
+
+  \;
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|>直接输出整数值
+
+    <item*|>字符串拼接
+
+    <item*|>调试或日志记录
+
+    <item*|>隐式调用
+  </description>
+
+  \;
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|类型安全 >输入 <scm|data> 已通过构造函数确保为整数 ( <scm|integer?> )，无需额外检查。
+
+    <item*|性能 >直接调用底层 <scm|number-<textgreater|>string>，无额外开销。
+
+    <item*|多进制支持 >如需转换为其他进制（如十六进制），需手动调用 <scm|number-<textgreater|>string> 并指定进制参数：
+
+    <\scm>
+      (number-\<gtr\>string (x :get) 16) ; =\<gtr\> "2a" (42 的十六进制)
+    </scm>
+
+    <item*|不可变性 >返回新字符串，不会修改原始富整数对象。
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%to-string)
@@ -2539,8 +2669,14 @@
     \;
   </goldfish-chunk>
 
+  <subparagraph|测试用例>
+
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ 1 :to-string) =\<gtr\> "1")
+
+    (check ($ -10 :to-string) =\<gtr\> "-10")
+
+    (check ($ 0 :to-string) =\<gtr\> "0")
 
     \;
   </goldfish-chunk>
@@ -2551,11 +2687,49 @@
 
   Goldfish Scheme中的整数是64位有符号整数，最大值为<math|2<rsup|63>-1>。
 
+  \;
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|>提供系统支持的整数范围上限
+
+    <item*|>用于边界检查或数值验证
+  </description>
+
+  \;
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|>需要处理大整数时的边界检查
+
+    <item*|>数值运算前的范围验证
+
+    <item*|>测试整数溢出情况
+  </description>
+
+  \;
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|>这是静态方法，需通过类名调用：(<scm|rich-integer :max-value>)
+
+    <item*|>超过此值的整数运算会产生溢出（自动回绕到最小值）
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (@max-value) 9223372036854775807)
 
     \;
   </goldfish-chunk>
+
+  <subparagraph|测试用例>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check (+ 1 (rich-integer :max-value)) =\<gtr\> (rich-integer :min-value))
@@ -2567,11 +2741,49 @@
 
   Goldfish Scheme中的整数是64位有符号整数，最大值为<math|-2<rsup|63>>。
 
+  \;
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|>提供系统支持的整数范围下限
+
+    <item*|>用于边界检查或数值验证
+  </description>
+
+  \;
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|>需要处理小整数时的边界检查
+
+    <item*|>数值运算前的范围验证
+
+    <item*|>测试整数下溢情况
+  </description>
+
+  \;
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|>这是静态方法，需通过类名调用：(<scm|rich-integer :min-value>)
+
+    <item*|>低于此值的整数运算会产生下溢（自动回绕到最大值）
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (@min-value) -9223372036854775808)
 
     \;
   </goldfish-chunk>
+
+  <subparagraph|测试用例>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check (- (rich-integer :min-value) 1) =\<gtr\> (rich-integer :max-value))

@@ -15,7 +15,7 @@
 ;
 
 (define-library (liii lang)
-
+                
 (import (only (scheme base) u8-string-length)
         (only (liii oop) define-case-class display* == @ typed-define case-class? chained-define define-object define-class != chain-apply object->string)
         (only (liii string) string-join string-null? string-starts? string-contains string-trim string-trim-right string-trim-both string-remove-prefix string-remove-suffix string-pad string-pad-right)

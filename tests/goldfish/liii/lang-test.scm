@@ -357,9 +357,12 @@
 (check (($ 1 :until 2) :collect) => (list 1))
 (check (($ 2 :until 2) :collect) => (list ))
 
+(check ($ 65 :to-rich-char) => #\A)
 (check-catch 'value-error ($ #x110000 :to-rich-char))
 
 (check ($ 1 :to-string) => "1")
+(check ($ -10 :to-string) => "-10")
+(check ($ 0 :to-string) => "0")
 
 (check (+ 1 (rich-integer :max-value)) => (rich-integer :min-value))
 
