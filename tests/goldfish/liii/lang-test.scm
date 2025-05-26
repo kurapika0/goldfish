@@ -414,6 +414,61 @@
 (check-true ($ #\a :ascii?))
 (check-true ($ #\Z :ascii?))
 
+;; 数字字符
+(check-true ($ #\3 :numeric?))
+(check-true ($ #\4 :numeric?))
+(check-true ($ #\5 :numeric?))
+(check-true ($ #\0 :numeric?))
+
+;; 非数字字符
+(check-false ($ #\[ :numeric?))
+(check-false ($ #\@ :numeric?))
+(check-false ($ #\; :numeric?))
+(check-false ($ #\P :numeric?))
+(check-false ($ #\x :numeric?))
+
+;; Unicode测试
+(let ((char1 (rich-char 48))  ;; ASCII '0'
+      (char2 (rich-char #xFF10))  ;; 全角 '０'
+      (char3 (rich-char #x0660))  ;; 阿拉伯数字 '٠'
+      (char4 (rich-char #x06F0))  ;; 扩展阿拉伯数字 '۰'
+      (char5 (rich-char #x0966))  ;; 印度数字
+      (char6 (rich-char #x09E6))  ;; 孟加拉数字
+      (char7 (rich-char #x0A66))  ;; 古尔穆奇数字
+      (char8 (rich-char #x0AE6))  ;; 古吉拉特数字
+      (char9 (rich-char #x0B66))  ;; 奥里亚数字
+      (char10 (rich-char #x0BE6))  ;; 泰米尔数字
+      (char11 (rich-char #x0C66))  ;; 泰卢固数字
+      (char12 (rich-char #x0CE6))  ;; 卡纳达数字 
+      (char13 (rich-char #x0D66))  ;; 马拉雅拉姆数字
+      (char14 (rich-char #x0E50))  ;; 泰文数字 '๐'
+      (char15 (rich-char #x0ED0))  ;; 老挝数字
+      (char16 (rich-char #x0F20))  ;; 藏文数字
+      (char17 (rich-char #x1040))  ;; 缅甸数字 '၀'
+      (char18 (rich-char #x17E0))  ;; 高棉数字 '០'
+      (char19 (rich-char #x1810))  ;; 蒙古数字 '᠐'
+      (char20 (rich-char 65)))  ;; ASCII 'A'
+  
+  (check (char1 :numeric?) => #t)  ;; ASCII 数字
+  (check (char2 :numeric?) => #f)  ;; 全角数字
+  (check (char3 :numeric?) => #f)  ;; 阿拉伯数字
+  (check (char4 :numeric?) => #f)  ;; 扩展阿拉伯数字
+  (check (char5 :numeric?) => #f)  ;; 印度数字
+  (check (char6 :numeric?) => #f)  ;; 孟加拉数字
+  (check (char7 :numeric?) => #f)  ;; 古尔穆奇数字
+  (check (char8 :numeric?) => #f)  ;; 古吉拉特数字
+  (check (char9 :numeric?) => #f)  ;; 奥里亚数字
+  (check (char10 :numeric?) => #f)  ;; 泰米尔数字
+  (check (char11 :numeric?) => #f)  ;; 泰卢固数字
+  (check (char12 :numeric?) => #f)  ;; 卡纳达数字
+  (check (char13 :numeric?) => #f)  ;; 马拉雅拉姆数字
+  (check (char14 :numeric?) => #f)  ;; 泰文数字
+  (check (char15 :numeric?) => #f)  ;; 老挝数字
+  (check (char16 :numeric?) => #f)  ;; 藏文数字
+  (check (char17 :numeric?) => #f)  ;; 缅甸数字
+  (check (char18 :numeric?) => #f)  ;; 高棉数字
+  (check (char19 :numeric?) => #f)  ;; 蒙古数字
+  (check (char20 :numeric?) => #f))  ;; 非数字字符
 ;; 大写字母
 (check-true ($ #\A :upper?))
 (check-true ($ #\Z :upper?))

@@ -2907,6 +2907,140 @@
 
   <paragraph|rich-char%numeric?>
 
+  判断字符是否为数字字符(不在范围内的直接返回#f)
+
+  <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
+    ;; \ 依赖于 R7RS 标准函数 integer-\<gtr\>char 和 char-numeric?
+
+    \;
+
+    (define (%numeric?)
+
+    \ \ (if (and (\<gtr\>= code-point 0) (\<less\>= code-point 255))
+
+    \ \ \ \ \ \ (let ((ch (integer-\<gtr\>char code-point)))
+
+    \ \ \ \ \ \ \ \ (char-numeric? ch))
+
+    \ \ \ \ \ \ ;; 超出code-point范围返回false
+
+    \ \ \ \ \ \ #f))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
+    ;; 数字字符
+
+    (check-true ($ #\\3 :numeric?))
+
+    (check-true ($ #\\4 :numeric?))
+
+    (check-true ($ #\\5 :numeric?))
+
+    (check-true ($ #\\0 :numeric?))
+
+    \;
+
+    ;; 非数字字符
+
+    (check-false ($ #\\[ :numeric?))
+
+    (check-false ($ #\\@ :numeric?))
+
+    (check-false ($ #\\; :numeric?))
+
+    (check-false ($ #\\P :numeric?))
+
+    (check-false ($ #\\x :numeric?))
+
+    \;
+
+    ;; Unicode测试
+
+    (let ((char1 (rich-char 48)) \ ;; ASCII '0'
+
+    \ \ \ \ \ \ (char2 (rich-char #xFF10)) \ ;; 全角 '０'
+
+    \ \ \ \ \ \ (char3 (rich-char #x0660)) \ ;; 阿拉伯数字 '٠'
+
+    \ \ \ \ \ \ (char4 (rich-char #x06F0)) \ ;; 扩展阿拉伯数字 '۰'
+
+    \ \ \ \ \ \ (char5 (rich-char #x0966)) \ ;; 印度数字
+
+    \ \ \ \ \ \ (char6 (rich-char #x09E6)) \ ;; 孟加拉数字
+
+    \ \ \ \ \ \ (char7 (rich-char #x0A66)) \ ;; 古尔穆奇数字
+
+    \ \ \ \ \ \ (char8 (rich-char #x0AE6)) \ ;; 古吉拉特数字
+
+    \ \ \ \ \ \ (char9 (rich-char #x0B66)) \ ;; 奥里亚数字
+
+    \ \ \ \ \ \ (char10 (rich-char #x0BE6)) \ ;; 泰米尔数字
+
+    \ \ \ \ \ \ (char11 (rich-char #x0C66)) \ ;; 泰卢固数字
+
+    \ \ \ \ \ \ (char12 (rich-char #x0CE6)) \ ;; 卡纳达数字\ 
+
+    \ \ \ \ \ \ (char13 (rich-char #x0D66)) \ ;; 马拉雅拉姆数字
+
+    \ \ \ \ \ \ (char14 (rich-char #x0E50)) \ ;; 泰文数字 '๐'
+
+    \ \ \ \ \ \ (char15 (rich-char #x0ED0)) \ ;; 老挝数字
+
+    \ \ \ \ \ \ (char16 (rich-char #x0F20)) \ ;; 藏文数字
+
+    \ \ \ \ \ \ (char17 (rich-char #x1040)) \ ;; 缅甸数字 '၀'
+
+    \ \ \ \ \ \ (char18 (rich-char #x17E0)) \ ;; 高棉数字 '០'
+
+    \ \ \ \ \ \ (char19 (rich-char #x1810)) \ ;; 蒙古数字 '᠐'
+
+    \ \ \ \ \ \ (char20 (rich-char 65))) \ ;; ASCII 'A'
+
+    \ \ 
+
+    \ \ (check (char1 :numeric?) =\<gtr\> #t) \ ;; ASCII 数字
+
+    \ \ (check (char2 :numeric?) =\<gtr\> #f) \ ;; 全角数字
+
+    \ \ (check (char3 :numeric?) =\<gtr\> #f) \ ;; 阿拉伯数字
+
+    \ \ (check (char4 :numeric?) =\<gtr\> #f) \ ;; 扩展阿拉伯数字
+
+    \ \ (check (char5 :numeric?) =\<gtr\> #f) \ ;; 印度数字
+
+    \ \ (check (char6 :numeric?) =\<gtr\> #f) \ ;; 孟加拉数字
+
+    \ \ (check (char7 :numeric?) =\<gtr\> #f) \ ;; 古尔穆奇数字
+
+    \ \ (check (char8 :numeric?) =\<gtr\> #f) \ ;; 古吉拉特数字
+
+    \ \ (check (char9 :numeric?) =\<gtr\> #f) \ ;; 奥里亚数字
+
+    \ \ (check (char10 :numeric?) =\<gtr\> #f) \ ;; 泰米尔数字
+
+    \ \ (check (char11 :numeric?) =\<gtr\> #f) \ ;; 泰卢固数字
+
+    \ \ (check (char12 :numeric?) =\<gtr\> #f) \ ;; 卡纳达数字
+
+    \ \ (check (char13 :numeric?) =\<gtr\> #f) \ ;; 马拉雅拉姆数字
+
+    \ \ (check (char14 :numeric?) =\<gtr\> #f) \ ;; 泰文数字
+
+    \ \ (check (char15 :numeric?) =\<gtr\> #f) \ ;; 老挝数字
+
+    \ \ (check (char16 :numeric?) =\<gtr\> #f) \ ;; 藏文数字
+
+    \ \ (check (char17 :numeric?) =\<gtr\> #f) \ ;; 缅甸数字
+
+    \ \ (check (char18 :numeric?) =\<gtr\> #f) \ ;; 高棉数字
+
+    \ \ (check (char19 :numeric?) =\<gtr\> #f) \ ;; 蒙古数字
+
+    \ \ (check (char20 :numeric?) =\<gtr\> #f)) \ ;; 非数字字符
+  </goldfish-chunk>
+
   <paragraph|rich-char%upper?>
 
   用于判断字符是否为大写字母，基于 ASCII 字符集的范围（<scm|#x41> 到 <scm|#x5A>）。

@@ -15,7 +15,7 @@
 ;
 
 (define-library (liii lang)
-                
+
 (import (only (scheme base) u8-string-length)
         (only (liii oop) define-case-class display* == @ typed-define case-class? chained-define define-object define-class != chain-apply object->string)
         (only (liii string) string-join string-null? string-starts? string-contains string-trim string-trim-right string-trim-both string-remove-prefix string-remove-suffix string-pad string-pad-right)
@@ -142,6 +142,15 @@
 
 (define (%ascii?)
   (and (>= code-point 0) (<= code-point 127)))
+
+;;  依赖于 R7RS 标准函数 integer->char 和 char-numeric?
+
+(define (%numeric?)
+  (if (and (>= code-point 0) (<= code-point 255))
+      (let ((ch (integer->char code-point)))
+        (char-numeric? ch))
+      ;; 超出code-point范围返回false
+      #f))
 
 (define (%upper?)
   (and (>= code-point #x41) (<= code-point #x5A)))
