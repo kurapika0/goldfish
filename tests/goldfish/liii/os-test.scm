@@ -95,13 +95,16 @@
 (check-catch 'file-not-found-error (remove "/nonexistent/file")) ; 文件不存在
 
 ;; 测试 remove 对目录的提示
-(let ((test-dir (string-append (os-temp-dir) "/test_dir")))
+(let ((test-dir (string-append (os-temp-dir) (string (os-sep)) "test_dir")))
   ;; 创建临时目录
-  (mkdir test-dir)
+  (when (not (file-exists? test-dir))
+    (mkdir test-dir))
   ;; 尝试删除目录，应提示使用 rmdir
   (check-catch 'value-error (remove test-dir))
   ;; 清理
-  (rmdir test-dir))
+  (rmdir test-dir)
+  (when (file-exists? test-dir)
+    (display* test-dir " failed to remove \n")))
 
 (when (not (os-windows?))
   (check (> (vector-length (listdir "/usr")) 0) => #t))
