@@ -42,6 +42,14 @@
             (loop (+ current step)
                   (cons (map-func current) result)))))))
 
+(define (%for-each proc)
+  (let loop ((current start))
+    (cond
+      ((or (and (> step 0) (if inclusive? (<= current end) (< current end)))
+            (and (< step 0) (if inclusive? (>= current end) (> current end))))
+        (proc current)
+        (loop (+ current step))))))
+
 (define (%filter f)
   (if (%empty?)
       (rich-list :empty)
