@@ -1347,9 +1347,9 @@
 
   <subparagraph|函数签名>
 
-  <\scm>
+  <\goldfish-code>
     (case-class? x) =\<gtr\> boolean?
-  </scm>
+  </goldfish-code>
 
   <\description>
     <item*|参数 ><scm|x> : 任意类型的对象。
@@ -1447,9 +1447,9 @@
 
   <subparagraph|函数签名>
 
-  <\scm>
+  <\goldfish-code>
     (== left right) =\<gtr\> boolean?
-  </scm>
+  </goldfish-code>
 
   <\description>
     <item*|参数 >
@@ -1539,9 +1539,9 @@
 
   <subparagraph|函数签名>
 
-  <\scm>
+  <\goldfish-code>
     (!= left right) =\<gtr\> boolean?
-  </scm>
+  </goldfish-code>
 
   <\description>
     <item*|参数 >
@@ -1621,9 +1621,9 @@
 
   <subparagraph|函数签名>
 
-  <\scm>
+  <\goldfish-code>
     (chained-define (method-name param1 param2 ...) body ...)
-  </scm>
+  </goldfish-code>
 
   <\description>
     <item*|参数 >
@@ -1733,9 +1733,9 @@
 
   <subparagraph|函数签名>
 
-  <\scm>
+  <\goldfish-code>
     (display* x y z ...) =\<gtr\> \<less\>#unspecified\<gtr\>
-  </scm>
+  </goldfish-code>
 
   <\description>
     <item*|参数 ><scm|x>, <scm|y>, <scm|z>, ...：任意数量的参数，可以是任意类型的对象，包括样本类、字符串、数字等。
@@ -1785,9 +1785,9 @@
 
   <subparagraph|函数签名>
 
-  <\scm>
+  <\goldfish-code>
     (object-\<gtr\>string x) =\<gtr\> string?
-  </scm>
+  </goldfish-code>
 
   <\description>
     <item*|参数 ><scm|x>：任意类型的对象，可以是样本类、字符串、数字、字符、列表、向量等。
@@ -1997,9 +1997,9 @@
 
   <subparagraph|函数签名>
 
-  <\scm>
+  <\goldfish-code>
     ($ x . xs) =\<gtr\> case-class?
-  </scm>
+  </goldfish-code>
 
   <\description>
     <item*|参数 ><scm|x>：需要装箱的值，支持以下类型：
@@ -2117,9 +2117,9 @@
 
   <subparagraph|样本类定义>
 
-  <\verbatim>
+  <\goldfish-code>
     (define-case-class rich-integer ((data integer?))
-  </verbatim>
+  </goldfish-code>
 
   <\description>
     <item*|关键点解析 >
@@ -2199,13 +2199,15 @@
 
   <subparagraph|示例>
 
-  <\scm>
-    (let ((x ($ 42)))
+  <\scm-code>
+    <\scm>
+      (let ((x ($ 42)))
 
-    \ \ (define y (x :get)) \ ; y 现在是普通的 Scheme 整数 42
+      \ \ (define y (x :get)) \ ; y 现在是普通的 Scheme 整数 42
 
-    \ \ (+ y 10)) \ ; 结果为 52
-  </scm>
+      \ \ (+ y 10)) \ ; 结果为 52
+    </scm>
+  </scm-code>
 
   \;
 
@@ -2241,11 +2243,11 @@
 
   <scm|%equals> 方法的定义如下：
 
-  <\scm>
+  <\goldfish-code>
     (define (%equals that)
 
     \ \ (== value (that 'value)))
-  </scm>
+  </goldfish-code>
 
   <\description>
     <item*|关键点解析 >
@@ -2301,17 +2303,19 @@
 
   <subparagraph|示例>
 
-  <\scm>
-    (let ((x ($ 42))
+  <\scm-code>
+    <\scm>
+      (let ((x ($ 42))
 
-    \ \ \ \ \ \ (y ($ 42))
+      \ \ \ \ \ \ (y ($ 42))
 
-    \ \ \ \ \ \ (z ($ 43)))
+      \ \ \ \ \ \ (z ($ 43)))
 
-    \ \ (check-true (x :equals y)) \ ; x 和 y 相等，返回 #t
+      \ \ (check-true (x :equals y)) \ ; x 和 y 相等，返回 #t
 
-    \ \ (check-false (x :equals z))) \ ; x 和 z 不相等，返回 #f
-  </scm>
+      \ \ (check-false (x :equals z))) \ ; x 和 z 不相等，返回 #f
+    </scm>
+  </scm-code>
 
   \;
 
@@ -2797,9 +2801,39 @@
 
   求富整数的平方根的整数下界。
 
-  <\equation*>
-    <scm|(x :sqrt)>=<around*|\<lfloor\>|<sqrt|x>|\<rfloor\>>
-  </equation*>
+  <math|<scm|(x :sqrt)>=<around*|\<lfloor\>|<sqrt|x>|\<rfloor\>>>
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|计算平方根下界 >返回不大于实际平方根的最大整数，即数学上的地板函数(<scm|floor>)结果
+
+    <item*|错误处理 >当输入为负数时会抛出<scm|value-error>异常
+
+    <item*|精确计算 >返回结果为精确整数，不会产生浮点数精度误差
+  </description>
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|数学运算 >需要计算整数平方根的场合，如数论计算、算法实现
+
+    <item*|边界判断 >在需要确定整数范围或边界时使用
+
+    <item*|性能优化 >比浮点数平方根计算更高效且精确
+  </description>
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|输入限制 >仅支持非负整数输入，负数会引发异常
+
+    <item*|返回值类型 >总是返回精确整数(<scm|inexact-\<gtr\>exact>)
+
+    <item*|大数处理 >能正确处理极大整数(如64位有符号整数的最大值)
+  </description>
+
+  <subparagraph|实现函数>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     ;;return exact integer
@@ -2817,7 +2851,7 @@
     \;
   </goldfish-chunk>
 
-  测试用例：
+  <subparagraph|测试用例>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ 0 :sqrt) =\<gtr\> 0) \ \ \ \ \ \ 
@@ -2859,6 +2893,68 @@
 
   <chapter|富有理数>
 
+  <scm|rich-rational> 是 Goldfish Scheme 中的一个样本类（case class），用于封装有理数并提供精确的数学运算支持。该模块扩展了 Scheme 中原生有理数的功能，提供更丰富的数值操作和类型安全保证。
+
+  <section|基本结构>
+
+  <paragraph|rich-rational>
+
+  <scm|rich-rational> 是一个样本类，其构造函数接受一个有理数作为参数，并将其封装在样本类中。通过样本类的机制，<scm|rich-rational> 提供了精确的算术运算和转换方法。
+
+  \;
+
+  <subparagraph|样本类定义>
+
+  <\goldfish-code>
+    (define-case-class rich-rational ((data rational?))
+  </goldfish-code>
+
+  <\description>
+    <item*|关键点解析 >
+
+    <\itemize-minus>
+      <assign|labelitemi|<macro|<math|->>><assign|labelitemii|<macro|<math|->>><assign|labelitemiii|<macro|<math|->>><assign|labelitemiv|<macro|<math|->>><item><with|font-series|bold|<scm|define-case-class>>: Goldfish Scheme 中定义样本类的宏，用于创建具有封装数据和丰富方法的结构。
+
+      <item><with|font-series|bold|<scm|data>>: 这是 <scm|rich-rational> 的核心字段，类型限定为 <scm|rational?>，确保只能封装有效的有理数值。
+
+      <item><with|font-series|bold|精确计算>: 专门设计用于处理分数运算，避免浮点数精度问题。
+    </itemize-minus>
+  </description>
+
+  \;
+
+  <subparagraph|示例>
+
+  <\scm-code>
+    (let ((x ($ 1/3))) \ ; 创建一个 rich-rational 实例，封装有理数 1/3
+
+    \ \ (x :get)) \ \ \ \ \ \ \ ; 返回 1/3
+  </scm-code>
+
+  \;
+
+  在这个示例中，<scm|$ 1/3>创建了一个<scm|rich-rational>实例，封装了有理数<scm|1/3>。通过<scm|:get>方法可以获取封装的有理数值。
+
+  \;
+
+  <subparagraph|样本类的特征>
+
+  <\description>
+    <item*|数学精确性 >保持分数形式的精确表示和计算，特别适合需要避免浮点误差的场景
+
+    <item*|运算安全 >自动处理分数约简，确保运算结果始终是最简形式
+
+    <item*|类型保障 >构造函数严格验证输入为合法有理数，拒绝非法输入
+
+    <item*|操作扩展 >提供专门针对有理数的算术运算、比较和转换方法
+
+    <item*|不可变性 >实例创建后内容不可修改，保证运算的确定性和线程安全
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class rich-rational ((data rational?))
 
@@ -2867,11 +2963,57 @@
 
   <section|选择器>
 
+  <paragraph|rich-rational%get>
+
+  获取富有理数样本类中封装的有理数值。
+
+  \;
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|值获取 >返回样本类中封装的基础有理数值
+
+    <item*|类型保证 >返回值保证是 Scheme 原生有理数类型
+
+    <item*|基础操作 >作为其他富有理数方法的基础访问器
+  </description>
+
+  \;
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|数值提取 >当需要获取富有理数封装的基础值时使用
+
+    <item*|原生运算 >需要将富有理数转换为原生有理数以进行底层运算
+
+    <item*|类型检查 >验证富有理数实例的封装值时使用
+  </description>
+
+  \;
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|返回值 >总是返回精确有理数，不会自动转换到浮点数
+
+    <item*|不可变 >获取的值是原始数据的副本，修改不会影响原样本类
+
+    <item*|性能 >作为简单访问器，调用开销极低
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%get) data)
 
     \;
   </goldfish-chunk>
+
+  <subparagraph|测试用例>
 
   <\scm-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ 1/3 :get) =\<gtr\> 1/3)
