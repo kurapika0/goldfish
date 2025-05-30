@@ -33,6 +33,9 @@ end
 target ("goldfish") do
     set_languages("c++11")
     set_targetdir("$(projectdir)/bin/")
+    if is_plat("linux") then
+        add_syslinks("stdc++")
+    end
     add_files ("src/goldfish.cpp")
     add_packages("s7")
     add_packages("tbox")
