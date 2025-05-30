@@ -826,7 +826,9 @@
   <\scm-chunk|tests/goldfish/liii/base64-test.scm|true|true>
     (import (liii check)
 
-    \ \ \ \ \ \ \ \ (liii base64))
+    \ \ \ \ \ \ \ \ (liii base64)
+
+    \ \ \ \ \ \ \ \ (liii error))
 
     \;
 
@@ -1072,9 +1074,9 @@
 
     \ \ \ \ \ \ (if (or (negative? b1) (negative? b2)
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (and (negative? b3) (!= c3 BASE64_PAD_BYTE))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (and (negative? b3) (not (equal? c3 BASE64_PAD_BYTE)))
 
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (and (negative? b4) (!= c4 BASE64_PAD_BYTE)))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ (and (negative? b4) (not (equal? c4 BASE64_PAD_BYTE))))
 
     \ \ \ \ \ \ \ \ \ \ (value-error "Invalid base64 input")
 
@@ -1518,7 +1520,11 @@
 
     \ \ \ \ \ \ \ \ (liii uuid)
 
-    \ \ \ \ \ \ \ \ (scheme time))
+    \ \ \ \ \ \ \ \ (scheme time)
+
+    \ \ \ \ \ \ \ \ (liii base)
+
+    \ \ \ \ \ \ \ \ (liii oop))
 
     \;
 
@@ -2968,7 +2974,7 @@
 
     )
 
-    (import (liii base) (liii error) (liii vector) (liii string) (liii list)
+    (import (liii base) (liii lang) (liii error) (liii vector) (liii string) (liii list)
 
     \ \ \ \ \ \ \ \ (liii os))
 
@@ -2986,11 +2992,13 @@
 
     \ \ \ \ \ \ \ \ (liii os)
 
-    \ \ \ \ \ \ \ \ (liii string))
+    \ \ \ \ \ \ \ \ (liii string)
+
+    \ \ \ \ \ \ \ \ (liii base))
 
     \;
 
-    ; (check-set-mode! 'report-failed)
+    (check-set-mode! 'report-failed)
 
     \;
   </scm-chunk>
@@ -5398,6 +5406,8 @@
   <\goldfish-chunk|goldfish/liii/datetime.scm|true|true>
     (define-library (liii datetime)
 
+    (import (liii oop))
+
     (export datetime date years)
 
     (begin
@@ -6660,7 +6670,9 @@
   <\scm-chunk|tests/goldfish/liii/argparse-test.scm|true|true>
     (import (liii check)
 
-    \ \ \ \ \ \ \ \ (liii argparse))
+    \ \ \ \ \ \ \ \ (liii argparse)
+
+    \ \ \ \ \ \ \ \ (liii base))
 
     \;
 
@@ -7114,9 +7126,13 @@
   <\goldfish-chunk|goldfish/liii/logging.scm|true|true>
     (define-library (liii logging)
 
-    (import (liii path)
+    (import (liii lang)
 
-    \ \ \ \ \ \ \ \ (liii datetime))
+    \ \ \ \ \ \ \ \ (liii path)
+
+    \ \ \ \ \ \ \ \ (liii datetime)
+
+    \ \ \ \ \ \ \ \ (liii error))
 
     (export logging)
 
@@ -7136,7 +7152,9 @@
 
     \ \ \ \ \ \ \ \ (liii lang)
 
-    \ \ \ \ \ \ \ \ (liii path))
+    \ \ \ \ \ \ \ \ (liii path)
+
+    \ \ \ \ \ \ \ \ (liii error))
 
     \;
   </scm-chunk>

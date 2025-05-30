@@ -19,7 +19,9 @@
         (liii os)
         (liii sys)
         (liii uuid)
-        (scheme time))
+        (scheme time)
+        (liii base)
+        (liii oop))
 
 (check-set-mode! 'report-failed)
 

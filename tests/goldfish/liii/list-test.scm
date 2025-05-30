@@ -17,6 +17,7 @@
 (import (liii list)
         (liii check)
         (liii cut)
+        (liii base)
         (only (srfi srfi-1) delete-duplicates))
 
 (check-set-mode! 'report-failed)

@@ -18,6 +18,7 @@
         (liii check)
         (liii vector)
         (liii cut)
+        (liii base)
         (only (scheme base) let-values))
 
 (check-set-mode! 'report-failed)

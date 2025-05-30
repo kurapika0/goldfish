@@ -15,7 +15,8 @@
 ;
 
 (import (liii check)
-        (liii base64))
+        (liii base64)
+        (liii error))
 
 (check-set-mode! 'report-failed)
 

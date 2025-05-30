@@ -16,7 +16,8 @@
 
 (import (liii check)
         (liii string)
-        (srfi srfi-13))
+        (srfi srfi-13)
+        (liii error))
 
 (check-set-mode! 'report-failed)
 

@@ -30,8 +30,8 @@
 
 (define (goldfish-cmd)
   (if (os-windows?)
-    "bin\\goldfish "
-    "bin/goldfish "))
+    "bin\\goldfish -m r7rs "
+    "bin/goldfish -m r7rs "))
 
 (let1 ret-l ((all-tests)
              :map (lambda (x) (string-append (goldfish-cmd) x))
@@ -42,3 +42,4 @@
                     (os-call x)))
   (when (ret-l :exists (compose not zero?))
     (exit -1)))
+

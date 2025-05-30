@@ -17,9 +17,10 @@
 (import (liii path)
         (liii check)
         (liii os)
-        (liii string))
+        (liii string)
+        (liii base))
 
-; (check-set-mode! 'report-failed)
+(check-set-mode! 'report-failed)
 
 (check (path-dir? ".") => #t)
 (check (path-dir? "..") => #t)

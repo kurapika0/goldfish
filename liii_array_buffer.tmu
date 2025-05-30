@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.8>>
+<TMU|<tuple|1.1.0|2025.0.9>>
 
 <style|<tuple|generic|chinese|goldfish|literate|reduced-margins>>
 
@@ -100,11 +100,17 @@
   <section|测试>
 
   <\goldfish-chunk|tests/goldfish/liii/array-buffer-test.scm|true|true>
-    (import (liii check) (liii array-buffer))
+    (import (liii check)
+
+    \ \ \ \ \ \ \ \ (liii array-buffer)
+
+    \ \ \ \ \ \ \ \ (liii oop)
+
+    \ \ \ \ \ \ \ \ (liii lang))
 
     \;
 
-    ; (check-set-mode! 'report-failed)
+    (check-set-mode! 'report-failed)
 
     \;
   </goldfish-chunk>

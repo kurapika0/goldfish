@@ -2,7 +2,8 @@
         (liii logging)
         (liii string)
         (liii lang)
-        (liii path))
+        (liii path)
+        (liii error))
 
 ;; Test set-path! with path object support
 (let ((log (logging "test-path-support")))

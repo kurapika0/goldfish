@@ -18,7 +18,8 @@
         (liii base)
         (liii list)
         (liii case)
-        (liii lang))
+        (liii lang)
+        (liii error))
 
 (check-set-mode! 'report-failed)
 

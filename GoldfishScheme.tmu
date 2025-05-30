@@ -456,7 +456,9 @@
 
     \ \ \ \ \ \ \ \ (liii case)
 
-    \ \ \ \ \ \ \ \ (liii lang))
+    \ \ \ \ \ \ \ \ (liii lang)
+
+    \ \ \ \ \ \ \ \ (liii error))
 
     \;
 
@@ -5662,7 +5664,7 @@
   <\scm-chunk|goldfish/srfi/srfi-78.scm|true|true>
     (define-library (srfi srfi-78)
 
-    (import (liii lang))
+    (import (liii oop))
 
     (export check check-set-mode! check-report check-reset!
 
@@ -5994,7 +5996,7 @@
   check的具体过程，依据不同的检查模式，做不同的处理：
 
   <\scm-chunk|goldfish/srfi/srfi-78.scm|true|true>
-    (define (check:proc expression thunk equal expected-result)
+    (define* (check:proc expression thunk expected-result (equal ==))
 
     \ \ (case check:mode
 
@@ -6060,7 +6062,7 @@
   <\scm-chunk|goldfish/srfi/srfi-78.scm|true|true>
     (define-macro (check expr =\<gtr\> expected)
 
-    \ \ `(check:proc ',expr (lambda () ,expr) == ,expected))
+    \ \ `(check:proc ',expr (lambda () ,expr) ,expected))
 
     \;
   </scm-chunk>
@@ -7011,6 +7013,8 @@
     \ \ \ \ \ \ \ \ (liii check)
 
     \ \ \ \ \ \ \ \ (liii cut)
+
+    \ \ \ \ \ \ \ \ (liii base)
 
     \ \ \ \ \ \ \ \ (only (srfi srfi-1) delete-duplicates))
 
@@ -11186,7 +11190,9 @@
 
     \ \ \ \ \ \ \ \ (liii string)
 
-    \ \ \ \ \ \ \ \ (srfi srfi-13))
+    \ \ \ \ \ \ \ \ (srfi srfi-13)
+
+    \ \ \ \ \ \ \ \ (liii error))
 
     \;
 
@@ -13611,6 +13617,8 @@
     \ \ \ \ \ \ \ \ (liii vector)
 
     \ \ \ \ \ \ \ \ (liii cut)
+
+    \ \ \ \ \ \ \ \ (liii base)
 
     \ \ \ \ \ \ \ \ (only (scheme base) let-values))
 

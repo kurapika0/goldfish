@@ -15,7 +15,8 @@
 ;
 
 (import (liii check)
-        (liii argparse))
+        (liii argparse)
+        (liii base))
 
 (check-set-mode! 'report-failed)
 

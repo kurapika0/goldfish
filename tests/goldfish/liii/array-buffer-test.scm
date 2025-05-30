@@ -14,9 +14,12 @@
 ; under the License.
 ;
 
-(import (liii check) (liii array-buffer))
+(import (liii check)
+        (liii array-buffer)
+        (liii oop)
+        (liii lang))
 
-; (check-set-mode! 'report-failed)
+(check-set-mode! 'report-failed)
 
 (check (array-buffer :from-vector #(1 2 3) :collect) => #(1 2 3))
 

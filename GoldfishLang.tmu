@@ -92,21 +92,49 @@
 
     \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
 
-    (import (only (scheme base) u8-string-length)
+    (import (only (liii base)
 
-    \ \ \ \ \ \ \ \ (only (liii oop) define-case-class display* == @ typed-define case-class? chained-define define-object define-class != chain-apply object-\<gtr\>string)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ u8-string-length any? receive u8-substring)
 
-    \ \ \ \ \ \ \ \ (only (liii string) string-join string-null? string-starts? string-contains string-trim string-trim-right string-trim-both string-remove-prefix string-remove-suffix string-pad string-pad-right)
+    \ \ \ \ \ \ \ \ (only (liii oop)
 
-    \ \ \ \ \ \ \ \ (only (liii vector) vector= vector-every vector-any vector-filter reverse-list-\<gtr\>vector vector-index vector-index-right vector-fold vector-fold-right)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ define-case-class display* == @ typed-define case-class? chained-define
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ define-object define-class != chain-apply object-\<gtr\>string)
+
+    \ \ \ \ \ \ \ \ (only (liii string)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ string-join string-null? string-starts? string-contains string-trim
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ string-trim-right string-trim-both string-remove-prefix string-remove-suffix string-pad
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ string-pad-right)
+
+    \ \ \ \ \ \ \ \ (only (liii vector)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ vector= vector-every vector-any vector-filter reverse-list-\<gtr\>vector
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ vector-index vector-index-right vector-fold vector-fold-right)
 
     \ \ \ \ \ \ \ \ (only (liii sort) list-stable-sort vector-stable-sort)
 
-    \ \ \ \ \ \ \ \ (only (liii list) length=? iota take filter count drop every any take-right drop-right fold fold-right reduce take-while drop-while list-index)
+    \ \ \ \ \ \ \ \ (only (liii list)
 
-    \ \ \ \ \ \ \ \ (only (liii hash-table) hash-table-update!/default hash-table-for-each hash-table-ref/default hash-table-contains? hash-table-delete! hash-table-count)
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ length=? iota take filter count
 
-    \ \ \ \ \ \ \ \ (only (liii bitwise) bitwise-and bitwise-ior arithmetic-shift))
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ drop every any take-right drop-right
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ fold fold-right reduce take-while drop-while list-index)
+
+    \ \ \ \ \ \ \ \ (only (liii hash-table)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ hash-table-update!/default hash-table-for-each hash-table-ref/default hash-table-contains? hash-table-delete!
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ hash-table-count)
+
+    \ \ \ \ \ \ \ \ (only (liii bitwise) bitwise-and bitwise-ior arithmetic-shift)
+
+    \ \ \ \ \ \ \ \ (liii error))
 
     \;
 
@@ -138,13 +166,17 @@
 
     \ \ \ \ \ \ \ \ (liii lang)
 
+    \ \ \ \ \ \ \ \ (only (liii base) let1 identity)
+
     \ \ \ \ \ \ \ \ (liii cut)
 
-    \ \ \ \ \ \ \ \ (liii case))
+    \ \ \ \ \ \ \ \ (liii case)
+
+    \ \ \ \ \ \ \ \ (liii error))
 
     \;
 
-    ;(check-set-mode! 'report-failed)
+    (check-set-mode! 'report-failed)
 
     \;
   </scm-chunk>
@@ -8384,7 +8416,7 @@
 
     \ \ \ \ \ \ ((length=? 1 xs)
 
-    \ \ \ \ \ \ \ (let1 sep (car xs)
+    \ \ \ \ \ \ \ (let ((sep (car xs)))
 
     \ \ \ \ \ \ \ \ \ (if (string? sep)
 
@@ -8416,9 +8448,9 @@
 
     \ \ (receive (start sep end) (parse-args xs)
 
-    \ \ \ \ (let1 as-string (lambda (x) (if (string? x) x (object-\<gtr\>string x)))
+    \ \ \ \ (let ((as-string (lambda (x) (if (string? x) x (object-\<gtr\>string x)))))
 
-    \ \ \ \ \ \ \ \ \ \ (string-append start (string-join (map as-string data) sep) end))))
+    \ \ \ \ \ \ (string-append start (string-join (map as-string data) sep) end))))
 
     \;
   </scm-chunk>
@@ -10246,7 +10278,7 @@
 
     \ \ \ \ \ \ ((length=? 1 xs)
 
-    \ \ \ \ \ \ \ (let1 sep (car xs)
+    \ \ \ \ \ \ \ (let ((sep (car xs)))
 
     \ \ \ \ \ \ \ \ \ (if (string? sep)
 

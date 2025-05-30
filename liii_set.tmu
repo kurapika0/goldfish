@@ -1,4 +1,4 @@
-<TMU|<tuple|1.1.0|2025.0.8>>
+<TMU|<tuple|1.1.0|2025.0.9>>
 
 <style|<tuple|generic|chinese|goldfish|literate|reduced-margins>>
 
@@ -248,7 +248,7 @@
 
     \;
 
-    (import (liii set) (liii check))
+    (import (liii base) (liii set) (liii check))
 
     \;
 
