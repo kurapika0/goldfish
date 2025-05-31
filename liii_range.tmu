@@ -197,12 +197,42 @@
     \;
   </goldfish-chunk>
 
+  <\goldfish-chunk|goldfish/liii/range.scm|true|false>
+    (define (%for-each proc)
+
+      (let loop ((current start))
+
+        (cond
+
+          ((or (and (\> step 0) (if inclusive? (\<= current end) (\< current end)))
+
+                (and (\< step 0) (if inclusive? (\>= current end) (\> current end))))
+
+            (proc current)
+
+            (loop (+ current step))))))
+
+    \;
+  </goldfish-chunk>
+
   <\goldfish-chunk|tests/goldfish/liii/range-test.scm|true|true>
     (check-false ((range :inclusive 1 3) :empty?))
 
     (check-true ((range :inclusive 3 1) :empty?))
 
     (check-false ((range :inclusive 1 3 0) :empty?))
+
+    \;
+  </goldfish-chunk>
+
+  <\goldfish-chunk|tests/goldfish/liii/range-test.scm|true|false>
+    (let1 r1 (range :inclusive -2 1)
+
+      (let1 map-func (lambda (x) (* x x))
+
+      (let1 r2 (r1 :map map-func)
+
+      (check r2 =\<gtr\> (rich-list (list 4 1 0 1))))))
 
     \;
   </goldfish-chunk>
