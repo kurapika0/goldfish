@@ -21,6 +21,7 @@
         (liii case)
         (liii error))
 
+(define == class=?)
 (check-set-mode! 'report-failed)
 
 (check ((@ + _ 2) 1) => 3)
@@ -280,17 +281,12 @@
   (check-false (case-class? 42))
 )
 
-(check (== (list 1 2) (list 1 2)) => #t)
-(check (!= (list 1 2) (list 1 2)) => #f)
-(check (== (box 10) 10) => #t)  
-(check (== 10 (box 10)) => #t)  
-(check (== (box 10) (box 10)) => #t)  
-(check (== 10 10) => #t)  
-(check-true (== (person "Bob" 21) (person "Bob" 21)))
-
-(check (== (list 1 2) (list 1 2)) => #t)
-(check (!= (list 1 2) (list 1 2)) => #f)
-(check-true (!= (person "Bob" 20) (person "Bob" 21)))
+(check (class=? (list 1 2) (list 1 2)) => #t)
+(check (class=? (box 10) 10) => #t)  
+(check (class=? 10 (box 10)) => #t)  
+(check (class=? (box 10) (box 10)) => #t)  
+(check (class=? 10 10) => #t)  
+(check-true (class=? (person "Bob" 21) (person "Bob" 21)))
 
 (let ()
   (define-case-class person ((name string?) (country string?))
@@ -746,9 +742,9 @@
 (check ($ "ABCabc" :filter (@ _ :upper?) :reverse) => "CBA")
 (check ($ "你好世界" :drop-while (@ _ :equals ($ "你" 0)) :reverse) => "界世好")
 
-(check ($ "" :count (@ == _ #\A)) => 0)
-(check ($ "hello" :count (@ == _ #\l)) => 2)
-(check ($ "你好，我是韩梅梅" :count (@ == _ (rich-char :from-string "#\\梅"))) => 2)
+(check ($ "" :count (@ class=? _ #\A)) => 0)
+(check ($ "hello" :count (@ class=? _ #\l)) => 2)
+(check ($ "你好，我是韩梅梅" :count (@ class=? _ (rich-char :from-string "#\\梅"))) => 2)
 
 (check ($ "Hello" :index-where (@ _ :equals (rich-char #\e))) => 1)
 (check ($ "" :index-where (@ _ :digit?)) => -1)
