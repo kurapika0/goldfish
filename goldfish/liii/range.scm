@@ -44,11 +44,11 @@
 
 (define (%for-each proc)
   (let loop ((current start))
-    (cond
-      ((or (and (> step 0) (if inclusive? (<= current end) (< current end)))
+    (when
+      (or (and (> step 0) (if inclusive? (<= current end) (< current end)))
            (and (< step 0) (if inclusive? (>= current end) (> current end))))
         (proc current)
-        (loop (+ current step))))))
+        (loop (+ current step)))))
 
 (define (%filter f)
   (if (%empty?)
