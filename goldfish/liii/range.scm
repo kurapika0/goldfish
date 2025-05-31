@@ -31,24 +31,24 @@
       (and (= start end) (not inclusive?))))
 
 (define (%map map-func)
-  (if (%empty?)
-      (rich-list :empty)
-      (let loop ((current start) (result '()))
-        (cond
-          ((or (and (> step 0) (if inclusive? (> current end) (>= current end)))
-                (and (< step 0) (if inclusive? (< current end) (<= current end))))
-            (rich-list (reverse result)))
-          (else
-            (loop (+ current step)
-                  (cons (map-func current) result)))))))
+  (if (%empty?)
+    (rich-list :empty)
+    (let loop ((current start) (result '()))
+      (cond
+        ((or (and (> step 0) (if inclusive? (> current end) (>= current end)))
+             (and (< step 0) (if inclusive? (< current end) (<= current end))))
+          (rich-list (reverse result)))
+        (else
+          (loop (+ current step)
+            (cons (map-func current) result)))))))
 
 (define (%for-each proc)
-  (let loop ((current start))
-    (cond
-      ((or (and (> step 0) (if inclusive? (<= current end) (< current end)))
-            (and (< step 0) (if inclusive? (>= current end) (> current end))))
-        (proc current)
-        (loop (+ current step))))))
+  (let loop ((current start))
+    (cond
+      ((or (and (> step 0) (if inclusive? (<= current end) (< current end)))
+           (and (< step 0) (if inclusive? (>= current end) (> current end))))
+        (proc current)
+        (loop (+ current step))))))
 
 (define (%filter f)
   (if (%empty?)
