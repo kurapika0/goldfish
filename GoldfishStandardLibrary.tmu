@@ -1524,7 +1524,9 @@
 
     \ \ \ \ \ \ \ \ (liii base)
 
-    \ \ \ \ \ \ \ \ (liii oop))
+    \ \ \ \ \ \ \ \ (liii oop)
+
+    \ \ \ \ \ \ \ \ (liii lang))
 
     \;
 
@@ -2442,19 +2444,19 @@
 
     \ \ (let1 r (listdir test-dir)
 
-    \ \ \ \ (check-true (in? "a" r))
+    \ \ \ \ (check-true ($ r :contains "a"))
 
-    \ \ \ \ (check-true (in? "b" r))
+    \ \ \ \ (check-true ($ r :contains "b"))
 
-    \ \ \ \ (check-true (in? "c" r)))
+    \ \ \ \ (check-true ($ r :contains "c")))
 
     \ \ (let1 r2 (listdir test-dir2)
 
-    \ \ \ \ (check-true (in? "a" r2))
+    \ \ \ \ (check-true ($ r2 :contains "a"))
 
-    \ \ \ \ (check-true (in? "b" r2))
+    \ \ \ \ (check-true ($ r2 :contains "b"))
 
-    \ \ \ \ (check-true (in? "c" r2)))
+    \ \ \ \ (check-true ($ r2 :contains "c")))
 
     \ \ (rmdir dir-a)
 
@@ -6832,7 +6834,7 @@
 
     \ \ \ \ (type-error "type of the argument must be symbol"))
 
-    \ \ (in? type '(string number)))
+    \ \ (member type '(string number)))
 
     \;
   </scm-chunk>
