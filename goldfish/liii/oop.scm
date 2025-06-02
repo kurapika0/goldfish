@@ -15,7 +15,7 @@
 ;
 
 (define-library (liii oop)
-(import (liii base) (liii list) (liii string))
+(import (srfi srfi-2) (liii list) (liii string))
 (export
   @ typed-define define-case-class define-object define-class
   case-class? chained-define display* object->string
@@ -149,7 +149,7 @@
          (instance-method-symbols (map caadr instance-methods))
          (instance-messages
           (map (lambda (method)
-                 (let1 name (string-remove-prefix (symbol->string method) "%")
+                 (let ((name (string-remove-prefix (symbol->string method) "%")))
                    (string->symbol (string-append ":" name))))
                instance-method-symbols))
          (static-methods
@@ -158,7 +158,7 @@
          (static-method-symbols (map caadr static-methods))
          (static-messages
           (map (lambda (method)
-                 (let1 name (string-remove-prefix (symbol->string method) "@")
+                 (let ((name (string-remove-prefix (symbol->string method) "@")))
                    (string->symbol (string-append ":" name))))
                static-method-symbols))
          ;(default-static-messages '(:is-type-of))
