@@ -8,4 +8,7 @@
 (print-curlet-length)
 (import (liii oop))
 (print-curlet-length)
+(import (liii oop))
+(print-curlet-length)
+
 (let->list (rootlet))

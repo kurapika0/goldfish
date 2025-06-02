@@ -46,9 +46,18 @@
                                 (begin
                                   (set! name (string-append name "/"))
                                   (loop (cdr lib) name))))))
-        (unless (member lib-filename (*s7* 'file-names))
-          (load lib-filename)))
+        (let* ((env (funclet r7rs-import-library-filename))
+               (ht (env 'loaded-libraries)))
+          (when (not (hash-table-ref ht lib-filename))
+            (load lib-filename)
+            ; (display "Loading ")
+            ; (display lib-filename)
+            ; (newline)
+            (hash-table-set! ht lib-filename #t)))
       (r7rs-import-library-filename (cdr libs)))))
+
+  (varlet (funclet r7rs-import-library-filename) 'loaded-libraries (hash-table))
+)
 
 (define-macro (import . libs)
   `(begin
