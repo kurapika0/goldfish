@@ -14,7 +14,7 @@
 ; under the License.
 ;
 
-(import (liii check) (liii range) (liii base) (liii lang))
+(import (liii check) (liii range) (liii base) (liii lang) (liii error))
 
 (check-set-mode! 'report-failed)
 
@@ -32,7 +32,7 @@
 
 (check-false ((range :inclusive 1 3) :empty?))
 (check-true ((range :inclusive 3 1) :empty?))
-(check-false ((range :inclusive 1 3 0) :empty?))
+(check-catch 'value-error ((range :inclusive 1 3 0) :empty?))
 
 (let* ((r1 (range :inclusive -2 1))
        (r2 (r1 :map (lambda (x) (* x x)))))
@@ -45,6 +45,29 @@
 
 (let1 r (range 5 1 -1 #t)
   (check (r :filter odd?) => ($ (list 5 3 1))))
+
+(let1 r (range 5 1 1 #t)
+  (check (r :filter odd?) => ($ (list ))))
+
+(let1 r (range -5 -1 1 #t)
+  (check (r :filter odd?) => ($ (list -5 -3 -1))))
+
+(let1 r (range 5 5 -1 #t)
+  (check (r :filter odd?) => ($ (list 5)))
+  (check (r :filter even?) => ($ (list ))))
+
+(check-false ((range :inclusive 1 3) :contains 4))
+(check-true ((range :inclusive 1 3) :contains 2))
+(check-true ((range :inclusive 3 3) :contains 3))
+(check-true ((range :inclusive 10 1 -3) :contains 4))
+(check-false ((range :inclusive 10 1 -3) :contains 14))
+(check-false ((range :inclusive 10 1 -3) :contains 3))
+(check-catch 'value-error ((range :inclusive 10 1 0) :contains 4))
+(check-false ((range :inclusive 10 1 -2) :contains 5))
+(check-true  ((range :inclusive 10 1 -2) :contains 6))
+(check-false ((range 1 3):contains 3))
+(check-false ((range 3 3) :contains 3))
+(check-false ((range 3 1 -1):contains 1))
 
 (check-report)
 

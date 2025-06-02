@@ -15,7 +15,9 @@
 ;
 
 (define-library (liii range)
-(import (liii oop) (only (liii lang) rich-list))
+(import (liii oop) 
+        (only (liii lang) rich-list) 
+        (liii error)) 
 (export range)
 (begin
 
@@ -25,16 +27,21 @@
 (define* (@inclusive start end (step 1))
   (range start end step #t))
 
+(define (check-step)
+  (when (zero? step)
+      (value-error "step can't be zero")))
+
 (define (in-range? x)
-  (or (and (> step 0) (if inclusive? (<= x end) (< x end)))
-      (and (< step 0) (if inclusive? (>= x end) (> x end)))))
+  (or (and (> step 0) (if inclusive? (and (<= x end) (>= x start)) (and (< x end) (>= x start))))
+      (and (< step 0) (if inclusive? (and (>= x end) (<= x start)) (and (> x end) (<= x start))))))
 
 (define (not-in-range? x)
-  (or (and (> step 0) (> x end))
-      (and (< step 0) (< x end))
+  (or (and (> step 0) (or (> x end) (< x start)))
+      (and (< step 0) (or (< x end) (> x start)))
       (and (= x end) (not inclusive?))))
 
 (define (%empty?)
+  (check-step)
   (or (and (> start end) (> step 0))
       (and (< start end) (< step 0))
       (and (= start end) (not inclusive?))))
@@ -65,6 +72,17 @@
                   (if (f i)
                       (cons i return)
                        return))))))
+
+(define (%contains elem)
+  (check-step)
+  (if (%empty?)
+      #f
+      (if (in-range? elem) ;判断是否在范围内
+          (zero? (modulo (- elem start) (abs step)))
+          #f)))
+
+           
+           
 
 ) ; define-case-cass
 ) ; begin
