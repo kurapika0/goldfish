@@ -393,6 +393,7 @@
 (check ($ 1.1 :abs) => 1.1)
 (check ($ 0.0 :abs) => 0.0)
 (check ($ -1.1 :abs) => 1.1)
+(check ($ -inf.0 :abs) => +inf.0)
 
 (check ($ 1.1 :to-string) => "1.1")
 (check ($ 0.0 :to-string) => "0.0")

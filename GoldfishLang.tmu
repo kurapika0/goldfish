@@ -2967,7 +2967,43 @@
 
   <section|其它函数>
 
-  <paragraph|rich-float%abs>
+  <paragraph|rich-rational%abs>
+
+  求富有理数的绝对值。
+
+  <htab|0pt>
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|计算绝对值 >返回当前富有理数的绝对值，保持其有理数特性不变。
+
+    <item*|保持符号 >如果原值为负，返回其正值；如果原值为正或零，直接返回原值。
+  </description>
+
+  \;
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|数值处理 >当需要忽略有理数的符号，只关注其大小时使用。
+
+    <item*|数学运算 >在需要进行绝对值比较或计算的数学运算中使用。
+  </description>
+
+  \;
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|不改变原值 >该方法不会修改原富有理数对象，而是返回一个新的富有理数对象。
+
+    <item*|高效计算 >由于有理数内部以分数形式存储，绝对值计算仅涉及分子符号调整，运算高效。
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%abs)\ 
@@ -2980,6 +3016,8 @@
 
     \ \ 
   </goldfish-chunk>
+
+  <subparagraph|测试用例>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ 1/3 :abs) =\<gtr\> 1/3)
@@ -3001,6 +3039,74 @@
 
   <chapter|富浮点数>
 
+  <scm|rich-float> 是 Goldfish Scheme 中的一个样本类（case class），用于封装浮点数并提供精确的数学运算支持。该模块扩展了 Scheme 中原生浮点数的功能，提供更丰富的数值操作和类型安全保证。
+
+  <section|基本结构>
+
+  <paragraph|rich-float>
+
+  <scm|rich-float> 是一个样本类，其构造函数接受一个浮点数作为参数，并将其封装在样本类中。通过样本类的机制，<scm|rich-float> 提供了精确的算术运算和转换方法。
+
+  <htab|0pt>
+
+  <subparagraph|样本类定义>
+
+  <\goldfish-code>
+    (define-case-class rich-float ((data float?))
+  </goldfish-code>
+
+  <\description>
+    <item*|关键点解析 >
+
+    <\itemize-minus>
+      <assign|labelitemi|<macro|<math|->>><assign|labelitemii|<macro|<math|->>><assign|labelitemiii|<macro|<math|->>><assign|labelitemiv|<macro|<math|->>><assign|labelitemi|<macro|<math|->>><assign|labelitemii|<macro|<math|->>><assign|labelitemiii|<macro|<math|->>><assign|labelitemiv|<macro|<math|->>>
+
+      <item><with|font-series|bold|<scm|define-case-class>>: Goldfish Scheme 中定义样本类的宏，用于创建具有封装数据和丰富方法的结构。
+
+      <item><with|font-series|bold|<scm|data>>: 这是 <scm|rich-float> 的核心字段，类型限定为 <scm|float?>，确保只能封装有效的浮点数值。
+
+      <item><with|font-series|bold|数值范围>: 支持 IEEE 754 双精度浮点数，覆盖 Scheme 标准浮点数范围
+    </itemize-minus>
+  </description>
+
+  <subparagraph|示例>
+
+  <\scm-code>
+    \;
+
+    (let ((x ($ 3.14))) \ ; 创建一个 rich-float 实例，封装浮点数 3.14
+
+    \ \ (x :get)) \ \ \ \ \ \ \ \ \ ; 返回 3.14
+
+    \;
+  </scm-code>
+
+  <htab|0pt>
+
+  在这个示例中，<scm|$ 3.14> 创建了一个 <scm|rich-float> 实例，封装了浮点数 <scm|3.14>。通过 <scm|:get> 方法可以获取封装的浮点数值。
+
+  <htab|0pt>
+
+  <subparagraph|样本类的特征>
+
+  <\description>
+    <item*|数值精度 >提供标准的双精度浮点数表示，适用于科学计算和工程应用
+
+    <item*|运算安全 >自动处理浮点数特殊值（如 NaN、Infinity）的运算
+
+    <item*|类型保障 >构造函数严格验证输入为合法浮点数，拒绝非法输入
+
+    <item*|操作扩展 >提供浮点数特有的数学运算（如三角函数、指数运算等）
+
+    <item*|不可变性 >实例创建后内容不可修改，保证运算的确定性和线程安全
+
+    <item*|兼容性 >与 Scheme 原生浮点数无缝交互，同时提供更丰富的操作方法
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define-case-class rich-float ((data float?))
 
@@ -3009,11 +3115,57 @@
 
   <section|选择器>
 
+  <paragraph|rich-float%get>
+
+  获取富浮点对象中封装的原始浮点数值。
+
+  <htab|0pt>
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|基础取值 >返回富浮点对象中存储的原始Scheme浮点数值
+
+    <item*|类型保持 >返回值类型保证为Scheme标准浮点数（即满足float?谓词）
+  </description>
+
+  \;
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|数值提取 >当需要将富浮点对象转换为普通Scheme浮点数进行后续计算时使用
+
+    <item*|类型转换 >作为富浮点对象与其他数值类型交互的桥梁，获取基础值后进行类型转换
+
+    <item*|显示输出 >需要直接显示或处理原始浮点数值而非富浮点对象时使用
+  </description>
+
+  \;
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|精度保持 >返回的浮点数保持原始精度，不会进行额外舍入
+
+    <item*|非拷贝 >返回的是内部存储的直接引用而非副本，但浮点数本身是不可变的
+
+    <item*|空值处理 >富浮点对象不会封装空值，因此无需考虑空值情况
+
+    <item*|性能 >作为简单取值操作，性能开销极低
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%get) data)
 
     \;
   </goldfish-chunk>
+
+  <subparagraph|测试用例>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ 12.2 :get) =\<gtr\> 12.2)
@@ -3024,6 +3176,48 @@
   <section|谓词>
 
   <paragraph|rich-float%abs>
+
+  求富浮点数的绝对值。
+
+  <htab|0pt>
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|绝对值计算 >对输入的富浮点数求取绝对值，结果仍为富浮点数类型
+
+    <item*|类型保持 >计算过程不改变数值的浮点类型特性
+
+    <item*|符号处理 >将负值转换为正值，正值和零保持不变
+  </description>
+
+  \;
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|数值运算 >在需要消除数值符号的数学计算中使用
+
+    <item*|物理模拟 >计算距离、幅度等非负物理量时使用
+
+    <item*|数据预处理 >在数据标准化或归一化前确保数值非负
+  </description>
+
+  \;
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|特殊值处理 >输入为\<pm\>Infinity时返回+Infinity
+
+    <item*|精度保证 >计算结果不会损失原始数值的精度
+
+    <item*|性能考虑 >相比整数绝对值运算有额外的浮点处理开销
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
 
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%abs)\ 
@@ -3037,12 +3231,16 @@
     \ \ 
   </goldfish-chunk>
 
+  <subparagraph|测试用例>
+
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ 1.1 :abs) =\<gtr\> 1.1)
 
     (check ($ 0.0 :abs) =\<gtr\> 0.0)
 
     (check ($ -1.1 :abs) =\<gtr\> 1.1)
+
+    (check ($ -inf.0 :abs) =\<gtr\> +inf.0)
 
     \;
   </goldfish-chunk>
@@ -3051,6 +3249,52 @@
 
   <paragraph|rich-float%to-string>
 
+  将富浮点数转换为字符串表示。
+
+  <htab|0pt>
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|数值转换 >将富浮点数转换为可读的字符串格式
+
+    <item*|格式保留 >保留原始数值的精度和格式特性
+
+    <item*|类型转换 >输出结果为Scheme标准字符串类型
+  </description>
+
+  \;
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|数据输出 >需要将浮点数以文本形式显示或存储时使用
+
+    <item*|日志记录 >在日志系统中记录浮点数值时使用
+
+    <item*|用户界面 >在GUI或CLI界面中显示浮点数值时使用
+  </description>
+
+  \;
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|精度控制 >
+
+    <\itemize-minus>
+      <item>默认使用Scheme的标准转换精度
+
+      <item>可能因实现不同而略有差异
+    </itemize-minus>
+
+    <item*|本地化 >不考虑本地化的数字格式（如千位分隔符）
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%to-string)
 
@@ -3058,6 +3302,8 @@
 
     \;
   </goldfish-chunk>
+
+  <subparagraph|测试用例>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ 1.1 :to-string) =\<gtr\> "1.1")
@@ -3075,6 +3321,42 @@
 
   <paragraph|rich-float%sqrt>
 
+  求富浮点数的平方根结果，保留浮点精度。
+
+  <htab|0pt>
+
+  <subparagraph|功能>
+
+  <\description>
+    <item*|数学计算 >对输入的浮点数进行精确的平方根运算
+
+    <item*|类型保持 >输出结果与输入保持相同的浮点类型（单精度/双精度）
+
+    <item*|异常处理 >对负数输入返回NaN（非数字）结果
+  </description>
+
+  <subparagraph|使用场景>
+
+  <\description>
+    <item*|科学计算 >物理模拟、工程计算等需要精确平方根的场合
+
+    <item*|图形处理 >计算向量长度、距离度量等图形学运算
+
+    <item*|金融分析 >波动率计算、风险评估等需要平方根的金融模型
+  </description>
+
+  <subparagraph|注意事项>
+
+  <\description>
+    <item*|精度限制 >浮点运算存在固有精度误差，不适合需要绝对精确的场合
+
+    <item*|性能考虑 >相比整数运算有更高的计算开销
+  </description>
+
+  \;
+
+  <subparagraph|实现函数>
+
   <\goldfish-chunk|goldfish/liii/lang.scm|true|true>
     (define (%sqrt)
 
@@ -3088,6 +3370,8 @@
 
     \;
   </goldfish-chunk>
+
+  <subparagraph|测试用例>
 
   <\goldfish-chunk|tests/goldfish/liii/lang-test.scm|true|true>
     (check ($ 0.0 :sqrt) =\<gtr\> 0.0) \ \ \ \ \ \ 
