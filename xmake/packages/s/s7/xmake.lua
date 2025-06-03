@@ -23,8 +23,9 @@ package("s7")
     set_homepage("https://ccrma.stanford.edu/software/snd/snd/s7.html")
     set_description("s7 is a Scheme interpreter intended as an extension language for other applications.")
 
-    add_urls("https://gitee.com/XmacsLabs/s7.git")
-    add_urls("https://github.com/XmacsLabs/s7.git")
+    -- add_urls("https://gitee.com/XmacsLabs/s7.git")
+    -- add_urls("https://github.com/XmacsLabs/s7.git")
+    set_sourcedir(path.join(os.scriptdir(), "../../../../3rdparty/s7"))
 
     add_versions("20241230", "20241230")
 
